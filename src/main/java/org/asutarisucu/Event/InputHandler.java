@@ -24,6 +24,6 @@ public class InputHandler implements IKeybindProvider, IKeyboardInputHandler, IM
     }
     @Override
     public void addHotkeys(IKeybindManager manager) {
-        manager.addHotkeysForCategory(Reference.MOD_ID, "amatweaks.hotkeys.category.generic_hotkeys", Hotkeys.HOTKEY_LIST);
+        manager.addHotkeysForCategory(Reference.MOD_ID, "Asutantweaks.hotkeys.category.generic_hotkeys", Hotkeys.HOTKEY_LIST);
     }
 }
