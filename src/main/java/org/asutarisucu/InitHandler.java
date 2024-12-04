@@ -3,7 +3,6 @@ package org.asutarisucu;
 import fi.dy.masa.malilib.config.ConfigManager;
 import fi.dy.masa.malilib.event.InputEventHandler;
 import fi.dy.masa.malilib.interfaces.IInitializationHandler;
-
 import org.asutarisucu.Configs.Callbacks;
 import org.asutarisucu.Configs.Configs;
 import org.asutarisucu.Event.InputHandler;

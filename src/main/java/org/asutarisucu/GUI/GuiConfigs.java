@@ -8,15 +8,13 @@ import fi.dy.masa.malilib.gui.button.ButtonBase;
 import fi.dy.masa.malilib.gui.button.ButtonGeneric;
 import fi.dy.masa.malilib.gui.button.IButtonActionListener;
 import fi.dy.masa.malilib.util.StringUtils;
-
-import java.util.Collections;
-import java.util.List;
-
 import org.asutarisucu.Configs.Configs;
 import org.asutarisucu.Configs.FeatureToggle;
 import org.asutarisucu.Configs.Hotkeys;
-
 import org.asutarisucu.Reference;
+
+import java.util.Collections;
+import java.util.List;
 
 public class GuiConfigs extends GuiConfigsBase {
     public static ImmutableList<FeatureToggle> TWEAK_LIST = FeatureToggle.VALUES;

@@ -1,10 +1,8 @@
 package org.asutarisucu.Event;
 
 import fi.dy.masa.malilib.hotkeys.*;
-
 import org.asutarisucu.Configs.FeatureToggle;
 import org.asutarisucu.Configs.Hotkeys;
-
 import org.asutarisucu.Reference;
 
 public class InputHandler implements IKeybindProvider, IKeyboardInputHandler, IMouseInputHandler {

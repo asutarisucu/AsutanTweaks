@@ -1,17 +1,16 @@
 package org.asutarisucu.Configs;
 
-import fi.dy.masa.malilib.hotkeys.KeyCallbackAdjustable;
-import fi.dy.masa.malilib.util.InfoUtils;
 import fi.dy.masa.malilib.config.IConfigBoolean;
 import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.hotkeys.IHotkeyCallback;
 import fi.dy.masa.malilib.hotkeys.IKeybind;
 import fi.dy.masa.malilib.hotkeys.KeyAction;
+import fi.dy.masa.malilib.hotkeys.KeyCallbackAdjustable;
 import fi.dy.masa.malilib.interfaces.IValueChangeCallback;
+import fi.dy.masa.malilib.util.InfoUtils;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
-
 import org.asutarisucu.GUI.GuiConfigs;
 
 public class Callbacks {
