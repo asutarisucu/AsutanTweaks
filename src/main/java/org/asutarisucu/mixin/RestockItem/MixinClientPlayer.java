@@ -1,8 +1,13 @@
 package org.asutarisucu.mixin.RestockItem;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screen.ingame.HandledScreen;
+import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemUsageContext;
+import net.minecraft.screen.PlayerScreenHandler;
+import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.util.ActionResult;
 import org.asutarisucu.Configs.FeatureToggle;
@@ -20,21 +25,13 @@ public abstract class MixinClientPlayer {
         if(FeatureToggle.ITEM_RESTOCK.getBooleanValue()){
             MinecraftClient client=MinecraftClient.getInstance();
 
-            client.interactionManager.clickSlot(
-                    client.player.currentScreenHandler.syncId,
-                    0,1, SlotActionType.PICKUP_ALL,client.player
-            );
-            client.interactionManager.clickSlot(
-                    client.player.currentScreenHandler.syncId,
-                    1,1, SlotActionType.THROW,client.player
-            );
-
-//            if(user.getMainHandStack().getCount()<= Configs.Generic.RESTOCK_COUNT.getIntegerValue()){
-//                int refillSlot= Inventorys.findMatchingItemStack(user.getInventory(),user.getMainHandStack());
-//                if(refillSlot!=-1){
-//                    Inventorys.refillHotbarSlot(user,user.getInventory().getStack(refillSlot));
-//                }
-//            }
+            Screen screen= client.currentScreen;
+            ScreenHandler handler=client.player.currentScreenHandler;
+            if (screen != null && !(handler instanceof PlayerScreenHandler && !(screen instanceof InventoryScreen))) {
+                HandledScreen<? extends ScreenHandler> handledScreen = (HandledScreen<? extends ScreenHandler>) screen;
+                ((MixinScreen) handledScreen).throw_items$onMouseClick(handledScreen.getScreenHandler().getSlot(0), 0, 0, SlotActionType.PICKUP);
+                ((MixinScreen) handledScreen).throw_items$onMouseClick(handledScreen.getScreenHandler().getSlot(1), 1, 0, SlotActionType.PICKUP);
+            }
         }
     }
 }

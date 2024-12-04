@@ -2,7 +2,6 @@ package org.asutarisucu;
 
 import fi.dy.masa.malilib.event.InitializationHandler;
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.api.ModInitializer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

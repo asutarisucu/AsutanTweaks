@@ -7,7 +7,6 @@ import fi.dy.masa.malilib.interfaces.IInitializationHandler;
 import org.asutarisucu.Configs.Callbacks;
 import org.asutarisucu.Configs.Configs;
 import org.asutarisucu.Event.InputHandler;
-import org.asutarisucu.Event.LastUseCancel;
 
 public class InitHandler implements IInitializationHandler {
     @Override
