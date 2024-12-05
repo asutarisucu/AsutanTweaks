@@ -1,20 +1,14 @@
 package org.asutarisucu.Utiles;
 
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.ChatScreen;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.ingame.*;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.SlotActionType;
-import net.minecraft.util.ClickType;
-import net.minecraft.util.collection.DefaultedList;
 import org.asutarisucu.Configs.FeatureToggle;
-import org.asutarisucu.mixin.RestockItem.MixinScreen;
 
 public class Inventorys {
     public static int findMatchingItemStack(PlayerInventory inventory, ItemStack targetStack) {

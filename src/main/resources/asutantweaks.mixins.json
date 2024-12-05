@@ -9,7 +9,6 @@
     "defaultRequire": 1
   },
   "client": [
-    "AutoFillInventory.MixinHandledScreen",
-    "RestockItem.MixinScreen"
+    "AutoFillInventory.MixinHandledScreen"
   ]
 }

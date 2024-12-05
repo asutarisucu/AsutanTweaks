@@ -2,6 +2,7 @@ package org.asutarisucu.mixin.AutoFillInventory;
 
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.text.Text;
@@ -21,8 +22,10 @@ public abstract class MixinHandledScreen<T extends ScreenHandler> extends Screen
     protected MixinHandledScreen(Text title) {
         super(title);
     }
-    @Inject(method = "<init>",at=@At("TAIL"))
-    private void onOpenScreen(ScreenHandler handler, PlayerInventory inventory, Text title, CallbackInfo ci){
-        if(FeatureToggle.AUTO_FILL_INVENTORY.getBooleanValue()) org.asutarisucu.Utiles.Screen.AutoFillInventory(handler);
+    @Inject(method = "render",at=@At("HEAD"))
+    private void onOpenScreen(MatrixStack matrices, int mouseX, int mouseY, float delta, CallbackInfo ci){
+        if(FeatureToggle.AUTO_FILL_INVENTORY.getBooleanValue()){
+            org.asutarisucu.Utiles.Screen.AutoFillInventory(handler);
+        }
     }
 }
