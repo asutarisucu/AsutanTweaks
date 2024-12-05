@@ -14,7 +14,7 @@ public class Inventorys {
     public static int findMatchingItemStack(PlayerInventory inventory, ItemStack targetStack) {
         for (int i = 9; i < inventory.main.size(); i++) {
             ItemStack inventoryStack = inventory.getStack(i);
-            if (ItemStack.canCombine(targetStack, inventoryStack)) {
+            if (ItemStack.canCombine(targetStack, inventoryStack)&&inventoryStack.getCount()!=1) {
                 return i;
             }
         }
@@ -28,9 +28,7 @@ public class Inventorys {
             client.interactionManager.clickSlot(handler.syncId, fromSlot, 0, SlotActionType.PICKUP, client.player);
             if(FeatureToggle.LAST_USE_CANCEL.getBooleanValue())client.interactionManager.clickSlot(handler.syncId, fromSlot, 1, SlotActionType.PICKUP, client.player);
             client.interactionManager.clickSlot(handler.syncId, toSlot, 0, SlotActionType.PICKUP, client.player);
-            if(inventory.getStack(fromSlot).getCount()+inventory.getStack(toSlot).getCount()>inventory.getStack(fromSlot).getMaxCount()){
-                client.interactionManager.clickSlot(handler.syncId, fromSlot, 0, SlotActionType.PICKUP, client.player);
-            }
+            if(!handler.getCursorStack().isEmpty())client.interactionManager.clickSlot(handler.syncId, fromSlot, 0, SlotActionType.PICKUP, client.player);
         }
     }
 }
