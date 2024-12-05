@@ -10,7 +10,7 @@ public class LastUseCancel {
         UseBlockCallback.EVENT.register(((playerEntity, world, hand, blockHitResult) -> {
             if(!FeatureToggle.LAST_USE_CANCEL.getBooleanValue()){
                 return ActionResult.PASS;
-            }else if(playerEntity.getMainHandStack().getCount()!=1){
+            }else if(playerEntity.getMainHandStack().getCount()!=1||playerEntity.getMainHandStack().getMaxCount()==1){
                 return ActionResult.PASS;
             }
             InfoUtils.printActionbarMessage("Cant Use LastItem");
