@@ -3,6 +3,7 @@
   "package": "org.asutarisucu.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "DisableVoidDive.MixinPlayerEntity",
     "RestockItem.MixinClientPlayer"
   ],
   "injectors": {

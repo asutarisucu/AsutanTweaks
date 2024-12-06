@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import fi.dy.masa.malilib.config.ConfigUtils;
 import fi.dy.masa.malilib.config.IConfigBase;
 import fi.dy.masa.malilib.config.IConfigHandler;
+import fi.dy.masa.malilib.config.options.ConfigDouble;
 import fi.dy.masa.malilib.config.options.ConfigInteger;
 import fi.dy.masa.malilib.util.FileUtils;
 import fi.dy.masa.malilib.util.JsonUtils;
@@ -19,9 +20,15 @@ public class Configs implements IConfigHandler {
 
     public static class Generic{
         public static final ConfigInteger RESTOCK_COUNT=new ConfigInteger("RestockCount",32,0,64,"MainHand Item Count using ItemRestock");
+        public static final ConfigDouble VOID_HEIGHT_OW=new ConfigDouble("VoidHeight_OW",-80,-64,-200,"In OverWorld,Below this is Void");
+        public static final ConfigDouble VOID_HEIGHT_NE=new ConfigDouble("VoidHeight_NE",-50,0,-100,"In The Nether,Below this is Void");
+        public static final ConfigDouble Void_HEIGHT_END=new ConfigDouble("VoidHeight_END",-50,0,-100,"In The End,Below this is Void");
 
         public static final ImmutableList<IConfigBase> OPTIONS = ImmutableList.of(
-                RESTOCK_COUNT
+                RESTOCK_COUNT,
+                VOID_HEIGHT_OW,
+                VOID_HEIGHT_NE,
+                Void_HEIGHT_END
         );
     }
 
@@ -33,6 +40,7 @@ public class Configs implements IConfigHandler {
             if (element != null && element.isJsonObject()) {
                 JsonObject root = element.getAsJsonObject();
                 ConfigUtils.readHotkeys(root, "GenericHotkeys", Hotkeys.HOTKEY_LIST);
+                ConfigUtils.readConfigBase(root,"Option", Generic.OPTIONS);
                 ConfigUtils.readHotkeyToggleOptions(root, "TweakHotkeys", "TweakToggles", FeatureToggle.VALUES);
             }
         }
@@ -44,6 +52,7 @@ public class Configs implements IConfigHandler {
             JsonObject root = new JsonObject();
 
             ConfigUtils.writeHotkeys(root, "GenericHotkeys", Hotkeys.HOTKEY_LIST);
+            ConfigUtils.writeConfigBase(root,"Option", Generic.OPTIONS);
             ConfigUtils.writeHotkeyToggleOptions(root, "TweakHotkeys", "TweakToggles", FeatureToggle.VALUES);
 
             JsonUtils.writeJsonToFile(root, new File(dir, CONFIG_FILE_NAME));

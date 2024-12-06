@@ -3,7 +3,6 @@ package org.asutarisucu.Utiles;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.screen.ScreenHandler;
@@ -22,7 +21,6 @@ public class Inventorys {
     }
     public static void restockItem(MinecraftClient client, Screen screen,int fromSlot){
         int toSlot=client.player.getInventory().getSlotWithStack(client.player.getMainHandStack())+36;
-        Inventory inventory = client.player.getInventory();
         ScreenHandler handler=client.player.currentScreenHandler;
         if ((screen == null && handler instanceof PlayerScreenHandler)) {
             client.interactionManager.clickSlot(handler.syncId, fromSlot, 0, SlotActionType.PICKUP, client.player);

@@ -3,7 +3,6 @@ package org.asutarisucu.mixin.AutoFillInventory;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.text.Text;
 import org.asutarisucu.Configs.FeatureToggle;
