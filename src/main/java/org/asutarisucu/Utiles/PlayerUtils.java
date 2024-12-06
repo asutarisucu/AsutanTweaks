@@ -25,7 +25,7 @@ public class PlayerUtils {
             switch (dim){
                 case "minecraft:overworld"->height= Configs.Generic.VOID_HEIGHT_OW.getDoubleValue();
                 case "minecraft:the_nether"->height=Configs.Generic.VOID_HEIGHT_NE.getDoubleValue();
-                case "minecraft:the_end"->height=Configs.Generic.Void_HEIGHT_END.getDoubleValue();
+                case "minecraft:the_end"->height=Configs.Generic.VOID_HEIGHT_END.getDoubleValue();
             }
             if (playerHeight<height){
                 int RocketSlot=findRocketSlot(client);
@@ -39,7 +39,7 @@ public class PlayerUtils {
                         player.setPitch(-90);
                         client.interactionManager.interactItem(player, Hand.MAIN_HAND);
                     }
-                }else disconnectFromServer(client);
+                }else if(Configs.Generic.VOID_DISCONNECT.getBooleanValue())disconnectFromServer(client);
             }
         }
     }
