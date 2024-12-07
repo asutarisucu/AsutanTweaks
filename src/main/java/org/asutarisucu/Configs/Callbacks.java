@@ -15,7 +15,6 @@ import org.asutarisucu.GUI.GuiConfigs;
 
 public class Callbacks {
     public static void init() {
-        MinecraftClient mc = MinecraftClient.getInstance();
         IHotkeyCallback callbackGeneric = new KeyCallbackHotkeysGeneric();
 
         Hotkeys.OPEN_CONFIG_GUI.getKeybind().setCallback(callbackGeneric);

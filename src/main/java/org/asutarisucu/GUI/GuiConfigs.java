@@ -93,6 +93,7 @@ public class GuiConfigs extends GuiConfigsBase {
         }
 
     public enum ConfigGuiTab {
+        //タブと関連するクラス
         GENERIC         ("Generic"),
         GENERIC_HOTKEYS ("Hotkeys"),
         TWEAKS          ("Tweaks");

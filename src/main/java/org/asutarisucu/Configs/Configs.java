@@ -17,11 +17,12 @@ import java.io.File;
 
 public class Configs implements IConfigHandler {
     private static final String CONFIG_FILE_NAME = Reference.MOD_ID + ".json";
+    //Genericタブに表示させたいConfig項目を書く
     public static class Generic{
         public static final ConfigInteger RESTOCK_COUNT=new ConfigInteger("RestockCount",32,0,64,"MainHand Item Count using ItemRestock");
-        public static final ConfigDouble VOID_HEIGHT_OW=new ConfigDouble("VoidHeight_OW",-80,-64,-200,"In OverWorld,Below this is Void");
-        public static final ConfigDouble VOID_HEIGHT_NE=new ConfigDouble("VoidHeight_NE",-50,0,-100,"In The Nether,Below this is Void");
-        public static final ConfigDouble VOID_HEIGHT_END=new ConfigDouble("VoidHeight_END",-50,0,-100,"In The End,Below this is Void");
+        public static final ConfigDouble VOID_HEIGHT_OW=new ConfigDouble("VoidHeight_OW",-80,-200,-64,"In OverWorld,Below this is Void");
+        public static final ConfigDouble VOID_HEIGHT_NE=new ConfigDouble("VoidHeight_NE",-50,-100,0,"In The Nether,Below this is Void");
+        public static final ConfigDouble VOID_HEIGHT_END=new ConfigDouble("VoidHeight_END",-50,-100,0,"In The End,Below this is Void");
         public static final ConfigBoolean VOID_DISCONNECT=new ConfigBoolean("VoidDisconnect",false,"if you cant safe yourself,disconnect world");
 
         public static final ImmutableList<IConfigBase> OPTIONS = ImmutableList.of(

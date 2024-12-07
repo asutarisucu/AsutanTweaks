@@ -18,7 +18,7 @@ import org.asutarisucu.AsutanTweaks;
 
 public enum FeatureToggle implements IHotkeyTogglable, IConfigNotifiable<IConfigBoolean> {
 
-    //Toggle Button switches
+    //toggleボタンで表示させたいConfig項目
     LAST_USE_CANCEL("LastUseCancel",false,"","You cant Use LastItem"),
     ITEM_RESTOCK("ItemRestock",false,"","Item Restock to Use Item"),
     AUTO_FILL_INVENTORY("AutoFillInventory",false,"","Fill Material in Your Inventory"),
