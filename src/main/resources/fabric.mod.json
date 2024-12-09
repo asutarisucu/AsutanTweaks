@@ -3,15 +3,15 @@
 	"id": "asutantweaks",
 	"version": "${version}",
 	"name": "AsutanTweaks",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"description": "developed exclusively for asutarisucu",
 	"authors": [
-		"Me!"
+		"asutarisucu"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"homepage": "",
+		"sources": "https://github.com/asutarisucu/AsutanTweaks"
 	},
-	"license": "CC0-1.0",
+	"license": "MTI",
 	"icon": "assets/asutantweaks/icon.png",
 	"environment": "*",
 	"entrypoints": {
