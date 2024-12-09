@@ -8,7 +8,6 @@ import fi.dy.masa.malilib.hotkeys.KeyAction;
 import fi.dy.masa.malilib.hotkeys.KeyCallbackAdjustable;
 import fi.dy.masa.malilib.interfaces.IValueChangeCallback;
 import fi.dy.masa.malilib.util.InfoUtils;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import org.asutarisucu.GUI.GuiConfigs;
@@ -18,9 +17,6 @@ public class Callbacks {
         IHotkeyCallback callbackGeneric = new KeyCallbackHotkeysGeneric();
 
         Hotkeys.OPEN_CONFIG_GUI.getKeybind().setCallback(callbackGeneric);
-        FeatureToggle.LAST_USE_CANCEL.getKeybind().setCallback(KeyCallbackAdjustableFeature.createCallback(FeatureToggle.LAST_USE_CANCEL));
-        FeatureToggle.AUTO_FILL_INVENTORY.getKeybind().setCallback(KeyCallbackAdjustableFeature.createCallback(FeatureToggle.AUTO_FILL_INVENTORY));
-
     }
 
     private static class KeyCallbackHotkeysGeneric implements IHotkeyCallback {
