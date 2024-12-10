@@ -10,7 +10,8 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import org.asutarisucu.Configs.Configs;
 import org.asutarisucu.Configs.FeatureToggle;
-import org.asutarisucu.Utiles.Inventorys;
+import org.asutarisucu.Utiles.Inventory.Inventorys;
+import org.asutarisucu.tweak.AutoFillInventory.RestickItem;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -27,7 +28,7 @@ public abstract class MixinClientPlayer {
             ItemStack MainItem=player.getMainHandStack();
             if(MainItem.getCount()< Configs.Generic.RESTOCK_COUNT.getIntegerValue()){
                 int refillSlot=Inventorys.findMatchingItemStack(player.getInventory(),MainItem);
-                if(refillSlot>0)Inventorys.restockItem(client,screen,refillSlot);
+                if(refillSlot>0) RestickItem.restockItem(client,screen,refillSlot);
             }
         }
     }

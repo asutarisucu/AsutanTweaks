@@ -1,4 +1,4 @@
-package org.asutarisucu.Utiles;
+package org.asutarisucu.Utiles.Inventory;
 
 import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.util.InfoUtils;

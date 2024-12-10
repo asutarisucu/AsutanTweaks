@@ -3,7 +3,7 @@ package org.asutarisucu.mixin.DisableVoidDive;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
 import org.asutarisucu.Configs.FeatureToggle;
-import org.asutarisucu.Utiles.PlayerUtils;
+import org.asutarisucu.tweak.DisableVoidDive.DisableVoidDive;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -18,7 +18,7 @@ public class MixinPlayerEntity {
             if(FeatureToggle.DISABLE_VOID_DIVE.getBooleanValue()){
                 if(!player.isOnGround()){
                     String dimension = player.getWorld().getRegistryKey().getValue().toString();
-                    PlayerUtils.safeVoidDive(dimension);
+                    DisableVoidDive.safeVoidDive(dimension);
                 }
             }
         }

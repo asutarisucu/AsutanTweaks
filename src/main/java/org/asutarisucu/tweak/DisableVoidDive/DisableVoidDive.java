@@ -1,4 +1,4 @@
-package org.asutarisucu.Utiles;
+package org.asutarisucu.tweak.DisableVoidDive;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
@@ -9,16 +9,18 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Items;
 import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.slot.Slot;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import org.asutarisucu.Configs.Configs;
+import org.asutarisucu.Utiles.Inventory.Inventorys;
+import org.asutarisucu.Utiles.PlayerEntity.InputBlocker;
 
-public class PlayerUtils {
+public class DisableVoidDive {
     public static void safeVoidDive(String dim){
         MinecraftClient client=MinecraftClient.getInstance();
         PlayerEntity player=client.player;
+        InputBlocker inputBlocker =new InputBlocker(client.options.jumpKey);
         if(player!=null){
             double height=-300;
             double playerHeight=player.getY();
@@ -28,9 +30,12 @@ public class PlayerUtils {
                 case "minecraft:the_end"->height=Configs.Generic.VOID_HEIGHT_END.getDoubleValue();
             }
             if (playerHeight<height){
-                int RocketSlot=findRocketSlot(client);
+                //花火のスロットを取得
+                int RocketSlot= Inventorys.findItemSlot(client,Items.FIREWORK_ROCKET);
+                //花火を持っていないかエリトラをつけていないなら弾く
                 if(RocketSlot!=-1&&player.getEquippedStack(EquipmentSlot.CHEST).getItem()==Items.ELYTRA){
-                    client.options.jumpKey.setPressed(!player.isFallFlying());
+                    if(!player.isFallFlying()){
+                    }
                     Screen screen=client.currentScreen;
                     ScreenHandler handler=player.currentScreenHandler;
                     int mainSlot=player.getInventory().selectedSlot;
@@ -42,15 +47,6 @@ public class PlayerUtils {
                 }else if(Configs.Generic.VOID_DISCONNECT.getBooleanValue())disconnectFromServer(client);
             }
         }
-    }
-    private static int findRocketSlot(MinecraftClient client){
-        if(client.player!=null){
-            ScreenHandler handler=client.player.currentScreenHandler;
-            for(Slot slot:handler.slots){
-                if(slot.getStack().getItem()== Items.FIREWORK_ROCKET)return slot.id;
-            }
-        }
-        return -1;
     }
     private static void disconnectFromServer(MinecraftClient client) {
         int[] pos ={(int) client.player.getPos().x,
