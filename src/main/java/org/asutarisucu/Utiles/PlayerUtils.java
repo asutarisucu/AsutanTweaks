@@ -56,14 +56,11 @@ public class PlayerUtils {
         int[] pos ={(int) client.player.getPos().x,
                 (int) client.player.getPos().y,
                 (int) client.player.getPos().z};
-        // サーバーに接続中の場合
         if (client.getNetworkHandler() != null) {
             ClientPlayNetworkHandler networkHandler = client.getNetworkHandler();
             networkHandler.getConnection().disconnect(Text.of(String.format("Disconnect from %d,%d,%d",pos[0],pos[1],pos[2])));
         }
-        // レンダースレッドで画面遷移を行う
         client.execute(() -> {
-            // タイトル画面に遷移
             client.setScreen(new TitleScreen());
         });
     }
