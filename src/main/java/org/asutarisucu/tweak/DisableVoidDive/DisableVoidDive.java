@@ -4,6 +4,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ChatScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.TitleScreen;
+import net.minecraft.client.gui.screen.ingame.CreativeInventoryScreen;
 import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.entity.EquipmentSlot;
@@ -42,18 +43,22 @@ public class DisableVoidDive {
                     if(!player.isFallFlying()){
                         //ジャンプキーをすでに押している場合
                         if(client.options.jumpKey.isPressed()){
-                            //GUIを開いていないとき
-                            if(screen==null){
-                                client.execute(()->{
-                                    client.setScreen(new InventoryScreen(player));
-                                });
-                                count=5;
-                                //GUIを開いているとき
-                            }else {
+                            //インベントリを開いているとき
+                            if(screen instanceof InventoryScreen||
+                            screen instanceof CreativeInventoryScreen){
                                 if(count<=0){
                                     client.execute(()->{
                                         client.setScreen(null);
                                     });
+                                    count=5;
+                                }else count--;
+                            //インベントリを開いていないとき
+                            }else {
+                                if(count<=0){
+                                    client.execute(()->{
+                                        client.setScreen(new InventoryScreen(player));
+                                    });
+                                    count=5;
                                 }else count--;
                             }
                         //ジャンプキーを押していない場合
@@ -62,6 +67,12 @@ public class DisableVoidDive {
                         }
                     //エリトラを開いているなら上を向いて花火を使用
                     }else{
+                        if(screen instanceof InventoryScreen||
+                            screen instanceof CreativeInventoryScreen){
+                            client.execute(()->{
+                                client.setScreen(null);
+                            });
+                        }
                         ScreenHandler handler=player.currentScreenHandler;
                         int mainSlot=player.getInventory().selectedSlot;
                         if(handler instanceof PlayerScreenHandler&&player.getVelocity().y<0){
