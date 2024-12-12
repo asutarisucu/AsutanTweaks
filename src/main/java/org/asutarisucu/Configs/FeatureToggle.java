@@ -23,7 +23,8 @@ public enum FeatureToggle implements IHotkeyTogglable, IConfigNotifiable<IConfig
     ITEM_RESTOCK("ItemRestock",false,"","Item Restock to Use Item"),
     AUTO_FILL_INVENTORY("AutoFillInventory",false,"","Fill Material in Your Inventory"),
     DISABLE_VOID_DIVE("DisableVoidDive",false,"","Protects you from VoidDive"),
-    SCHEMATIC_RESTRICTION_STATE_WHITELIST("SchematicRestrictionStateWhiteList",false,"","Only one can be placed per square.to use Restriction");
+    SCHEMATIC_RESTRICTION_STATE_WHITELIST("SchematicRestrictionStateWhiteList",false,"","Only one can be placed per square.to use Restriction"),
+    SIMPLE_ITEM_ENTITY_RENDER("SimpleItemEntityRender",false,"","Combine many ItemEntities into one");
 
     public static final ImmutableList<FeatureToggle> VALUES = ImmutableList.copyOf(values());
 
