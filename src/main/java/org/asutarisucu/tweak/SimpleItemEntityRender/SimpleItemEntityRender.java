@@ -20,11 +20,13 @@ public class SimpleItemEntityRender {
         Vec3d itemPos = itemEntity.getPos();
         UUID id =itemEntity.getUuid();
         List<ItemEntity> nearItems= ItemEntityUtil.getItemEntity(itemEntity.getStack(),1,itemPos);
+        int suppressCount=0;
         if(!suppressedItems.containsKey(id)){
-            int suppressCount=0;
             for(ItemEntity item:nearItems){
                 if (!suppressedItems.containsKey(item.getUuid())){
                     if(itemEntity.getId()<item.getId()){
+                        Renderer.countMap.remove(id);
+                        Renderer.entityMap.remove(id);
                         suppressedItems.put(item.getUuid(),item);
                         ci.cancel();
                         break;
@@ -32,7 +34,8 @@ public class SimpleItemEntityRender {
                 }
                 suppressCount++;
             }
-            Renderer.entityMap.put(suppressCount,itemEntity);
         }else ci.cancel();
+        Renderer.entityMap.put(id,itemEntity);
+        Renderer.countMap.put(id,suppressCount);
     }
 }
