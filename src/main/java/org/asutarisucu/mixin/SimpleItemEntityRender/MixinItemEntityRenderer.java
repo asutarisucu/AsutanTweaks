@@ -4,6 +4,7 @@ import net.minecraft.client.render.entity.ItemEntityRenderer;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
+import org.asutarisucu.Configs.FeatureToggle;
 import org.asutarisucu.tweak.SimpleItemEntityRender.SimpleItemEntityRender;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -18,6 +19,8 @@ public abstract class MixinItemEntityRenderer {
             at = @At("HEAD"),
             cancellable = true)
     private void onRender(ItemEntity itemEntity, float f, float g, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, CallbackInfo ci) {
-        SimpleItemEntityRender.shouldRender(itemEntity,ci,matrixStack,vertexConsumerProvider);
+//        if(FeatureToggle.SIMPLE_ITEM_ENTITY_RENDER.getBooleanValue())SimpleItemEntityRender.shouldRender(itemEntity,ci);
     }
+
+
 }
