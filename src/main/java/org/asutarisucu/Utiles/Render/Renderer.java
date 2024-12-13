@@ -34,6 +34,7 @@ public class Renderer {
         MatrixStack matrixStack = RenderSystem.getModelViewStack();
 
         for(Map.Entry<UUID,Integer> entry: countMap.entrySet()){
+            //登録されているUUIDを持つentityが存在しなければレンダリングせず削除
             if(entry.getValue()!=0&&!entityMap.get(entry.getKey()).isRemoved()){
                 String text=String.valueOf(entry.getValue()+1);
                 Vec3d Pos=entityMap.get(entry.getKey()).getPos().subtract(camera.getPos());
