@@ -33,8 +33,7 @@ public class Callbacks {
                 GuiBase.openGui(new GuiConfigs());
                 return true;
             }else if(key==Hotkeys.CLEAR_ITEM_COUNT.getKeybind()){
-                Renderer.entityMap.clear();
-                Renderer.countMap.clear();
+                SimpleItemEntityRender.EntityUUID.clear();
                 InfoUtils.printActionbarMessage("CountClear!"+GuiBase.TXT_GREEN);
                 return true;
             }

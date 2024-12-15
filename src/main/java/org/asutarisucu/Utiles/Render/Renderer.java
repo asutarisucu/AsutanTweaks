@@ -7,25 +7,32 @@ import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.LightmapTextureManager;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.util.math.AffineTransformation;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
+import org.asutarisucu.tweak.SimpleItemEntityRender.SimpleItemEntityRender;
 import org.joml.Matrix4f;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 public class Renderer {
-    public static ConcurrentHashMap<UUID,Integer> countMap=new ConcurrentHashMap<>();
-    public static ConcurrentHashMap<UUID,ItemEntity> entityMap=new ConcurrentHashMap<>();
 
     public static void renderCount(Camera camera) {
+        //クライアントを取得
         MinecraftClient client = MinecraftClient.getInstance();
-        VertexConsumerProvider.Immediate immediate=client.getBufferBuilders().getEffectVertexConsumers();
-
+        //クライアントワールドを取得
+        World world=client.world;
+        //レンダラーを取得
         TextRenderer textRenderer = client.textRenderer;
-
+        VertexConsumerProvider.Immediate immediate=client.getBufferBuilders().getEffectVertexConsumers();
+        //RenderSystemの設定
         RenderSystem.disableDepthTest();
         RenderSystem.depthMask(true);
         RenderSystem.enableBlend();
@@ -33,14 +40,21 @@ public class Renderer {
 
         MatrixStack matrixStack = RenderSystem.getModelViewStack();
 
-        for(Map.Entry<UUID,Integer> entry: countMap.entrySet()){
+        //抑制している原因と抑制リストへの出現回数のMap
+        Map<Entity, Long> entityCountMap=SimpleItemEntityRender.EntityUUID.values().stream()
+                .filter(entity -> !entity.isRemoved())
+                .collect(Collectors.groupingBy(value->value,Collectors.counting()));
+        //リストのEntityの数だけ実行
+        for(Map.Entry<Entity,Long> entry: entityCountMap.entrySet()){
             //登録されているUUIDを持つentityが存在しなければレンダリングせず削除
-            if(entry.getValue()!=0&&!entityMap.get(entry.getKey()).isRemoved()){
+            if(!entry.getKey().isRemoved()){
+                //カウントのレンダリング準備
                 String text=String.valueOf(entry.getValue()+1);
-                Vec3d Pos=entityMap.get(entry.getKey()).getPos().subtract(camera.getPos());
+                //相対座標を取得
+                Vec3d Pos=entry.getKey().getPos().subtract(camera.getPos());
 
                 matrixStack.push();
-                matrixStack.translate(Pos.x, Pos.y, Pos.z);
+                matrixStack.translate(Pos.x, Pos.y+0.5, Pos.z);
                 matrixStack.multiplyPositionMatrix((new Matrix4f()).rotation(camera.getRotation()));
                 matrixStack.scale(-0.025F, -0.025F, 0.025F);
 
@@ -57,8 +71,7 @@ public class Renderer {
                 matrixStack.pop();
                 RenderSystem.applyModelViewMatrix();
             }else{
-                countMap.remove(entry.getKey());
-                entityMap.remove(entry.getKey());
+                SimpleItemEntityRender.EntityUUID.entrySet().removeIf(entity-> entity.getValue()==entry.getKey());
             }
         }
         RenderSystem.enableDepthTest();
