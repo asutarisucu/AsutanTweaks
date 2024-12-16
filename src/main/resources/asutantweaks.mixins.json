@@ -12,7 +12,7 @@
   },
   "client": [
     "AutoFillInventory.MixinHandledScreen",
-    "SimpleItemEntityRender.MixinEntityRenderDispatcher",
-    "SimpleItemEntityRender.MixinWorldRenderer"
+    "SimpleItemEntityRender.MixinEntityRender",
+    "SimpleItemEntityRender.MixinEntityRenderDispatcher"
   ]
 }
