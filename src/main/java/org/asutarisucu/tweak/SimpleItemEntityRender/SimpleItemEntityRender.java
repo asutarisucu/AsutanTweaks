@@ -1,5 +1,6 @@
 package org.asutarisucu.tweak.SimpleItemEntityRender;
 
+import net.minecraft.client.render.entity.ItemEntityRenderer;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.mob.MobEntity;
@@ -26,6 +27,8 @@ public class SimpleItemEntityRender {
             return false;
         }else return true;
     }
+
+    ItemEntityRenderer
 
     public static void suppressRenderItem(ItemEntity item,CallbackInfo ci){
         List<Entity> nearItems= ItemEntityUtil.getItemEntity(item.getStack(),1,item.getPos());
