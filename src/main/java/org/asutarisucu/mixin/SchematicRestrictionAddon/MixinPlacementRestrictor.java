@@ -25,9 +25,7 @@ public class MixinPlacementRestrictor {
                     target = "Lme/fallenbreath/tweakermore/config/options/TweakerMoreConfigBooleanHotkeyed;getBooleanValue()Z"
             ))
     private static boolean isInCHECK_FACING(TweakerMoreConfigBooleanHotkeyed instance){
-        if(instance== TweakerMoreConfigs.SCHEMATIC_BLOCK_PLACEMENT_RESTRICTION_CHECK_FACING){
-            inCHECK_FACING=true;
-        }else inCHECK_FACING=false;
+        inCHECK_FACING= instance == TweakerMoreConfigs.SCHEMATIC_BLOCK_PLACEMENT_RESTRICTION_CHECK_FACING;
         return instance.getBooleanValue();
     }
     @Inject(
