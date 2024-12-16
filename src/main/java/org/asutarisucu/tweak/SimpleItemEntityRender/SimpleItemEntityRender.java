@@ -28,8 +28,6 @@ public class SimpleItemEntityRender {
         }else return true;
     }
 
-    ItemEntityRenderer
-
     public static void suppressRenderItem(ItemEntity item,CallbackInfo ci){
         List<Entity> nearItems= ItemEntityUtil.getItemEntity(item.getStack(),1,item.getPos());
         if(SimpleItemEntityRender.EntityUUID.containsKey(item.getUuid())){
