@@ -23,7 +23,7 @@ AsutanTweaksはクライアントサイドで動作するFabricMODです。<br>
 ### DisableVoidDive
 > 奈落に落ちることを防ぎます。
 > 各ディメンションごとに奈落と認識する高さを変更できます。<br>
-> `VoidDisconnect`を有効にすることで奈落でロケット花火かエリトラがなくなった際に自動でゲームを切断します。
+> `VoidDisconnect`を有効にすることで奈落でロケット花火かエリトラがなくなった際に自動でゲームを切断します。<br>
 > ただしゲームを再開しても助かりません。
 ### SchematicRestrictionWhiteList
 >TweakerMoreの`schematicBlockRestriction`でチェックするブロックの状態を自由に変更できます。<br>

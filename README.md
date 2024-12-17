@@ -23,9 +23,9 @@ you can also access the config GUI via [Mod Menu](https://legacy.curseforge.com/
 This means you can always transport the optimal amount of items.
 ### DisableVoidDive
 >When you try to fall into the Void, it automatically stops you from falling with fireworks.<br>
->For each dimension, the height at which it is recognized as void can be changed.
->Setting `VoidDisconnect` to True will automatically disconnect the game when there are no fireworks or elytra.
-> Resuming the game, however, will not save your life.
+>For each dimension, the height at which it is recognized as void can be changed.<br>
+>Setting `VoidDisconnect` to True will automatically disconnect the game when there are no fireworks or elytra.<br>
+>Resuming the game, however, will not save your life.
 ### SchematicRestrictionWhiteList
 >You can freely specify the BlockState to be checked in TweakerMore's `schematicBlockRestriction`<br>
 >Enter the BlockState you wish to check in the `RestrictionStateWhiteList` in lower or upper case.
