@@ -22,9 +22,11 @@ public enum FeatureToggle implements IHotkeyTogglable, IConfigNotifiable<IConfig
     LAST_USE_CANCEL("LastUseCancel",false,"","You cant Use LastItem"),
     ITEM_RESTOCK("ItemRestock",false,"","Item Restock to Use Item"),
     AUTO_FILL_INVENTORY("AutoFillInventory",false,"","Fill Material in Your Inventory"),
-    DISABLE_VOID_DIVE("DisableVoidDive",false,"","Protects you from VoidDive");
-
-
+    DISABLE_VOID_DIVE("DisableVoidDive",false,"","Protects you from VoidDive"),
+    SCHEMATIC_RESTRICTION_STATE_WHITELIST("SchematicRestrictionStateWhiteList",false,"","Only one can be placed per square.to use Restriction"),
+    SIMPLE_ITEM_ENTITY_RENDER("SimpleItemEntityRender",false,"","Combine many ItemEntities into one"),
+    SIMPLE_MOB_ENTITY_RENDER("SimpleMobEntityRender",false,"","many MobEntity into one"),
+    SIMPLE_ENTITY_RENDER_COUNT("SimpleEntityRenderCount",false,"","SimpleEntityRender nearItem Count Display");
 
     public static final ImmutableList<FeatureToggle> VALUES = ImmutableList.copyOf(values());
 

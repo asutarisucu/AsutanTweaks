@@ -32,6 +32,7 @@ dependencies {
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 	modImplementation "maven.modrinth:malilib:${project.malilib_version}"
 	modImplementation "maven.modrinth:item-scroller:${project.itemscroller_version}"
+	modImplementation "maven.modrinth:tweakermore:${project.tweakermore_version}"
 	modImplementation files('tmp/tweakfork-fabric-1.19.4-1.2.3.jar')
 	modImplementation files('tmp/litematica-fabric-1.19.4-0.14.7.jar')
 

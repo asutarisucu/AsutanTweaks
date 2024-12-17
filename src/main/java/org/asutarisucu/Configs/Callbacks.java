@@ -11,12 +11,14 @@ import fi.dy.masa.malilib.util.InfoUtils;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import org.asutarisucu.GUI.GuiConfigs;
+import org.asutarisucu.tweak.SimpleItemEntityRender.SimpleEntityRender;
 
 public class Callbacks {
     public static void init() {
         IHotkeyCallback callbackGeneric = new KeyCallbackHotkeysGeneric();
 
         Hotkeys.OPEN_CONFIG_GUI.getKeybind().setCallback(callbackGeneric);
+        Hotkeys.CLEAR_ITEM_COUNT.getKeybind().setCallback(callbackGeneric);
     }
 
     private static class KeyCallbackHotkeysGeneric implements IHotkeyCallback {
@@ -28,6 +30,10 @@ public class Callbacks {
         public boolean onKeyAction(KeyAction action, IKeybind key) {
             if (key == Hotkeys.OPEN_CONFIG_GUI.getKeybind()) {
                 GuiBase.openGui(new GuiConfigs());
+                return true;
+            }else if(key==Hotkeys.CLEAR_ITEM_COUNT.getKeybind()){
+                SimpleEntityRender.EntityUUID.clear();
+                InfoUtils.printActionbarMessage("CountClear!"+GuiBase.TXT_GREEN);
                 return true;
             }
             return false;

@@ -4,12 +4,18 @@
   "compatibilityLevel": "JAVA_17",
   "mixins": [
     "DisableVoidDive.MixinPlayerEntity",
-    "RestockItem.MixinClientPlayer"
+    "RestockItem.MixinClientPlayer",
+    "SchematicRestrictionAddon.MixinPlacementRestrictor",
+    "SimpleItemEntityRender.MixinItemEntity"
   ],
   "injectors": {
     "defaultRequire": 1
   },
   "client": [
-    "AutoFillInventory.MixinHandledScreen"
+    "AutoFillInventory.MixinHandledScreen",
+    "SimpleItemEntityRender.MixinEntityRender",
+    "SimpleItemEntityRender.MixinEntityRenderDispatcher",
+    "SimpleItemEntityRender.MixinItemEntityRenderer",
+    "SimpleItemEntityRender.MixinMinecraftClient"
   ]
 }

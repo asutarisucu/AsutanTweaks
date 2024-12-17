@@ -6,11 +6,10 @@ import com.google.gson.JsonObject;
 import fi.dy.masa.malilib.config.ConfigUtils;
 import fi.dy.masa.malilib.config.IConfigBase;
 import fi.dy.masa.malilib.config.IConfigHandler;
-import fi.dy.masa.malilib.config.options.ConfigBoolean;
-import fi.dy.masa.malilib.config.options.ConfigDouble;
-import fi.dy.masa.malilib.config.options.ConfigInteger;
+import fi.dy.masa.malilib.config.options.*;
 import fi.dy.masa.malilib.util.FileUtils;
 import fi.dy.masa.malilib.util.JsonUtils;
+
 import org.asutarisucu.Reference;
 
 import java.io.File;
@@ -24,13 +23,15 @@ public class Configs implements IConfigHandler {
         public static final ConfigDouble VOID_HEIGHT_NE=new ConfigDouble("VoidHeight_NE",-50,-100,0,"In The Nether,Below this is Void");
         public static final ConfigDouble VOID_HEIGHT_END=new ConfigDouble("VoidHeight_END",-50,-100,0,"In The End,Below this is Void");
         public static final ConfigBoolean VOID_DISCONNECT=new ConfigBoolean("VoidDisconnect",false,"if you cant safe yourself,disconnect world");
+        public static final ConfigStringList RESTRICTION_STATE_WHITELIST=new ConfigStringList("RestrictionStateWhiteList",ImmutableList.of("UP","DOWN","NORTH","EAST","SOUTH","WEST"),"Restriction Check State WhiteList");
 
         public static final ImmutableList<IConfigBase> OPTIONS = ImmutableList.of(
                 RESTOCK_COUNT,
                 VOID_HEIGHT_OW,
                 VOID_HEIGHT_NE,
                 VOID_HEIGHT_END,
-                VOID_DISCONNECT
+                VOID_DISCONNECT,
+                RESTRICTION_STATE_WHITELIST
         );
     }
 

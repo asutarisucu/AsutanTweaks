@@ -24,7 +24,7 @@ public abstract class MixinHandledScreen<T extends ScreenHandler> extends Screen
     @Inject(method = "render",at=@At("HEAD"))
     private void onOpenScreen(MatrixStack matrices, int mouseX, int mouseY, float delta, CallbackInfo ci){
         if(FeatureToggle.AUTO_FILL_INVENTORY.getBooleanValue()){
-            org.asutarisucu.Utiles.Screen.AutoFillInventory(handler);
+            org.asutarisucu.Utiles.Inventory.Screen.AutoFillInventory(handler);
         }
     }
 }
