@@ -7,7 +7,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 
 import org.asutarisucu.Utiles.Render.Renderer;
-import org.asutarisucu.tweak.SimpleItemEntityRender.SimpleItemEntityRender;
+import org.asutarisucu.tweak.SimpleItemEntityRender.SimpleEntityRender;
 
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -22,8 +22,8 @@ public class MixinEntityRender {
 
     @Inject(method = "render",at = @At("HEAD"))
     private void onRender(Entity entity, float yaw, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, CallbackInfo ci){
-        if(!SimpleItemEntityRender.EntityUUID.containsKey(entity.getUuid())){
-            long count=SimpleItemEntityRender.EntityUUID.values().stream()
+        if(!SimpleEntityRender.EntityUUID.containsKey(entity.getUuid())){
+            long count= SimpleEntityRender.EntityUUID.values().stream()
                     .filter(value->value==entity)
                     .count();
             if (count>0) Renderer.renderCount(entity,matrices,vertexConsumers,textRenderer,String.valueOf(count+1));

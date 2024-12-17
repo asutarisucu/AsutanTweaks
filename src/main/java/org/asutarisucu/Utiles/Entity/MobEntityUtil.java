@@ -6,7 +6,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
-import org.asutarisucu.tweak.SimpleItemEntityRender.SimpleItemEntityRender;
+import org.asutarisucu.tweak.SimpleItemEntityRender.SimpleEntityRender;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,11 +22,10 @@ public class MobEntityUtil {
         return  world.getEntitiesByClass(
                 Entity.class,
                 box,
-                entity ->!SimpleItemEntityRender.EntityUUID.containsKey(mob.getUuid())&&entity instanceof MobEntity&&entity!=mob
+                entity ->!SimpleEntityRender.EntityUUID.containsKey(mob.getUuid())&&entity instanceof MobEntity&&entity!=mob
         ).stream()
                 .map(entity -> (MobEntity) entity)// キャスト
                 .filter(mobEntity -> mobEntity.getType()==mob.getType())
-                .filter(mobEntity->mobEntity!=mob)
                 .collect(Collectors.toList());
     }
 }

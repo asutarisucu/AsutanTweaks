@@ -5,7 +5,8 @@
   "mixins": [
     "DisableVoidDive.MixinPlayerEntity",
     "RestockItem.MixinClientPlayer",
-    "SchematicRestrictionAddon.MixinPlacementRestrictor"
+    "SchematicRestrictionAddon.MixinPlacementRestrictor",
+    "SimpleItemEntityRender.MixinItemEntity"
   ],
   "injectors": {
     "defaultRequire": 1
@@ -13,6 +14,7 @@
   "client": [
     "AutoFillInventory.MixinHandledScreen",
     "SimpleItemEntityRender.MixinEntityRender",
-    "SimpleItemEntityRender.MixinEntityRenderDispatcher"
+    "SimpleItemEntityRender.MixinEntityRenderDispatcher",
+    "SimpleItemEntityRender.MixinItemEntityRenderer"
   ]
 }

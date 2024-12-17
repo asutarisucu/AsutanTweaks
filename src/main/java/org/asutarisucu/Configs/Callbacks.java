@@ -11,8 +11,7 @@ import fi.dy.masa.malilib.util.InfoUtils;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import org.asutarisucu.GUI.GuiConfigs;
-import org.asutarisucu.Utiles.Render.Renderer;
-import org.asutarisucu.tweak.SimpleItemEntityRender.SimpleItemEntityRender;
+import org.asutarisucu.tweak.SimpleItemEntityRender.SimpleEntityRender;
 
 public class Callbacks {
     public static void init() {
@@ -33,7 +32,7 @@ public class Callbacks {
                 GuiBase.openGui(new GuiConfigs());
                 return true;
             }else if(key==Hotkeys.CLEAR_ITEM_COUNT.getKeybind()){
-                SimpleItemEntityRender.EntityUUID.clear();
+                SimpleEntityRender.EntityUUID.clear();
                 InfoUtils.printActionbarMessage("CountClear!"+GuiBase.TXT_GREEN);
                 return true;
             }
