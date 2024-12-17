@@ -21,7 +21,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MixinEntityRender {
     @Shadow @Final private TextRenderer textRenderer;
 
-    @Inject(method = "render",at = @At("HEAD"))
+    @Inject(method = "render",at = @At("RETURN"))
     private void onRender(Entity entity, float yaw, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, CallbackInfo ci){
         if(FeatureToggle.SIMPLE_ENTITY_RENDER_COUNT.getBooleanValue()){
             //Entityが描画される際にカウントも描画する
