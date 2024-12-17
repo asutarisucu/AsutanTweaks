@@ -26,11 +26,11 @@ AsutanTweaksはクライアントサイドで動作するFabricMODです。<br>
 > `VoidDisconnect`を有効にすることで奈落でロケット花火かエリトラがなくなった際に自動でゲームを切断します。
 > ただしゲームを再開しても助かりません。
 ### SchematicRestrictionWhiteList
->TweakerMoreの`schematicBlockRestriction`でチェックするブロックの状態を自由に変更できます。
+>TweakerMoreの`schematicBlockRestriction`でチェックするブロックの状態を自由に変更できます。<br>
 > `RestrictionStateWhiteList`というリストにチェックしたいブロックの状態をすべて小文字かすべて大文字で入力してください。
 ### SimpleEntityRender
->エンティティの描画を簡単にすることでfpsを向上させます。
->エンティティが密集している場合、それらを一つにまとめて描画します。
->`SimpleEntityRenderCount`が有効な場合、そこにいくつのエンティティがまとめられているのかを表示します。
-> アイテムエンティティの鬱陶しく上下する動きを抑制します。
+>エンティティの描画を簡単にすることでfpsを向上させます。<br>
+>エンティティが密集している場合、それらを一つにまとめて描画します。<br>
+>`SimpleEntityRenderCount`が有効な場合、そこにいくつのエンティティがまとめられているのかを表示します。<br>
+> アイテムエンティティの鬱陶しく上下する動きを抑制します。<br>
 > 現時点ではモブエンティティとアイテムエンティティにのみ有効です。
