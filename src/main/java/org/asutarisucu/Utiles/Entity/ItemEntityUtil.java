@@ -4,16 +4,13 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
-import org.asutarisucu.tweak.SimpleItemEntityRender.SimpleItemEntityRender;
+import org.asutarisucu.tweak.SimpleItemEntityRender.SimpleEntityRender;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 public class ItemEntityUtil {
 
@@ -26,7 +23,7 @@ public class ItemEntityUtil {
         return world.getEntitiesByClass(
             Entity.class,
             box,
-            entity ->!SimpleItemEntityRender.EntityUUID.containsKey(entity.getUuid())&&entity instanceof ItemEntity
+            entity ->!SimpleEntityRender.EntityUUID.containsKey(entity.getUuid())&&entity instanceof ItemEntity
         ).stream()
                 .map(entity -> (ItemEntity) entity)// キャスト
                 .filter(itemEntity -> itemEntity.getStack().getItem()==stack.getItem())
