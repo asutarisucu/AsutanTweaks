@@ -26,4 +26,13 @@ This means you can always transport the optimal amount of items.
 >For each dimension, the height at which it is recognized as void can be changed.
 >Setting `VoidDisconnect` to True will automatically disconnect the game when there are no fireworks or elytra.
 > Resuming the game, however, will not save your life.
+### SchematicRestrictionWhiteList
+>You can freely specify the BlockState to be checked in TweakerMore's `schematicBlockRestriction`.
+>Enter the BlockState you wish to check in the `RestrictionStateWhiteList` in lower or upper case.
+### SimpleEntityRender
+>Simplifies Entity rendering and improves fps.
+>If you have a large number of Entities clustered together, combine them into one. 
+>Enable `SimpleEntityRenderCount` to see how many Entities are grouped there. 
+>It also prevents ItemEntity from moving in a depressing way. 
+>Currently, it is only available for ItemEntity and MobEntity.
  
