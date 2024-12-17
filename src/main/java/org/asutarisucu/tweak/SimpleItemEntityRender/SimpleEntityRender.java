@@ -19,7 +19,7 @@ public class SimpleEntityRender {
         //抑制リストに既に存在するか
         if (EntityUUID.containsKey(entity.getUuid())) {
             //抑制の原因は近くに存在するか
-            if (EntityUUID.get(entity.getUuid()).getPos().distanceTo(entity.getPos()) > 1) {
+            if (EntityUUID.get(entity.getUuid()).getPos().distanceTo(entity.getPos()) > 1||EntityUUID.get(entity.getUuid()).isRemoved()) {
                 //存在しないなら抑制リストから削除
                 EntityUUID.remove(entity.getUuid());
             //存在するなら抑制の原因は抑制されていないか

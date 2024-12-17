@@ -37,8 +37,9 @@ public abstract class MixinItemEntityRenderer<T extends ItemEntity> extends Enti
     @Inject(method = "render(Lnet/minecraft/entity/ItemEntity;FFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V",at=@At("HEAD"), cancellable = true)
     private void onRender(ItemEntity itemEntity, float f, float g, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, CallbackInfo ci){
         if(FeatureToggle.SIMPLE_ITEM_ENTITY_RENDER.getBooleanValue()){
+            //元のrenderメソッドをキャンセル
             ci.cancel();
-
+            //アイテムが動かないようなrenderを実装
             Camera camera=MinecraftClient.getInstance().gameRenderer.getCamera();
             ItemStack itemStack = itemEntity.getStack();
             BakedModel bakedModel = this.itemRenderer.getModel(itemStack, itemEntity.world, null, itemEntity.getId());
@@ -46,6 +47,7 @@ public abstract class MixinItemEntityRenderer<T extends ItemEntity> extends Enti
             matrixStack.multiplyPositionMatrix((new Matrix4f()).rotation(camera.getRotation()));
             this.itemRenderer.renderItem(itemStack, ModelTransformationMode.GROUND, false, matrixStack, vertexConsumerProvider, i, OverlayTexture.DEFAULT_UV, bakedModel);
             matrixStack.pop();
+            //EntityRendererのrenderを呼び出す(これがないとMixinEntityRendererに刺してるコードが動かない)
             super.render((T) itemEntity, f, g, matrixStack, vertexConsumerProvider, i);
         }
     }

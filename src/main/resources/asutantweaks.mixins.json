@@ -15,6 +15,7 @@
     "AutoFillInventory.MixinHandledScreen",
     "SimpleItemEntityRender.MixinEntityRender",
     "SimpleItemEntityRender.MixinEntityRenderDispatcher",
-    "SimpleItemEntityRender.MixinItemEntityRenderer"
+    "SimpleItemEntityRender.MixinItemEntityRenderer",
+    "SimpleItemEntityRender.MixinMinecraftClient"
   ]
 }

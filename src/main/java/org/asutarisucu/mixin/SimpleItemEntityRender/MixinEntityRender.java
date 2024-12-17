@@ -6,6 +6,7 @@ import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 
+import org.asutarisucu.Configs.FeatureToggle;
 import org.asutarisucu.Utiles.Render.Renderer;
 import org.asutarisucu.tweak.SimpleItemEntityRender.SimpleEntityRender;
 
@@ -22,11 +23,16 @@ public class MixinEntityRender {
 
     @Inject(method = "render",at = @At("HEAD"))
     private void onRender(Entity entity, float yaw, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, CallbackInfo ci){
-        if(!SimpleEntityRender.EntityUUID.containsKey(entity.getUuid())){
-            long count= SimpleEntityRender.EntityUUID.values().stream()
-                    .filter(value->value==entity)
-                    .count();
-            if (count>0) Renderer.renderCount(entity,matrices,vertexConsumers,textRenderer,String.valueOf(count+1));
+        if(FeatureToggle.SIMPLE_ENTITY_RENDER_COUNT.getBooleanValue()){
+            //Entityが描画される際にカウントも描画する
+            if(!SimpleEntityRender.EntityUUID.containsKey(entity.getUuid())){
+                //抑制リストに値として出現する数を数える
+                long count= SimpleEntityRender.EntityUUID.values().stream()
+                        .filter(value->value==entity)
+                        .count();
+                //何も抑制していない場合はカウントを表示しない
+                if (count>0) Renderer.renderCount(entity,matrices,vertexConsumers,textRenderer,String.valueOf(count+1));
+            }
         }
     }
 }

@@ -16,6 +16,7 @@ public class Renderer {
     public static void renderCount(Entity entity,MatrixStack matrices,VertexConsumerProvider vertexConsumers,TextRenderer textRenderer,String text) {
         MinecraftClient client=MinecraftClient.getInstance();
         Camera camera=client.gameRenderer.getCamera();
+        //クライアントのカメラの動きについてくるようにカメラのクオータニオンを加工
         Quaternionf quaternionf=new Quaternionf(
                 -camera.getRotation().x,
                 -camera.getRotation().y,
