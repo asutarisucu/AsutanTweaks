@@ -26,7 +26,9 @@ public enum FeatureToggle implements IHotkeyTogglable, IConfigNotifiable<IConfig
     SCHEMATIC_RESTRICTION_STATE_WHITELIST("SchematicRestrictionStateWhiteList",false,"","Only one can be placed per square.to use Restriction"),
     SIMPLE_ITEM_ENTITY_RENDER("SimpleItemEntityRender",false,"","Combine many ItemEntities into one"),
     SIMPLE_MOB_ENTITY_RENDER("SimpleMobEntityRender",false,"","many MobEntity into one"),
-    SIMPLE_ENTITY_RENDER_COUNT("SimpleEntityRenderCount",false,"","SimpleEntityRender nearItem Count Display");
+    SIMPLE_ENTITY_RENDER_COUNT("SimpleEntityRenderCount",false,"","SimpleEntityRender nearItem Count Display"),
+    THE_THIRD_EYE("TheThirdEye",false,"","The Third Eye Window");
+
 
     public static final ImmutableList<FeatureToggle> VALUES = ImmutableList.copyOf(values());
 

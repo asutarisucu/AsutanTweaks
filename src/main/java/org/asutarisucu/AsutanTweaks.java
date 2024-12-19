@@ -11,5 +11,6 @@ public class AsutanTweaks implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		InitializationHandler.getInstance().registerInitializationHandler(new InitHandler());
+		System.setProperty("java.awt.headless", "false");
 	}
 }
