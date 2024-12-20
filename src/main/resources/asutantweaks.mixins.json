@@ -16,7 +16,6 @@
     "SimpleItemEntityRender.MixinEntityRender",
     "SimpleItemEntityRender.MixinEntityRenderDispatcher",
     "SimpleItemEntityRender.MixinItemEntityRenderer",
-    "SimpleItemEntityRender.MixinMinecraftClient",
-    "TheThirdEye.MixinMinecraftClient"
+    "SimpleItemEntityRender.MixinMinecraftClient"
   ]
 }
