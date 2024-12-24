@@ -19,14 +19,14 @@ import org.asutarisucu.AsutanTweaks;
 public enum FeatureToggle implements IHotkeyTogglable, IConfigNotifiable<IConfigBoolean> {
 
     //toggleボタンで表示させたいConfig項目
-    LAST_USE_CANCEL("LastUseCancel",false,"","You cant Use LastItem"),
-    ITEM_RESTOCK("ItemRestock",false,"","Item Restock to Use Item"),
-    AUTO_FILL_INVENTORY("AutoFillInventory",false,"","Fill Material in Your Inventory"),
-    DISABLE_VOID_DIVE("DisableVoidDive",false,"","Protects you from VoidDive"),
-    SCHEMATIC_RESTRICTION_STATE_WHITELIST("SchematicRestrictionStateWhiteList",false,"","Only one can be placed per square.to use Restriction"),
-    SIMPLE_ITEM_ENTITY_RENDER("SimpleItemEntityRender",false,"","Combine many ItemEntities into one"),
-    SIMPLE_MOB_ENTITY_RENDER("SimpleMobEntityRender",false,"","many MobEntity into one"),
-    SIMPLE_ENTITY_RENDER_COUNT("SimpleEntityRenderCount",false,"","SimpleEntityRender nearItem Count Display");
+    LAST_USE_CANCEL("TweakLastUseCancel",false,"","You cant Use LastItem"),
+    ITEM_RESTOCK("TweakItemRestock",false,"","Item Restock to Use Item"),
+    AUTO_FILL_INVENTORY("TweakAutoFillInventory",false,"","Fill Material in Your Inventory"),
+    DISABLE_VOID_DIVE("TweakDisableVoidDive",false,"","Protects you from VoidDive"),
+    SCHEMATIC_RESTRICTION_STATE_WHITELIST("TweakSchematicRestrictionStateWhiteList",false,"","Only one can be placed per square.to use Restriction"),
+    SIMPLE_ITEM_ENTITY_RENDER("TweakSimpleItemEntityRender",false,"","Combine many ItemEntities into one"),
+    SIMPLE_MOB_ENTITY_RENDER("TweakSimpleMobEntityRender",false,"","many MobEntity into one"),
+    SIMPLE_ENTITY_RENDER_COUNT("TweakSimpleEntityRenderCount",false,"","SimpleEntityRender nearItem Count Display");
 
     public static final ImmutableList<FeatureToggle> VALUES = ImmutableList.copyOf(values());
 
