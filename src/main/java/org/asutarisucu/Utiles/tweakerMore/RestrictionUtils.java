@@ -18,7 +18,7 @@
  * along with TweakerMore.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.asutarisucu.Utiles.tweakemore;
+package org.asutarisucu.Utiles.tweakerMore;
 
 import me.fallenbreath.tweakermore.mixins.tweaks.features.schematicProPlace.BlockItemAccessor;
 import net.minecraft.block.BlockState;

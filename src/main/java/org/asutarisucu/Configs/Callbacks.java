@@ -8,12 +8,10 @@ import fi.dy.masa.malilib.hotkeys.KeyAction;
 import fi.dy.masa.malilib.hotkeys.KeyCallbackAdjustable;
 import fi.dy.masa.malilib.interfaces.IValueChangeCallback;
 import fi.dy.masa.malilib.util.InfoUtils;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import org.asutarisucu.GUI.GuiConfigs;
 import org.asutarisucu.tweak.SimpleItemEntityRender.SimpleEntityRender;
-import org.asutarisucu.tweak.TheThirdEye.WindowManager;
 
 public class Callbacks {
     public static void init() {
@@ -37,9 +35,6 @@ public class Callbacks {
             }else if(key==Hotkeys.CLEAR_ITEM_COUNT.getKeybind()){
                 SimpleEntityRender.EntityUUID.clear();
                 InfoUtils.printActionbarMessage("CountClear!"+GuiBase.TXT_GREEN);
-                return true;
-            } else if (key==Hotkeys.OPEN_THIRD_EYE.getKeybind()) {
-                MinecraftClient.getInstance().execute(WindowManager::openWindow);
                 return true;
             }
             return false;

@@ -21,10 +21,10 @@ public class ItemEntityUtil {
                 center.x+radius,center.y+radius,center.z+radius
         );
         return world.getEntitiesByClass(
-            Entity.class,
-            box,
-            entity ->!SimpleEntityRender.EntityUUID.containsKey(entity.getUuid())&&entity instanceof ItemEntity
-        ).stream()
+                        Entity.class,
+                        box,
+                        entity ->!SimpleEntityRender.EntityUUID.containsKey(entity.getUuid())&&entity instanceof ItemEntity
+                ).stream()
                 .map(entity -> (ItemEntity) entity)// キャスト
                 .filter(itemEntity -> itemEntity.getStack().getItem()==stack.getItem())
                 .filter(itemEntity -> itemEntity.getStack()!=stack)

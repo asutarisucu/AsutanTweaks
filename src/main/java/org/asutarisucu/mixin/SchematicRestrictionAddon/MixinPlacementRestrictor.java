@@ -22,7 +22,8 @@ public class MixinPlacementRestrictor {
     @Redirect(method = "canDoBlockPlacement",
             at = @At(
                     value = "INVOKE",
-                    target = "Lme/fallenbreath/tweakermore/config/options/TweakerMoreConfigBooleanHotkeyed;getBooleanValue()Z"
+                    target = "Lme/fallenbreath/tweakermore/config/options/TweakerMoreConfigBooleanHotkeyed;getBooleanValue()Z",
+                    remap = false
             ))
     private static boolean isInCHECK_FACING(TweakerMoreConfigBooleanHotkeyed instance){
         inCHECK_FACING= instance == TweakerMoreConfigs.SCHEMATIC_BLOCK_PLACEMENT_RESTRICTION_CHECK_FACING;
@@ -32,7 +33,8 @@ public class MixinPlacementRestrictor {
             method = "canDoBlockPlacement",
             at= @At(value = "INVOKE",
                     target = "Lme/fallenbreath/tweakermore/config/options/TweakerMoreConfigBooleanHotkeyed;getBooleanValue()Z",
-                    shift = At.Shift.BEFORE
+                    shift = At.Shift.BEFORE,
+                    remap = false
             ),
             cancellable = true)
     private static void onAfterCheckFacing(MinecraftClient mc, BlockHitResult hitResult, ItemPlacementContext context, CallbackInfoReturnable<Boolean> cir){

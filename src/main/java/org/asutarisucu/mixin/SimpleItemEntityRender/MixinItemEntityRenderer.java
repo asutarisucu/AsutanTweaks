@@ -33,7 +33,7 @@ public abstract class MixinItemEntityRenderer<T extends ItemEntity> extends Enti
     }
 
     @Shadow @Final private ItemRenderer itemRenderer;
-
+    @SuppressWarnings("unchecked")
     @Inject(method = "render(Lnet/minecraft/entity/ItemEntity;FFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V",at=@At("HEAD"), cancellable = true)
     private void onRender(ItemEntity itemEntity, float f, float g, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, CallbackInfo ci){
         if(FeatureToggle.SIMPLE_ITEM_ENTITY_RENDER.getBooleanValue()){
@@ -42,7 +42,7 @@ public abstract class MixinItemEntityRenderer<T extends ItemEntity> extends Enti
             //アイテムが動かないようなrenderを実装
             Camera camera=MinecraftClient.getInstance().gameRenderer.getCamera();
             ItemStack itemStack = itemEntity.getStack();
-            BakedModel bakedModel = this.itemRenderer.getModel(itemStack, itemEntity.world, null, itemEntity.getId());
+            BakedModel bakedModel = this.itemRenderer.getModel(itemStack, itemEntity.getWorld(), null, itemEntity.getId());
             matrixStack.push();
             matrixStack.multiplyPositionMatrix((new Matrix4f()).rotation(camera.getRotation()));
             this.itemRenderer.renderItem(itemStack, ModelTransformationMode.GROUND, false, matrixStack, vertexConsumerProvider, i, OverlayTexture.DEFAULT_UV, bakedModel);
