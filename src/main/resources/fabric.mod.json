@@ -1,38 +1,36 @@
 {
-	"schemaVersion": 1,
-	"id": "asutantweaks",
-	"version": "${version}",
-	"name": "AsutanTweaks",
-	"description": "developed exclusively for asutarisucu",
-	"authors": [
-		"asutarisucu"
-	],
-	"contact": {
-		"homepage": "",
-		"sources": "https://github.com/asutarisucu/AsutanTweaks"
-	},
-	"license": "MTI",
-	"icon": "assets/asutantweaks/icon.png",
-	"environment": "*",
-	"entrypoints": {
-		"client": [
-			"org.asutarisucu.AsutanTweaks"
-		],
-		"modmenu": [
-			"org.asutarisucu.ModMenuImpl"
-		],
-		"main": []
-	},
-	"mixins": [
-		"asutantweaks.mixins.json"
-	],
-	"depends": {
-		"fabricloader": ">=0.16.9",
-		"minecraft": "~1.19.4",
-		"java": ">=17",
-		"fabric-api": "*"
-	},
-	"suggests": {
-		"another-mod": "*"
-	}
+  "schemaVersion": 1,
+  "id": "${id}",
+  "version": "${version}",
+
+  "name": "${name}",
+  "description": "developed exclusively for asutarisucu",
+  "authors": [
+    "asutarisucu"
+  ],
+  "contact": {
+    "homepage": "https://modrinth.com",
+    "sources": "https://github.com/asutarisucu/AsutanTweaks"
+  },
+  "license": "MTI",
+  "icon": "assets/asutantweaks/icon.png",
+
+  "environment": "*",
+  "entrypoints": {
+    "main": [],
+    "client": [
+      "org.asutarisucu.AsutanTweaks"
+    ],
+    "modmenu": [
+      "org.asutarisucu.ModMenuImpl"
+    ]
+  },
+  "mixins": [
+    "asutantweaks.mixins.json"
+  ],
+
+  "depends": {
+    "fabricloader": ">=0.11.4",
+    "minecraft": "${minecraft_dependency}"
+  }
 }

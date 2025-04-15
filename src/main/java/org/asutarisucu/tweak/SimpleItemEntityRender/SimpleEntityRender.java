@@ -22,7 +22,7 @@ public class SimpleEntityRender {
             if (EntityUUID.get(entity.getUuid()).getPos().distanceTo(entity.getPos()) > 1||EntityUUID.get(entity.getUuid()).isRemoved()) {
                 //存在しないなら抑制リストから削除
                 EntityUUID.remove(entity.getUuid());
-            //存在するなら抑制の原因は抑制されていないか
+                //存在するなら抑制の原因は抑制されていないか
             } else if (EntityUUID.containsKey(EntityUUID.get(entity.getUuid()).getUuid())) {
                 //抑制されているなら抑制されている原因を変更
                 EntityUUID.put(entity.getUuid(),EntityUUID.get(EntityUUID.get(entity.getUuid()).getUuid()));

@@ -34,12 +34,12 @@ public class GuiConfigs extends GuiConfigsBase {
         int y = 26;
 
         for (ConfigGuiTab tab : ConfigGuiTab.values()) {
-            x += this.createButton(x, y, -1, tab);
+            x += this.createButton(x, y, tab);
         }
     }
 
-    private int createButton(int x, int y, int width, ConfigGuiTab tab) {
-        ButtonGeneric button = new ButtonGeneric(x, y, width, 20, tab.getDisplayName());
+    private int createButton(int x, int y, ConfigGuiTab tab) {
+        ButtonGeneric button = new ButtonGeneric(x, y, -1, 20, tab.getDisplayName());
         button.setEnabled(GuiConfigs.tab != tab);
         this.addButton(button, new ButtonListener(tab, this));
         return button.getWidth() + 2;
@@ -84,13 +84,13 @@ public class GuiConfigs extends GuiConfigsBase {
     private record ButtonListener(ConfigGuiTab tab, GuiConfigs parent) implements IButtonActionListener {
 
         @Override
-            public void actionPerformedWithButton(ButtonBase button, int mouseButton) {
-                GuiConfigs.tab = this.tab;
-                this.parent.reCreateListWidget(); // apply the new config width
-                this.parent.getListWidget().resetScrollbarPosition();
-                this.parent.initGui();
-            }
+        public void actionPerformedWithButton(ButtonBase button, int mouseButton) {
+            GuiConfigs.tab = this.tab;
+            this.parent.reCreateListWidget(); // apply the new config width
+            this.parent.getListWidget().resetScrollbarPosition();
+            this.parent.initGui();
         }
+    }
 
     public enum ConfigGuiTab {
         //タブと関連するクラス

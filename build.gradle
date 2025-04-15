@@ -1,88 +1,48 @@
 plugins {
-	id 'fabric-loom' version '1.8-SNAPSHOT'
 	id 'maven-publish'
+	id 'com.github.hierynomus.license' version '0.16.1' apply false
+	id 'fabric-loom' version '1.10-SNAPSHOT' apply false
+
+	// https://github.com/ReplayMod/preprocessor
+	// https://github.com/Fallen-Breath/preprocessor
+	id 'com.replaymod.preprocess' version 'ce1aeb2b'
+
+	// https://github.com/Fallen-Breath/yamlang
+	id 'me.fallenbreath.yamlang' version '1.4.1' apply false
 }
 
-version = project.mod_version
-group = project.maven_group
+preprocess {
+	def mc119  = createNode('1.19.4', 1_19_04, '')
+	def mc1204 = createNode('1.20.4', 1_20_04, '')
+	def mc1206 = createNode('1.20.6', 1_20_06, '')
+	def mc1211 = createNode('1.21.1', 1_21_01, '')
 
-base {
-	archivesName = project.archives_base_name
+	mc119 .link(mc1204, null)
+	mc1204.link(mc1206, null)
+	mc1206.link(mc1211, null)
 }
 
-repositories {
-	maven {
-		name = 'Modrinth'
-		url = 'https://api.modrinth.com/maven'
+tasks.register('buildAndGather') {
+	subprojects {
+		dependsOn project.tasks.named('build').get()
 	}
-	maven {
-		url 'https://maven.fallenbreath.me/releases'
-	}
-}
-
-dependencies {
-	// To change the versions see the gradle.properties file
-	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-
-	modImplementation "maven.modrinth:modmenu:${project.modmenu_version}"
-
-	// Fabric API. This is technically optional, but you probably want it anyway.
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-	modImplementation "maven.modrinth:malilib:${project.malilib_version}"
-	modImplementation "maven.modrinth:item-scroller:${project.itemscroller_version}"
-	modImplementation "maven.modrinth:tweakermore:${project.tweakermore_version}"
-	modImplementation files('tmp/tweakfork-fabric-1.19.4-1.2.3.jar')
-	modImplementation files('tmp/litematica-fabric-1.19.4-0.14.7.jar')
-
-	include(implementation("com.fasterxml.jackson.core:jackson-core:2.13.0"))
-	include(implementation("com.fasterxml.jackson.core:jackson-databind:2.13.0"))
-	include(implementation("com.fasterxml.jackson.core:jackson-annotations:2.13.0"))
-}
-
-processResources {
-	inputs.property "version", project.version
-
-	filesMatching("fabric.mod.json") {
-		expand "version": project.version
-	}
-}
-
-tasks.withType(JavaCompile).configureEach {
-	it.options.release = 17
-}
-
-java {
-	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-	// if it is present.
-	// If you remove this line, sources will not be generated.
-	withSourcesJar()
-
-	sourceCompatibility = JavaVersion.VERSION_17
-	targetCompatibility = JavaVersion.VERSION_17
-}
-
-jar {
-	from("LICENSE") {
-		rename { "${it}_${project.base.archivesName.get()}"}
-	}
-}
-
-// configure the maven publication
-publishing {
-	publications {
-		create("mavenJava", MavenPublication) {
-			artifactId = project.archives_base_name
-			from components.java
+	doFirst {
+		println 'Gathering builds'
+		def buildLibs = {
+			p -> p.buildDir.toPath().resolve('libs')
 		}
-	}
-
-	// See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
-	repositories {
-		// Add repositories to publish to here.
-		// Notice: This block does NOT have the same function as the block in the top level.
-		// The repositories here will be used for publishing your artifact, not for
-		// retrieving dependencies.
+		delete fileTree(buildLibs(rootProject)) {
+			include '*'
+		}
+		subprojects {
+			copy {
+				from(buildLibs(project)) {
+					include '*.jar'
+					exclude '*-dev.jar', '*-sources.jar', '*-shadow.jar'
+				}
+				into buildLibs(rootProject)
+				duplicatesStrategy = DuplicatesStrategy.INCLUDE
+			}
+		}
 	}
 }

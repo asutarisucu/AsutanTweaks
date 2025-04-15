@@ -8,7 +8,7 @@ import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import org.asutarisucu.Utiles.tweakemore.RestrictionUtils;
+import org.asutarisucu.Utiles.tweakerMore.RestrictionUtils;
 
 import java.util.Optional;
 

@@ -45,14 +45,14 @@ public class DisableVoidDive {
                         if(client.options.jumpKey.isPressed()){
                             //インベントリを開いているとき
                             if(screen instanceof InventoryScreen||
-                            screen instanceof CreativeInventoryScreen){
+                                    screen instanceof CreativeInventoryScreen){
                                 if(count<=0){
                                     client.execute(()->{
                                         client.setScreen(null);
                                     });
                                     count=5;
                                 }else count--;
-                            //インベントリを開いていないとき
+                                //インベントリを開いていないとき
                             }else {
                                 if(count<=0){
                                     client.execute(()->{
@@ -61,14 +61,14 @@ public class DisableVoidDive {
                                     count=5;
                                 }else count--;
                             }
-                        //ジャンプキーを押していない場合
+                            //ジャンプキーを押していない場合
                         }else {
                             client.options.jumpKey.setPressed(true);
                         }
-                    //エリトラを開いているなら上を向いて花火を使用
+                        //エリトラを開いているなら上を向いて花火を使用
                     }else{
                         if(screen instanceof InventoryScreen||
-                            screen instanceof CreativeInventoryScreen){
+                                screen instanceof CreativeInventoryScreen){
                             client.execute(()->{
                                 client.setScreen(null);
                             });

@@ -24,6 +24,7 @@ public class Configs implements IConfigHandler {
         public static final ConfigDouble VOID_HEIGHT_END=new ConfigDouble("VoidHeight_END",-50,-100,0,"In The End,Below this is Void");
         public static final ConfigBoolean VOID_DISCONNECT=new ConfigBoolean("VoidDisconnect",false,"if you cant safe yourself,disconnect world");
         public static final ConfigStringList RESTRICTION_STATE_WHITELIST=new ConfigStringList("RestrictionStateWhiteList",ImmutableList.of("UP","DOWN","NORTH","EAST","SOUTH","WEST"),"Restriction Check State WhiteList");
+        public static final ConfigStringList LAST_USE_CANCEL_BLACKLIST=new ConfigStringList("LastUseCancelBlackList",ImmutableList.of("chest","Shulker_box"),"ignore LastUseCancel Interact this List Block");
 
         public static final ImmutableList<IConfigBase> OPTIONS = ImmutableList.of(
                 RESTOCK_COUNT,
@@ -31,7 +32,8 @@ public class Configs implements IConfigHandler {
                 VOID_HEIGHT_NE,
                 VOID_HEIGHT_END,
                 VOID_DISCONNECT,
-                RESTRICTION_STATE_WHITELIST
+                RESTRICTION_STATE_WHITELIST,
+                LAST_USE_CANCEL_BLACKLIST
         );
     }
 

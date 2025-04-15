@@ -1,4 +1,4 @@
-﻿# AsutanTweaks
+# AsutanTweaks
 [![Static Badge](https://img.shields.io/badge/JapaneseText-blue)](README_ja.md)<br><br>
 [![License](https://img.shields.io/github/license/asutarisucu/Asutantweaks.svg)](https://opensource.org/licenses/MIT)
 

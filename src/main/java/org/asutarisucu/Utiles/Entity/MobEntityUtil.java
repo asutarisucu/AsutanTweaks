@@ -20,10 +20,10 @@ public class MobEntityUtil {
                 center.x+radius,center.y+radius,center.z+radius
         );
         return  world.getEntitiesByClass(
-                Entity.class,
-                box,
-                entity ->!SimpleEntityRender.EntityUUID.containsKey(mob.getUuid())&&entity instanceof MobEntity&&entity!=mob
-        ).stream()
+                        Entity.class,
+                        box,
+                        entity ->!SimpleEntityRender.EntityUUID.containsKey(mob.getUuid())&&entity instanceof MobEntity&&entity!=mob
+                ).stream()
                 .map(entity -> (MobEntity) entity)// キャスト
                 .filter(mobEntity -> mobEntity.getType()==mob.getType())
                 .collect(Collectors.toList());

@@ -1,6 +1,5 @@
 package org.asutarisucu.Utiles.Render;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.render.Camera;
@@ -11,7 +10,6 @@ import net.minecraft.entity.Entity;
 
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
-import org.lwjgl.opengl.GL30;
 
 public class Renderer {
 

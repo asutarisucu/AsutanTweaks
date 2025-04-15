@@ -13,11 +13,11 @@ public class Screen {
     public static void AutoFillInventory(ScreenHandler handler){
         MinecraftClient client = MinecraftClient.getInstance();
         if(
-                //チェスト、シュルカーボックス、3*3のコンテナ、ホッパーで動作する
+            //チェスト、シュルカーボックス、3*3のコンテナ、ホッパーで動作する
                 handler instanceof GenericContainerScreenHandler||
-                handler instanceof Generic3x3ContainerScreenHandler||
-                handler instanceof ShulkerBoxScreenHandler||
-                handler instanceof HopperScreenHandler
+                        handler instanceof Generic3x3ContainerScreenHandler||
+                        handler instanceof ShulkerBoxScreenHandler||
+                        handler instanceof HopperScreenHandler
         ){
             //Playerのinventoryを右下から取得して空でないかつMaxでないなら処理
             for(int i=handler.slots.size()-1;i>=handler.slots.size()-36;i--){
@@ -31,8 +31,8 @@ public class Screen {
                             //カーソルにアイテムがあるならコンテナに戻す
                             if(!handler.getCursorStack().isEmpty()){
                                 client.interactionManager.clickSlot(handler.syncId, matchSlot, 0, SlotActionType.PICKUP, client.player);
-                            //まだそのアイテムがStack上限に達していないならもう一度同じ処理を行う
-                            //たとえぴったりだった場合でも2つ目のifで弾かれるので問題ない
+                                //まだそのアイテムがStack上限に達していないならもう一度同じ処理を行う
+                                //たとえぴったりだった場合でも2つ目のifで弾かれるので問題ない
                             } else {
                                 i++;
                             }
