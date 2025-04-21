@@ -20,8 +20,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ClientPlayerInteractionManager.class)
 public abstract class MixinClientPlayer {
-    @Inject(method = "interactBlock",at=@At("HEAD"))
-    private void UseItem(ClientPlayerEntity player, Hand hand, BlockHitResult hitResult, CallbackInfoReturnable<ActionResult> cir){
+    @Inject(method = "interactBlock",at=@At("TAIL"))
+    private void UseItemAfter(ClientPlayerEntity player, Hand hand, BlockHitResult hitResult, CallbackInfoReturnable<ActionResult> cir){
         if(FeatureToggle.ITEM_RESTOCK.getBooleanValue()){
             MinecraftClient client=MinecraftClient.getInstance();
             Screen screen= client.currentScreen;

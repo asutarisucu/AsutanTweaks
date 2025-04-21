@@ -21,6 +21,9 @@ repositories {
 configurations {
 	modRuntimeOnly.exclude group: 'net.fabricmc', module: 'fabric-loader'
 }
+configurations {
+	modImplementation.exclude group: 'io.github.prospector', module: 'modmenu'
+}
 
 dependencies {
 	// loom
@@ -56,17 +59,29 @@ JavaVersion MIXIN_COMPATIBILITY_LEVEL = JAVA_COMPATIBILITY
 
 loom {
 	accessWidenerPath = file("${project.mod_id}.accesswidener")
-	def commonVmArgs = ['-Dmixin.debug.export=true', '-Dmixin.debug.countInjections=true']
+
+	def commonVmArgs = ['-Dmixin.debug.export=true']
+	if (mcVersion < 11904) {
+		// carpet 1.4.100+v230314 for mc1.19.4 and above
+		// fail to pass the check on at MinecraftServer_pingPlayerSampleLimit#modifyPlayerSampleLimit
+		// see https://github.com/gnembon/fabric-carpet/pull/1938
+		commonVmArgs.add('-Dmixin.debug.countInjections=true')
+	}
 	runConfigs.configureEach {
-		// to make sure it generates all "Minecraft Client (:subproject_name)" applications
-		ideConfigGenerated = true
 		runDir '../../run'
 		vmArgs commonVmArgs
+		ideConfigGenerated true
 	}
+
 	runs {
-		def auditVmArgs = [*commonVmArgs, '-DmixinAuditor.audit=true']
+		def auditVmArgs = ["-D${project.mod_id}.mixin_audit=true"]
 		serverMixinAudit {
 			server()
+			vmArgs auditVmArgs
+			ideConfigGenerated false
+		}
+		clientMixinAudit {
+			client()
 			vmArgs auditVmArgs
 			ideConfigGenerated false
 		}
