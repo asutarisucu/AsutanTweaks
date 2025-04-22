@@ -3,6 +3,7 @@ package org.asutarisucu.Configs;
 import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import fi.dy.masa.malilib.config.ConfigType;
 import fi.dy.masa.malilib.config.ConfigUtils;
 import fi.dy.masa.malilib.config.IConfigBase;
 import fi.dy.masa.malilib.config.IConfigHandler;
@@ -10,6 +11,7 @@ import fi.dy.masa.malilib.config.options.*;
 import fi.dy.masa.malilib.util.FileUtils;
 import fi.dy.masa.malilib.util.JsonUtils;
 
+import fi.dy.masa.malilib.util.restrictions.UsageRestriction;
 import org.asutarisucu.Reference;
 
 import java.io.File;
@@ -25,9 +27,9 @@ public class Configs implements IConfigHandler {
         public static final ConfigBoolean VOID_DISCONNECT=new ConfigBoolean("VoidDisconnect",false,"if you cant safe yourself,disconnect world");
         public static final ConfigStringList RESTRICTION_STATE_WHITELIST=new ConfigStringList("RestrictionStateWhiteList",ImmutableList.of("UP","DOWN","NORTH","EAST","SOUTH","WEST"),"Restriction Check State WhiteList");
         public static final ConfigStringList LAST_USE_CANCEL_BLACKLIST=new ConfigStringList("LastUseCancelBlackList",ImmutableList.of("chest","Shulker_box"),"ignore RestockItem Interact this List Block");
-        public static final ConfigStringList ENDERCHEST_MATERIALLIST_WHITELIST=new ConfigStringList("EnderChestMaterialListWhiteList",ImmutableList.of("Shulker_box"),"MaterialList Check box WhiteList");
-        public static final ConfigStringList ENDERCHEST_MATERIALLIST_BLACKLIST=new ConfigStringList("EnderChestMaterialListBlackList",ImmutableList.of("Shulker_box"),"MaterialList Check box BlackList");
-
+        public static final ConfigStringList ENDERCHEST_MATERIALLIST_WHITELIST=new ConfigStringList("EnderChestMaterialListWhiteList",ImmutableList.of("white"),"MaterialList Check box WhiteList");
+        public static final ConfigStringList ENDERCHEST_MATERIALLIST_BLACKLIST=new ConfigStringList("EnderChestMaterialListBlackList",ImmutableList.of("white"),"MaterialList Check box BlackList");
+        public static final ConfigOptionList ENDERCHEST_MATERIALLIST_FILTERTYPE=new ConfigOptionList("EnderChestMaterialListFilter", UsageRestriction.ListType.NONE,"EnderChestMaterialList Check box Whitelist or Blacklist");
 
 
         public static final ImmutableList<IConfigBase> OPTIONS = ImmutableList.of(
@@ -39,7 +41,8 @@ public class Configs implements IConfigHandler {
                 RESTRICTION_STATE_WHITELIST,
                 LAST_USE_CANCEL_BLACKLIST,
                 ENDERCHEST_MATERIALLIST_WHITELIST,
-                ENDERCHEST_MATERIALLIST_BLACKLIST
+                ENDERCHEST_MATERIALLIST_BLACKLIST,
+                ENDERCHEST_MATERIALLIST_FILTERTYPE
         );
     }
 
