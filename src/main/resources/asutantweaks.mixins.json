@@ -5,6 +5,7 @@
   "compatibilityLevel": "JAVA_17",
   "mixins": [
     "DisableVoidDive.MixinPlayerEntity",
+    "EnderChestMaterialList.MixinMaterialListUtils",
     "RestockItem.MixinClientPlayer",
     "SchematicRestrictionAddon.MixinPlacementRestrictor",
     "SimpleItemEntityRender.MixinItemEntity"
