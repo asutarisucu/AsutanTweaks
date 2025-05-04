@@ -1,5 +1,6 @@
 package org.asutarisucu.mixin.EnderChestMaterialList;
 
+import com.llamalad7.mixinextras.sugar.Local;
 import fi.dy.masa.litematica.materials.MaterialCache;
 import fi.dy.masa.litematica.materials.MaterialListEntry;
 import fi.dy.masa.litematica.materials.MaterialListUtils;
@@ -25,8 +26,7 @@ public class MixinMaterialListUtils {
                     value = "INVOKE_ASSIGN",
                     target = "Lfi/dy/masa/litematica/materials/MaterialListUtils;getInventoryItemCounts(Lnet/minecraft/inventory/Inventory;)Lit/unimi/dsi/fastutil/objects/Object2IntOpenHashMap;",
                     ordinal = 0
-            ),
-            locals = LocalCapture.CAPTURE_FAILHARD
+            )
     )
     private static void addEnderchestItemCount(
             Object2IntOpenHashMap<BlockState> countsTotal,
@@ -34,15 +34,11 @@ public class MixinMaterialListUtils {
             Object2IntOpenHashMap<BlockState> countsMismatch,
             PlayerEntity player,
             CallbackInfoReturnable<List<MaterialListEntry>> cir,
-            List<MaterialListEntry> list,
-            MaterialCache cache,
-            Object2IntOpenHashMap<ItemType> itemTypesTotal,
-            Object2IntOpenHashMap<ItemType> itemTypesMissing,
-            Object2IntOpenHashMap<ItemType> itemTypesMismatch
+            @Local(ordinal = 3) Object2IntOpenHashMap<ItemType> itemTypesTotal
     ) {
         Object2IntOpenHashMap<ItemType> enderChestItems = EnderChestCache.getEnderChestItems(player);
         if (enderChestItems != null) {
-            enderChestItems.forEach(itemTypesTotal::addTo);
+//            enderChestItems.forEach(itemTypesTotal::addTo);
         }
     }
 
@@ -54,10 +50,10 @@ public class MixinMaterialListUtils {
             Object2IntOpenHashMap<ItemType> playerInvItems
     ) {
         Object2IntOpenHashMap<ItemType> enderChestItems = EnderChestCache.getEnderChestItems();
-        if (enderChestItems != null) {
+        if(enderChestItems!=null){
             enderChestItems.forEach(playerInvItems::addTo);
-            AsutanTweaks.LOGGER.info(playerInvItems.toString());
         }
+        AsutanTweaks.LOGGER.info(playerInvItems.toString());
     }
 
 }
