@@ -19,14 +19,19 @@ import org.asutarisucu.Configs.FeatureToggle;
 import java.util.Optional;
 
 public class EnderChestCache {
+    private static final Optional<DefaultedList<ItemStack>> empty= Optional.of(DefaultedList.ofSize(27, ItemStack.EMPTY));;
+    public static Optional<DefaultedList<ItemStack>> cachedItems = Optional.empty();
     public static Object2IntOpenHashMap<ItemType> getEnderChestItems(PlayerEntity player) {
         try {
             Optional<DefaultedList<ItemStack>> optional = EnderChestItemFetcher.fetch();
-            if (optional.isEmpty()) {
-                return null;
+            if (optional.isPresent()&& empty.isPresent()&&optional.get().equals(empty.get())) {
+                if(cachedItems.isPresent()){
+                    optional= cachedItems;
+                }else return null;
             }
-
+            cachedItems=optional;
             Object2IntOpenHashMap<ItemType> map = new Object2IntOpenHashMap<>();
+            if(optional.isEmpty())return null;
             for (ItemStack stack : optional.get()) {
                 map.addTo(new ItemType(stack, true, false), stack.getCount());
                 if (stack.getItem() instanceof BlockItem && ((BlockItem)stack.getItem()).getBlock() instanceof ShulkerBoxBlock && InventoryUtils.shulkerBoxHasItems(stack)){
