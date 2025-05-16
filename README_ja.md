@@ -1,6 +1,6 @@
 # AsutanTweaks
-[![Static Badge](https://img.shields.io/badge/EnglishText-blue)](README.md)<br><br>
-[![License](https://img.shields.io/github/license/asutarisucu/Asutantweaks.svg)](https://opensource.org/licenses/MIT)
+[![Static Badge](https://img.shields.io/badge/EnglishText-blue)](README.md)<br>
+[![License](https://img.shields.io/github/license/asutarisucu/Asutantweaks.svg)](https://opensource.org/licenses/MIT)<br>
 
 AsutanTweaksはクライアントサイドで動作するFabricMODです。<br>
 このMODはasutarisucuのために作成されました。<br>
