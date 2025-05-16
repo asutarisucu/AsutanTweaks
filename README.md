@@ -35,4 +35,16 @@ This means you can always transport the optimal amount of items.
 >Enable `SimpleEntityRenderCount` to see how many Entities are grouped there. <br>
 >It also prevents ItemEntity from moving in a depressing way. <br>
 >Currently, it is only available for ItemEntity and MobEntity.
- 
+### EnderChestMaterialList
+>Add the contents of the ender chest to the count in [Litematica](https://github.com/maruohon/litematica)'s MaterialList.<br>
+>From the `EnderChestMaterialListWhiteList` and `EnderChestMaterialListBlocklist`, 
+>you can specify the colors of the shulker box boxes to exclude from the count.<br>
+>If you want to use it in multiplayer, enable `serverDataSyncer` in [tweakermore](https://github.com/Fallen-Breath/tweakermore/tree/master)
+>and `debugNbtQueryNoPermission` in [Carpet](https://github.com/gnembon/fabric-carpet).<br>
+>You may not get it right the first time, but try several times.
+### SearchHighlight
+>Highlight the location of the item set in HighLightItemList.
+>`SearchBlockHighlight` displays the block if it is located,
+> and `SearchContainerHighlight` displays the container in which the item is located.
+> The color and range can be set for each,
+>  and you can also register your main hand items using hot keys.

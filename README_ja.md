@@ -34,3 +34,14 @@ AsutanTweaksはクライアントサイドで動作するFabricMODです。<br>
 >`SimpleEntityRenderCount`が有効な場合、そこにいくつのエンティティがまとめられているのかを表示します。<br>
 > アイテムエンティティの鬱陶しく上下する動きを抑制します。<br>
 > 現時点ではモブエンティティとアイテムエンティティにのみ有効です。
+### EnderChestMaterialList
+>エンダーチェストの中身を[Litematica](https://github.com/maruohon/litematica)の材料リストのカウントに加えます。<br>
+> `EnderChestMaterialListWhiteList`と`EnderChestMaterialListBlocklist`から、カウントから除外するシュルカーボックスの箱の色を指定できます。<br>
+> マルチプレイで使用したい場合は[tweakermore](https://github.com/Fallen-Breath/tweakermore/tree/master)の`serverDataSyncer`を有効にして、
+> [Carpet](https://github.com/gnembon/fabric-carpet)の`debugNbtQueryNoPermission`を有効にしてください。<br>
+> 一度目でうまく取得できない場合がありますが何度か試してください。
+### SearchHighlight
+>`HighLightItemList`に設定したアイテムのある場所をハイライト表示する。<br>
+> `SearchBlockHighlight`ではアイテムがブロックとして設置されている場合に表示し、
+> `SearchContainerHighlight`ではアイテムが中にあるコンテナを表示する。<br>
+> それぞれ色と範囲を設定することができ、ホットキーから自分の持っているアイテムを登録することもできる。
