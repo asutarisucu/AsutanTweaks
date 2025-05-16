@@ -14,7 +14,7 @@ public class LastUseCancel {
         UseBlockCallback.EVENT.register(((playerEntity, world, hand, blockHitResult) -> {
             if(!FeatureToggle.LAST_USE_CANCEL.getBooleanValue()||
                     playerEntity.getMainHandStack().getCount()!=1||
-                    playerEntity.getMainHandStack().getMaxCount()==1||  //unstackableは無視
+                    playerEntity.getMainHandStack().getMaxCount()==1||
                     playerEntity.getAbilities().creativeMode||
                     isBlockEntity(world.getBlockState(blockHitResult.getBlockPos()).getBlock())
             )return ActionResult.PASS;

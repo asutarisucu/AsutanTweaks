@@ -20,13 +20,28 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ClientPlayerInteractionManager.class)
 public abstract class MixinClientPlayer {
-    @Inject(method = "interactBlock",at=@At("TAIL"))
+    @Inject(method = "interactBlock",at=@At("HEAD"))
     private void UseItemAfter(ClientPlayerEntity player, Hand hand, BlockHitResult hitResult, CallbackInfoReturnable<ActionResult> cir){
         if(FeatureToggle.ITEM_RESTOCK.getBooleanValue()){
             MinecraftClient client=MinecraftClient.getInstance();
             Screen screen= client.currentScreen;
             ItemStack MainItem=player.getMainHandStack();
-            if(MainItem.getCount()< Configs.Generic.RESTOCK_COUNT.getIntegerValue()){
+            if(MainItem.getCount()< Configs.Generic.RESTOCK_COUNT.getIntegerValue()
+            &&MainItem.getMaxCount()!=1){
+                int refillSlot=Inventorys.findMatchingItemStack(player.getInventory(),MainItem);
+                if(refillSlot>0) RestickItem.restockItem(client,screen,refillSlot);
+            }
+        }
+    }
+
+    @Inject(method = "interactBlock",at=@At("TAIL"))
+    private void UseUnstackbleItemAfter(ClientPlayerEntity player, Hand hand, BlockHitResult hitResult, CallbackInfoReturnable<ActionResult> cir){
+        if(FeatureToggle.ITEM_RESTOCK.getBooleanValue()){
+            MinecraftClient client=MinecraftClient.getInstance();
+            Screen screen= client.currentScreen;
+            ItemStack MainItem=player.getMainHandStack();
+            if(MainItem.getCount()< Configs.Generic.RESTOCK_COUNT.getIntegerValue()
+                    &&MainItem.getMaxCount()==1){
                 int refillSlot=Inventorys.findMatchingItemStack(player.getInventory(),MainItem);
                 if(refillSlot>0) RestickItem.restockItem(client,screen,refillSlot);
             }
