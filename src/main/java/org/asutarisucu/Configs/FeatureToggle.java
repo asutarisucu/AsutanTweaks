@@ -27,8 +27,9 @@ public enum FeatureToggle implements IHotkeyTogglable, IConfigNotifiable<IConfig
     SIMPLE_ITEM_ENTITY_RENDER("SimpleItemEntityRender", false, "", "Combine many ItemEntities into one"),
     SIMPLE_MOB_ENTITY_RENDER("SimpleMobEntityRender", false, "", "many MobEntity into one"),
     SIMPLE_ENTITY_RENDER_COUNT("SimpleEntityRenderCount", false, "", "SimpleEntityRender nearItem Count Display"),
-    ENDERCHEST_MATERIALLIST("EnderChestMaterialList",false,"","Include your EnderChest Item in MaterialList");
-
+    ENDERCHEST_MATERIALLIST("EnderChestMaterialList",false,"","Include your EnderChest Item in MaterialList"),
+    SEARCH_BLOCK_HIGHLIGHT("SearchBlockHighlight",false,"","Highlight registered blocks"),
+    SEARCH_CONTAINER_HIGHLIGHT("SearchContainerHighlight",false,"","Highlight container with registered item inside");
 
     public static final ImmutableList<FeatureToggle> VALUES = ImmutableList.copyOf(values());
 

@@ -30,7 +30,11 @@ public class Configs implements IConfigHandler {
         public static final ConfigStringList ENDERCHEST_MATERIALLIST_WHITELIST=new ConfigStringList("EnderChestMaterialListWhiteList",ImmutableList.of("white"),"MaterialList Check box WhiteList");
         public static final ConfigStringList ENDERCHEST_MATERIALLIST_BLACKLIST=new ConfigStringList("EnderChestMaterialListBlackList",ImmutableList.of("white"),"MaterialList Check box BlackList");
         public static final ConfigOptionList ENDERCHEST_MATERIALLIST_FILTERTYPE=new ConfigOptionList("EnderChestMaterialListFilter", UsageRestriction.ListType.NONE,"EnderChestMaterialList Check box Whitelist or Blacklist");
-
+        public static final ConfigStringList HIGHLIGHT_ITEM_LIST=new ConfigStringList("HighLightItemList",ImmutableList.of(),"HighLight something name list");
+        public static final ConfigColor HIGHLIGHT_BLOCK_COLOR=new ConfigColor("HighlightBlockColor","#FFFF0000","Highlight color BlockOutline");
+        public static final ConfigInteger HIGHLIGHT_BLOCK_RANGE=new ConfigInteger("HighlightBlockRange",32,0,64,true,"Range to Search for blocks to highlight");
+        public static final ConfigColor HIGHLIGHT_CONTAINER_COLOR=new ConfigColor("HighlightContainerColor","#FF0000FF","Highlight color ContainerOutline");
+        public static final ConfigInteger HIGHLIGHT_CONTAINER_RANGE=new ConfigInteger("HighlightBlockRange",32,0,64,true,"Range to Search for Container to highlight");
 
         public static final ImmutableList<IConfigBase> OPTIONS = ImmutableList.of(
                 RESTOCK_COUNT,
@@ -42,7 +46,12 @@ public class Configs implements IConfigHandler {
                 LAST_USE_CANCEL_BLACKLIST,
                 ENDERCHEST_MATERIALLIST_WHITELIST,
                 ENDERCHEST_MATERIALLIST_BLACKLIST,
-                ENDERCHEST_MATERIALLIST_FILTERTYPE
+                ENDERCHEST_MATERIALLIST_FILTERTYPE,
+                HIGHLIGHT_ITEM_LIST,
+                HIGHLIGHT_BLOCK_COLOR,
+                HIGHLIGHT_BLOCK_RANGE,
+                HIGHLIGHT_CONTAINER_COLOR,
+                HIGHLIGHT_CONTAINER_RANGE
         );
     }
 
