@@ -14,7 +14,12 @@ import fi.dy.masa.malilib.util.JsonUtils;
 import fi.dy.masa.malilib.util.restrictions.UsageRestriction;
 import org.asutarisucu.Reference;
 
+//#if MC < 260100
 import java.io.File;
+//#else
+//$$ import java.nio.file.Files;
+//$$ import java.nio.file.Path;
+//#endif
 
 public class Configs implements IConfigHandler {
     private static final String CONFIG_FILE_NAME = Reference.MOD_ID + ".json";
@@ -56,30 +61,40 @@ public class Configs implements IConfigHandler {
     }
 
     public static void loadFromFile() {
+//#if MC >= 260100
+//$$ Path configFile = FileUtils.getConfigDirectory().resolve(CONFIG_FILE_NAME);
+//$$ if (!Files.exists(configFile) || Files.isDirectory(configFile) || !Files.isReadable(configFile)) return;
+//$$ JsonElement element = JsonUtils.parseJsonFile(configFile);
+//#else
         File configFile = new File(FileUtils.getConfigDirectory(), CONFIG_FILE_NAME);
-        if (configFile.exists() && configFile.isFile() && configFile.canRead()) {
-            JsonElement element = JsonUtils.parseJsonFile(configFile);
-
-            if (element != null && element.isJsonObject()) {
-                JsonObject root = element.getAsJsonObject();
-                ConfigUtils.readHotkeys(root, "GenericHotkeys", Hotkeys.HOTKEY_LIST);
-                ConfigUtils.readConfigBase(root,"Option", Generic.OPTIONS);
-                ConfigUtils.readHotkeyToggleOptions(root, "TweakHotkeys", "TweakToggles", FeatureToggle.VALUES);
-            }
+        if (!configFile.exists() || !configFile.isFile() || !configFile.canRead()) return;
+        JsonElement element = JsonUtils.parseJsonFile(configFile);
+//#endif
+        if (element != null && element.isJsonObject()) {
+            JsonObject root = element.getAsJsonObject();
+            ConfigUtils.readHotkeys(root, "GenericHotkeys", Hotkeys.HOTKEY_LIST);
+            ConfigUtils.readConfigBase(root,"Option", Generic.OPTIONS);
+            ConfigUtils.readHotkeyToggleOptions(root, "TweakHotkeys", "TweakToggles", FeatureToggle.VALUES);
         }
     }
 
     public static void saveToFile() {
+//#if MC >= 260100
+//$$ Path dir = FileUtils.getConfigDirectory();
+//$$ try { Files.createDirectories(dir); } catch (java.io.IOException e) { return; }
+//#else
         File dir = FileUtils.getConfigDirectory();
-        if ((dir.exists() && dir.isDirectory()) || dir.mkdirs()) {
-            JsonObject root = new JsonObject();
-
-            ConfigUtils.writeHotkeys(root, "GenericHotkeys", Hotkeys.HOTKEY_LIST);
-            ConfigUtils.writeConfigBase(root,"Option", Generic.OPTIONS);
-            ConfigUtils.writeHotkeyToggleOptions(root, "TweakHotkeys", "TweakToggles", FeatureToggle.VALUES);
-
-            JsonUtils.writeJsonToFile(root, new File(dir, CONFIG_FILE_NAME));
-        }
+        if (!((dir.exists() && dir.isDirectory()) || dir.mkdirs())) return;
+//#endif
+        JsonObject root = new JsonObject();
+        ConfigUtils.writeHotkeys(root, "GenericHotkeys", Hotkeys.HOTKEY_LIST);
+        ConfigUtils.writeConfigBase(root,"Option", Generic.OPTIONS);
+        ConfigUtils.writeHotkeyToggleOptions(root, "TweakHotkeys", "TweakToggles", FeatureToggle.VALUES);
+//#if MC >= 260100
+//$$ JsonUtils.writeJsonToFile(root, dir.resolve(CONFIG_FILE_NAME));
+//#else
+        JsonUtils.writeJsonToFile(root, new File(dir, CONFIG_FILE_NAME));
+//#endif
     }
 
     @Override

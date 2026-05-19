@@ -7,8 +7,10 @@ import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.render.entity.ItemEntityRenderer;
+//#if MC < 260100
 import net.minecraft.client.render.item.ItemRenderer;
 import net.minecraft.client.render.model.BakedModel;
+//#endif
 import net.minecraft.client.render.model.json.ModelTransformationMode;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.ItemEntity;
@@ -26,6 +28,14 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ItemEntityRenderer.class)
+//#if MC >= 260100
+//$$ public class MixinItemEntityRenderer extends net.minecraft.client.renderer.entity.EntityRenderer<net.minecraft.world.entity.item.ItemEntity, net.minecraft.client.renderer.entity.state.ItemEntityRenderState> {
+//$$
+//$$     protected MixinItemEntityRenderer(net.minecraft.client.renderer.entity.EntityRendererProvider.Context context) { super(context); }
+//$$
+//$$     @Override
+//$$     public net.minecraft.client.renderer.entity.state.ItemEntityRenderState createRenderState() { return null; }
+//#else
 public abstract class MixinItemEntityRenderer<T extends ItemEntity> extends EntityRenderer<T> {
 
     protected MixinItemEntityRenderer(EntityRendererFactory.Context context){
@@ -51,4 +61,5 @@ public abstract class MixinItemEntityRenderer<T extends ItemEntity> extends Enti
             super.render((T) itemEntity, f, g, matrixStack, vertexConsumerProvider, i);
         }
     }
+//#endif
 }

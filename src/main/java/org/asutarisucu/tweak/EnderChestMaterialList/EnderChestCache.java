@@ -2,7 +2,11 @@ package org.asutarisucu.tweak.EnderChestMaterialList;
 
 import fi.dy.masa.litematica.materials.MaterialListUtils;
 import fi.dy.masa.malilib.util.InventoryUtils;
+//#if MC >= 260100
+//$$ import fi.dy.masa.malilib.util.data.ItemType;
+//#else
 import fi.dy.masa.malilib.util.ItemType;
+//#endif
 import fi.dy.masa.malilib.util.restrictions.UsageRestriction;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import me.fallenbreath.tweakermore.impl.mod_tweaks.mlShulkerBoxPreviewSupportEnderChest.EnderChestItemFetcher;

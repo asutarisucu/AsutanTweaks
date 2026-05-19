@@ -17,7 +17,11 @@ public class MixinPlayerEntity {
         if(player!=null){
             if(FeatureToggle.DISABLE_VOID_DIVE.getBooleanValue()){
                 if(!player.isOnGround()){
+//#if MC >= 260100
+//$$                     String dimension = player.level().dimension().identifier().toString();
+//#else
                     String dimension = player.getWorld().getRegistryKey().getValue().toString();
+//#endif
                     DisableVoidDive.safeVoidDive(dimension);
                 }
             }

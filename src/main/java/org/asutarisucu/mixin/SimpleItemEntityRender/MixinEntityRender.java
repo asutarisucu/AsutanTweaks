@@ -19,6 +19,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(EntityRenderer.class)
 public class MixinEntityRender {
+//#if MC < 260100
     @Shadow @Final private TextRenderer textRenderer;
 
     @Inject(method = "render",at = @At("RETURN"))
@@ -31,8 +32,9 @@ public class MixinEntityRender {
                         .filter(value->value==entity)
                         .count();
                 //何も抑制していない場合はカウントを表示しない
-                if (count>0) Renderer.renderCount(entity,matrices,vertexConsumers,textRenderer,String.valueOf(count+1));
+                if (count>0) Renderer.renderCount(entity,matrices,vertexConsumers,this.textRenderer,String.valueOf(count+1));
             }
         }
     }
+//#endif
 }

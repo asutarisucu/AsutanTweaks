@@ -17,7 +17,8 @@ pluginManagement {
 		eachPlugin {
 			switch (requested.id.id) {
 				case "com.replaymod.preprocess": {
-					useModule("com.github.Fallen-Breath:preprocessor:${requested.version}")
+					// Upstream ReplayMod/preprocessor is a multi-module project on JitPack
+				useModule("com.github.ReplayMod.preprocessor:preprocessor:${requested.version}")
 					break
 				}
 			}

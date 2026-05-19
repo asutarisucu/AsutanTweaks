@@ -4,7 +4,11 @@ import com.llamalad7.mixinextras.sugar.Local;
 import fi.dy.masa.litematica.materials.MaterialCache;
 import fi.dy.masa.litematica.materials.MaterialListEntry;
 import fi.dy.masa.litematica.materials.MaterialListUtils;
+//#if MC >= 260100
+//$$ import fi.dy.masa.malilib.util.data.ItemType;
+//#else
 import fi.dy.masa.malilib.util.ItemType;
+//#endif
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;

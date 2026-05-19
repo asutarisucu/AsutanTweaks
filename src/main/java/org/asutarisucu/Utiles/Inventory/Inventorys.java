@@ -9,7 +9,11 @@ import net.minecraft.screen.slot.Slot;
 
 public class Inventorys {
     public static int findMatchingItemStack(PlayerInventory inventory, ItemStack targetStack) {
+//#if MC >= 260100
+//$$         for (int i = 9; i < inventory.getContainerSize(); i++) {
+//#else
         for (int i = 9; i < inventory.main.size(); i++) {
+//#endif
             ItemStack inventoryStack = inventory.getStack(i);
             if (ItemStack.canCombine(targetStack, inventoryStack)&&inventoryStack.getCount()!=1) {
                 return i;

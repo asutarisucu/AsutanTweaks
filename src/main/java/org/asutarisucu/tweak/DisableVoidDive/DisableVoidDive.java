@@ -10,9 +10,14 @@ import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Items;
+//#if MC >= 260100
+//$$ import net.minecraft.world.inventory.InventoryMenu;
+//$$ import net.minecraft.world.inventory.AbstractContainerMenu;
+//#else
 import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.SlotActionType;
+//#endif
 import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import org.asutarisucu.Configs.Configs;
@@ -73,6 +78,15 @@ public class DisableVoidDive {
                                 client.setScreen(null);
                             });
                         }
+//#if MC >= 260100
+//$$ net.minecraft.world.inventory.AbstractContainerMenu handler=player.containerMenu;
+//$$ int mainSlot=player.getInventory().getSelectedSlot();
+//$$ if(handler instanceof net.minecraft.world.inventory.InventoryMenu&&player.getDeltaMovement().y<0){
+//$$     client.gameMode.handleContainerInput(handler.containerId,RocketSlot,mainSlot,net.minecraft.world.inventory.ContainerInput.SWAP,player);
+//$$     player.setXRot(-90);
+//$$     client.gameMode.useItem(player, InteractionHand.MAIN_HAND);
+//$$ }
+//#else
                         ScreenHandler handler=player.currentScreenHandler;
                         int mainSlot=player.getInventory().selectedSlot;
                         if(handler instanceof PlayerScreenHandler&&player.getVelocity().y<0){
@@ -80,6 +94,7 @@ public class DisableVoidDive {
                             player.setPitch(-90);
                             client.interactionManager.interactItem(player, Hand.MAIN_HAND);
                         }
+//#endif
                     }
                 }else if(Configs.Generic.VOID_DISCONNECT.getBooleanValue())disconnectFromServer(client);
             }

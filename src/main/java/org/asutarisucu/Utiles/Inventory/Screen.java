@@ -4,9 +4,13 @@ import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.util.InfoUtils;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.ItemStack;
+//#if MC >= 260100
+//$$ import net.minecraft.world.inventory.*;
+//#else
 import net.minecraft.screen.*;
-import net.minecraft.screen.slot.Slot;
 import net.minecraft.screen.slot.SlotActionType;
+//#endif
+import net.minecraft.screen.slot.Slot;
 import net.minecraft.util.collection.DefaultedList;
 
 public class Screen {
@@ -25,6 +29,17 @@ public class Screen {
                     if(handler.getSlot(i).getStack().getCount()<handler.getSlot(i).getMaxItemCount()){
                         //取得したアイテムに重ねられるアイテムのスロットを取得
                         int matchSlot=matchItem(handler.slots,i);
+//#if MC >= 260100
+//$$ if(matchSlot!=-1){
+//$$     client.gameMode.handleContainerInput(handler.containerId, matchSlot, 0, net.minecraft.world.inventory.ContainerInput.PICKUP, client.player);
+//$$     client.gameMode.handleContainerInput(handler.containerId, i, 0, net.minecraft.world.inventory.ContainerInput.PICKUP, client.player);
+//$$     if(!handler.getCarried().isEmpty()){
+//$$         client.gameMode.handleContainerInput(handler.containerId, matchSlot, 0, net.minecraft.world.inventory.ContainerInput.PICKUP, client.player);
+//$$     } else {
+//$$         i++;
+//$$     }
+//$$ }
+//#else
                         if(matchSlot!=-1){
                             client.interactionManager.clickSlot(handler.syncId, matchSlot, 0, SlotActionType.PICKUP, client.player);
                             client.interactionManager.clickSlot(handler.syncId, i, 0, SlotActionType.PICKUP, client.player);
@@ -37,6 +52,7 @@ public class Screen {
                                 i++;
                             }
                         }
+//#endif
                     }
                 }
             }

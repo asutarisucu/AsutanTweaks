@@ -88,12 +88,21 @@ public class BlockState {
             case "SHORT", "short" -> property = Properties.SHORT;
             case "SHRIEKING", "shrieking" -> property = Properties.SHRIEKING;
             case "SIGNAL_FIRE", "signal_fire" -> property = Properties.SIGNAL_FIRE;
+//#if MC >= 260100
+//$$             case "SLOT_0_OCCUPIED", "slot_0_occupied" -> property = net.minecraft.world.level.block.state.properties.BlockStateProperties.SLOT_0_OCCUPIED;
+//$$             case "SLOT_1_OCCUPIED", "slot_1_occupied" -> property = net.minecraft.world.level.block.state.properties.BlockStateProperties.SLOT_1_OCCUPIED;
+//$$             case "SLOT_2_OCCUPIED", "slot_2_occupied" -> property = net.minecraft.world.level.block.state.properties.BlockStateProperties.SLOT_2_OCCUPIED;
+//$$             case "SLOT_3_OCCUPIED", "slot_3_occupied" -> property = net.minecraft.world.level.block.state.properties.BlockStateProperties.SLOT_3_OCCUPIED;
+//$$             case "SLOT_4_OCCUPIED", "slot_4_occupied" -> property = net.minecraft.world.level.block.state.properties.BlockStateProperties.SLOT_4_OCCUPIED;
+//$$             case "SLOT_5_OCCUPIED", "slot_5_occupied" -> property = net.minecraft.world.level.block.state.properties.BlockStateProperties.SLOT_5_OCCUPIED;
+//#else
             case "SLOT_0_OCCUPIED", "slot_0_occupied" -> property = Properties.SLOT_0_OCCUPIED;
             case "SLOT_1_OCCUPIED", "slot_1_occupied" -> property = Properties.SLOT_1_OCCUPIED;
             case "SLOT_2_OCCUPIED", "slot_2_occupied" -> property = Properties.SLOT_2_OCCUPIED;
             case "SLOT_3_OCCUPIED", "slot_3_occupied" -> property = Properties.SLOT_3_OCCUPIED;
             case "SLOT_4_OCCUPIED", "slot_4_occupied" -> property = Properties.SLOT_4_OCCUPIED;
             case "SLOT_5_OCCUPIED", "slot_5_occupied" -> property = Properties.SLOT_5_OCCUPIED;
+//#endif
             case "SNOWY", "snowy" -> property = Properties.SNOWY;
             case "SOUTH", "south" -> property = Properties.SOUTH;
             case "SOUTH_WALL_SHAPE", "south_wall_shape" -> property = Properties.SOUTH_WALL_SHAPE;

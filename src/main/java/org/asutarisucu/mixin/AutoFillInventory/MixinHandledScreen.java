@@ -7,7 +7,9 @@ import net.minecraft.text.Text;
 //#if MC <=11904
 import net.minecraft.client.util.math.MatrixStack;
 //#endif
-//#if MC>=12001
+//#if MC>=260100
+//$$ import net.minecraft.client.gui.GuiGraphicsExtractor;
+//#elseif MC>=12001
 //$$ import net.minecraft.client.gui.DrawContext;
 //#endif
 import org.asutarisucu.Configs.FeatureToggle;
@@ -26,15 +28,18 @@ public abstract class MixinHandledScreen<T extends ScreenHandler> extends Screen
     protected MixinHandledScreen(Text title) {
         super(title);
     }
+//#if MC>=260100
+//$$ @Inject(method = "extractRenderState(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IIF)V",at=@At("HEAD"))
+//$$ private void onOpenScreen(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta, CallbackInfo ci){
+//#elseif MC>=12001
+//$$ @Inject(method = "render(Lnet/minecraft/client/gui/DrawContext;IIF)V",at=@At("HEAD"))
+//$$ private void onOpenScreen(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci){
+//#else
     @Inject(method = "render",at=@At("HEAD"))
-//#if MC <=11904
     private void onOpenScreen(MatrixStack matrices, int mouseX, int mouseY, float delta, CallbackInfo ci){
 //#endif
-//#if MC >=12001
-//$$ private void onOpenScreen(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci){
-//#endif
         if(FeatureToggle.AUTO_FILL_INVENTORY.getBooleanValue()){
-            org.asutarisucu.Utiles.Inventory.Screen.AutoFillInventory(handler);
+            org.asutarisucu.Utiles.Inventory.Screen.AutoFillInventory(this.handler);
         }
     }
 }

@@ -117,6 +117,16 @@ public enum FeatureToggle implements IHotkeyTogglable, IConfigNotifiable<IConfig
 //$$
 //$$    }
 //#endif
+//#if MC >= 260100
+//$$    @Override
+//$$    public boolean isDirty() { return false; }
+//$$    @Override
+//$$    public void markDirty() {}
+//$$    @Override
+//$$    public void markClean() {}
+//$$    @Override
+//$$    public void checkIfClean() {}
+//#endif
 
     @Override
     public String getPrettyName() {

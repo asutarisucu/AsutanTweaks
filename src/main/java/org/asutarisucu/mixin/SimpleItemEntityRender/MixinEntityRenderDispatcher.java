@@ -15,6 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(EntityRenderDispatcher.class)
 public class MixinEntityRenderDispatcher {
+//#if MC < 260100
     @Inject(method = "render",at = @At("HEAD"), cancellable = true)
     private void onRender(Entity entity, double x, double y, double z, float yaw, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, CallbackInfo ci){
         //ItemEntityの場合
@@ -33,4 +34,5 @@ public class MixinEntityRenderDispatcher {
             }
         }
     }
+//#endif
 }

@@ -1,5 +1,12 @@
+// minecraft_version from gradle.properties is available before any plugin is applied
+boolean isUnobfuscated = project.minecraft_version.split('\\.')[0].toInteger() >= 26
+
 apply plugin: 'maven-publish'
-apply plugin: 'fabric-loom'
+if (isUnobfuscated) {
+	apply plugin: 'net.fabricmc.fabric-loom'  // MC 26.1+: unobfuscated, no remapping
+} else {
+	apply plugin: 'fabric-loom'               // MC < 26.1: obfuscated, remap-capable
+}
 apply plugin: 'com.replaymod.preprocess'
 
 int mcVersion = project.mcVersion
@@ -18,35 +25,45 @@ repositories {
 }
 
 // https://github.com/FabricMC/fabric-loader/issues/783
-configurations {
-	modRuntimeOnly.exclude group: 'net.fabricmc', module: 'fabric-loader'
+// modRuntimeOnly/modImplementation exist only with the remap plugin (MC < 26.1)
+if (mcVersion < 260100) {
+	configurations {
+		modRuntimeOnly.exclude group: 'net.fabricmc', module: 'fabric-loader'
+	}
+	configurations {
+		modImplementation.exclude group: 'io.github.prospector', module: 'modmenu'
+	}
 }
-configurations {
-	modImplementation.exclude group: 'io.github.prospector', module: 'modmenu'
-}
+
+String MOD_DEP = mcVersion >= 260100 ? 'implementation' : 'modImplementation'
 
 dependencies {
 	// loom
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+	// MC 26.1+ ships unobfuscated — no Yarn mappings exist; no mappings declaration needed
+	if (mcVersion < 260100) {
+		mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+	}
+	add(MOD_DEP, "net.fabricmc:fabric-loader:${project.loader_version}")
+	add(MOD_DEP, "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}")
 
-	modImplementation "maven.modrinth:modmenu:${project.modmenu_version}"
-	modImplementation "maven.modrinth:malilib:${project.malilib_version}"
-	modImplementation "maven.modrinth:tweakeroo:${project.tweakeroo_version}"
-	modImplementation "maven.modrinth:tweakermore:${project.tweakermore_version}"
-	modImplementation "maven.modrinth:item-scroller:${project.itemscroller_version}"
-	modImplementation "maven.modrinth:litematica:${project.litematica_version}"
+	add(MOD_DEP, "maven.modrinth:modmenu:${project.modmenu_version}")
+	add(MOD_DEP, "maven.modrinth:malilib:${project.malilib_version}")
+	add(MOD_DEP, "maven.modrinth:tweakeroo:${project.tweakeroo_version}")
+	add(MOD_DEP, "maven.modrinth:tweakermore:${project.tweakermore_version}")
+	add(MOD_DEP, "maven.modrinth:item-scroller:${project.itemscroller_version}")
+	add(MOD_DEP, "maven.modrinth:litematica:${project.litematica_version}")
 
-	modImplementation("me.fallenbreath:conditional-mixin-fabric:${project.conditionalmixin_version}")
+	add(MOD_DEP, "me.fallenbreath:conditional-mixin-fabric:${project.conditionalmixin_version}")
 //	include(annotationProcessor(implementation("io.github.llamalad7:mixinextras-fabric:${project.mixinextras_version}")))
 }
 
 String MIXIN_CONFIG_PATH = 'asutantweaks.mixins.json'
 String LANG_DIR = 'assets/asutantweaks/lang'
 JavaVersion JAVA_COMPATIBILITY
-if (mcVersion >= 12005) {
+if (mcVersion >= 260100) {
+	JAVA_COMPATIBILITY = JavaVersion.toVersion(25)
+} else if (mcVersion >= 12005) {
 	JAVA_COMPATIBILITY = JavaVersion.VERSION_21
 } else if (mcVersion >= 11800) {
 	JAVA_COMPATIBILITY = JavaVersion.VERSION_17
@@ -160,12 +177,15 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 java {
-	sourceCompatibility = JAVA_COMPATIBILITY
-	targetCompatibility = JAVA_COMPATIBILITY
-
-	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-	// if it is present.
-	// If you remove this line, sources will not be generated.
+	if (mcVersion >= 260100) {
+		// Use Gradle toolchain so Gradle itself can run on Java 21 while compiling with Java 25
+		toolchain {
+			languageVersion = JavaLanguageVersion.of(25)
+		}
+	} else {
+		sourceCompatibility = JAVA_COMPATIBILITY
+		targetCompatibility = JAVA_COMPATIBILITY
+	}
 	withSourcesJar()
 }
 

@@ -1,11 +1,12 @@
 plugins {
 	id 'maven-publish'
 	id 'com.github.hierynomus.license' version '0.16.1' apply false
-	id 'fabric-loom' version '1.10-SNAPSHOT' apply false
+	id 'fabric-loom' version '1.16.2' apply false              // MC < 26.1 (obfuscated, remap)
+	id 'net.fabricmc.fabric-loom' version '1.16.2' apply false // MC 26.1+ (unobfuscated, no-remap)
 
 	// https://github.com/ReplayMod/preprocessor
 	// https://github.com/Fallen-Breath/preprocessor
-	id 'com.replaymod.preprocess' version 'ce1aeb2b'
+	id 'com.replaymod.preprocess' version 'd654c0d0'
 
 	// https://github.com/Fallen-Breath/yamlang
 	id 'me.fallenbreath.yamlang' version '1.4.1' apply false
@@ -17,11 +18,14 @@ preprocess {
 	def mc1204 = createNode('1.20.4', 1_20_04, '')
 	def mc1206 = createNode('1.20.6', 1_20_06, '')
 	def mc1211 = createNode('1.21.1', 1_21_01, '')
+	// MC 26.1 uses year-based versioning; integer 260100 keeps ordering above all 1.x.x values
+	def mc261  = createNode('26.1',   260100,   '')
 
 	mc119 .link(mc1201, null)
 	mc1201.link(mc1204, null)
 	mc1204.link(mc1206, null)
 	mc1206.link(mc1211, null)
+	mc1211.link(mc261,  null)
 }
 
 tasks.register('buildAndGather') {
@@ -30,8 +34,9 @@ tasks.register('buildAndGather') {
 	}
 	doFirst {
 		println 'Gathering builds'
-		def buildLibs = {
-			p -> p.buildDir.toPath().resolve('libs')
+		// Gradle 9: buildDir removed, use layout.buildDirectory instead
+		def buildLibs = { p ->
+			p.layout.buildDirectory.dir('libs').get().asFile
 		}
 		delete fileTree(buildLibs(rootProject)) {
 			include '*'
