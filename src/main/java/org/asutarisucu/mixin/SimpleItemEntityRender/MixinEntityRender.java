@@ -22,18 +22,13 @@ public class MixinEntityRender {
 //#if MC < 260100
     @Shadow @Final private TextRenderer textRenderer;
 
-    @Inject(method = "render",at = @At("RETURN"))
-    private void onRender(Entity entity, float yaw, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, CallbackInfo ci){
-        if(FeatureToggle.SIMPLE_ENTITY_RENDER_COUNT.getBooleanValue()){
-            //Entityが描画される際にカウントも描画する
-            if(!SimpleEntityRender.EntityUUID.containsKey(entity.getUuid())){
-                //抑制リストに値として出現する数を数える
-                long count= SimpleEntityRender.EntityUUID.values().stream()
-                        .filter(value->value==entity)
-                        .count();
-                //何も抑制していない場合はカウントを表示しない
-                if (count>0) Renderer.renderCount(entity,matrices,vertexConsumers,this.textRenderer,String.valueOf(count+1));
-            }
+    @Inject(method = "render", at = @At("RETURN"))
+    private void onRender(Entity entity, float yaw, float tickDelta, MatrixStack matrices,
+                          VertexConsumerProvider vertexConsumers, int light, CallbackInfo ci) {
+        if (FeatureToggle.SIMPLE_ENTITY_RENDER_COUNT.getBooleanValue()) {
+            int count = SimpleEntityRender.getSuppressCount(entity.getId());
+            if (count > 0) Renderer.renderCount(entity, matrices, vertexConsumers, textRenderer,
+                    String.valueOf(count + 1));
         }
     }
 //#endif

@@ -23,6 +23,6 @@ public class LastUseCancel {
         }));
     }
     private static boolean isBlockEntity(Block block){
-        return Configs.Generic.LAST_USE_CANCEL_BLACKLIST.getStrings().contains(Registries.BLOCK.getId(block).toString().substring(10));
+        return Configs.Generic.LAST_USE_CANCEL_BLACKLIST.getStrings().contains(Registries.BLOCK.getId(block).getPath());
     }
 }

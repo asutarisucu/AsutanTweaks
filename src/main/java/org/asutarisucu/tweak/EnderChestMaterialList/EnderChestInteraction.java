@@ -8,15 +8,15 @@ import java.util.List;
 import java.util.Optional;
 
 public class EnderChestInteraction {
-    public static boolean isOpen=false;
-    public static void open(){
-        isOpen=true;
+    private static boolean isOpen = false;
+    public static void open() {
+        isOpen = true;
     }
-    public static void close(HandledScreen<?> screen){
-        if(isOpen){
-            List<ItemStack> enderChestItemStacks = screen.getScreenHandler().getStacks().subList(0,27);
-            EnderChestCache.cachedItems=listItemStack(enderChestItemStacks);
-            isOpen=false;
+    public static void close(HandledScreen<?> screen) {
+        if (isOpen) {
+            List<ItemStack> stacks = screen.getScreenHandler().getStacks().subList(0, 27);
+            EnderChestCache.cachedItems = listItemStack(stacks);
+            isOpen = false;
         }
     }
     private static Optional<DefaultedList<ItemStack>> listItemStack(List<ItemStack> stacks) {

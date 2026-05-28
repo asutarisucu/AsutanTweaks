@@ -17,6 +17,6 @@ public class MixinMinecraftClient {
     private void onDisconnect(CallbackInfo ci){
 //#endif
         //ワールドを退出した際にMapをクリアする
-        SimpleEntityRender.EntityUUID.clear();
+        SimpleEntityRender.clearAll();
     }
 }

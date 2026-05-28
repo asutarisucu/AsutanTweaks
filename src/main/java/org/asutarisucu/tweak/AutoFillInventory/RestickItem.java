@@ -14,7 +14,9 @@ import org.asutarisucu.Configs.FeatureToggle;
 
 public class RestickItem {
     public static void restockItem(MinecraftClient client, Screen screen, int fromSlot){
-        int toSlot=client.player.getInventory().getSlotWithStack(client.player.getMainHandStack())+36;
+        int rawSlot = client.player.getInventory().getSlotWithStack(client.player.getMainHandStack());
+        if (rawSlot < 0) return;
+        int toSlot = rawSlot + 36;
 //#if MC >= 260100
 //$$ net.minecraft.world.inventory.AbstractContainerMenu handler=client.player.containerMenu;
 //$$ if (screen == null && handler instanceof net.minecraft.world.inventory.InventoryMenu) {

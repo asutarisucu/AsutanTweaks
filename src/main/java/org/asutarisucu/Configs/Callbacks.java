@@ -35,7 +35,7 @@ public class Callbacks {
                 GuiBase.openGui(new GuiConfigs());
                 return true;
             }else if(key==Hotkeys.CLEAR_ITEM_COUNT.getKeybind()){
-                SimpleEntityRender.EntityUUID.clear();
+                SimpleEntityRender.clearAll();
                 InfoUtils.printActionbarMessage("CountClear!"+GuiBase.TXT_GREEN);
                 return true;
             } else if (key==Hotkeys.ADD_HIGHLIGHT_ITEM_LIST.getKeybind()){

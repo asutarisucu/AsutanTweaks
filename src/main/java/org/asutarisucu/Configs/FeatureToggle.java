@@ -29,7 +29,11 @@ public enum FeatureToggle implements IHotkeyTogglable, IConfigNotifiable<IConfig
     SIMPLE_ENTITY_RENDER_COUNT("SimpleEntityRenderCount", false, "", "SimpleEntityRender nearItem Count Display"),
     ENDERCHEST_MATERIALLIST("EnderChestMaterialList",false,"","Include your EnderChest Item in MaterialList"),
     SEARCH_BLOCK_HIGHLIGHT("SearchBlockHighlight",false,"","Highlight registered blocks"),
-    SEARCH_CONTAINER_HIGHLIGHT("SearchContainerHighlight",false,"","Highlight container with registered item inside");
+    SEARCH_CONTAINER_HIGHLIGHT("SearchContainerHighlight",false,"","Highlight container with registered item inside"),
+    PLACEMENT_UPDATE_VIEWER("PlacementUpdateViewer",false,"","Show block update range when placing a block (red)"),
+    BREAKING_UPDATE_VIEWER("BreakingUpdateViewer",false,"","Show block update range when breaking a block (blue)"),
+    UPDATE_VIEW_INSTANT_ONLY("UpdateViewInstantOnly",false,"","Limit update viewer to instant updates only (exclude schedulable blocks like pistons/observers)"),
+    UPDATE_SUPPRESSION_VIEW("UpdateSuppressionView",false,"","Show warning at bottom of screen when instant update chain contains crash-prone positions");
 
     public static final ImmutableList<FeatureToggle> VALUES = ImmutableList.copyOf(values());
 

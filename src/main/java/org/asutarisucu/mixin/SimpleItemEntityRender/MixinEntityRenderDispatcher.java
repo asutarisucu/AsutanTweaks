@@ -16,21 +16,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(EntityRenderDispatcher.class)
 public class MixinEntityRenderDispatcher {
 //#if MC < 260100
-    @Inject(method = "render",at = @At("HEAD"), cancellable = true)
-    private void onRender(Entity entity, double x, double y, double z, float yaw, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, CallbackInfo ci){
-        //ItemEntityの場合
-        if(entity instanceof ItemEntity){
-            if(FeatureToggle.SIMPLE_ITEM_ENTITY_RENDER.getBooleanValue()){
-                if(SimpleEntityRender.checkSuppressed(entity)) {
-                    SimpleEntityRender.suppressRenderItem((ItemEntity) entity,ci);
-                }else ci.cancel();
+    @Inject(method = "render", at = @At("HEAD"), cancellable = true)
+    private void onRender(Entity entity, double x, double y, double z, float yaw, float tickDelta,
+                          MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, CallbackInfo ci) {
+        if (entity instanceof ItemEntity) {
+            if (FeatureToggle.SIMPLE_ITEM_ENTITY_RENDER.getBooleanValue()
+                    && SimpleEntityRender.isSuppressed(entity.getId())) {
+                ci.cancel();
             }
-            //MobEntityの場合
         } else if (entity instanceof MobEntity) {
-            if (FeatureToggle.SIMPLE_MOB_ENTITY_RENDER.getBooleanValue()){
-                if(SimpleEntityRender.checkSuppressed(entity)) {
-                    SimpleEntityRender.suppressRenderMob((MobEntity) entity,ci);
-                }else ci.cancel();
+            if (FeatureToggle.SIMPLE_MOB_ENTITY_RENDER.getBooleanValue()
+                    && SimpleEntityRender.isSuppressed(entity.getId())) {
+                ci.cancel();
             }
         }
     }

@@ -12,7 +12,6 @@ import fi.dy.masa.malilib.util.ItemType;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
-import org.asutarisucu.AsutanTweaks;
 import org.asutarisucu.tweak.EnderChestMaterialList.EnderChestCache;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -40,7 +39,7 @@ public class MixinMaterialListUtils {
             CallbackInfoReturnable<List<MaterialListEntry>> cir,
             @Local(ordinal = 3) Object2IntOpenHashMap<ItemType> itemTypesTotal
     ) {
-        Object2IntOpenHashMap<ItemType> enderChestItems = EnderChestCache.getEnderChestItems(player);
+        Object2IntOpenHashMap<ItemType> enderChestItems = EnderChestCache.getEnderChestItems();
         if (enderChestItems != null) {
 //            enderChestItems.forEach(itemTypesTotal::addTo);
         }
@@ -54,10 +53,9 @@ public class MixinMaterialListUtils {
             Object2IntOpenHashMap<ItemType> playerInvItems
     ) {
         Object2IntOpenHashMap<ItemType> enderChestItems = EnderChestCache.getEnderChestItems();
-        if(enderChestItems!=null){
+        if (enderChestItems != null) {
             enderChestItems.forEach(playerInvItems::addTo);
         }
-        AsutanTweaks.LOGGER.info(playerInvItems.toString());
     }
 
 }
