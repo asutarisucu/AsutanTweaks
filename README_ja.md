@@ -45,3 +45,9 @@ AsutanTweaksはクライアントサイドで動作するFabricMODです。<br>
 > `SearchBlockHighlight`ではアイテムがブロックとして設置されている場合に表示し、
 > `SearchContainerHighlight`ではアイテムが中にあるコンテナを表示する。<br>
 > それぞれ色と範囲を設定することができ、ホットキーから自分の持っているアイテムを登録することもできる。
+### BlockUpdateViewer
+>ブロックを設置または破壊したときにブロックアップデートを受け取るブロックをビジュアライズします。<br>
+>ブロックアイテムを持っているときに`PlacementUpdateViewer`を有効にすると、アップデート対象を**赤色**でハイライト表示します。<br>
+>採掘ツールを持っているときに`BreakingUpdateViewer`を有効にすると、アップデート対象を**青色**でハイライト表示します。<br>
+>`UpdateViewInstantOnly`を有効にすると、ピストンやオブザーバーなどスケジュール更新されるブロックを除いた即時アップデートのみを表示します。<br>
+>`UpdateSuppressionView`を有効にすると、アップデートチェーンにアップデート抑制を引き起こす可能性のある座標が含まれている場合にHUDに警告（`CCE suppress Ready`）を表示します。

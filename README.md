@@ -48,3 +48,9 @@ This means you can always transport the optimal amount of items.
 > and `SearchContainerHighlight` displays the container in which the item is located.
 > The color and range can be set for each,
 >  and you can also register your main hand items using hot keys.
+### BlockUpdateViewer
+>Visualises which blocks will receive block updates when you place or break a block.<br>
+>Enable `PlacementUpdateViewer` to highlight update targets in **red** while holding a block item.<br>
+>Enable `BreakingUpdateViewer` to highlight update targets in **blue** while holding a mining tool.<br>
+>Enable `UpdateViewInstantOnly` to show only instant updates, excluding schedulable blocks such as pistons and observers.<br>
+>Enable `UpdateSuppressionView` to display a HUD warning (`CCE suppress Ready`) when the update chain contains positions that could trigger update suppression.
