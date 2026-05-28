@@ -4,11 +4,13 @@
   "package": "org.asutarisucu.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+//#if MC < 260100
     "BlockUpdateViewer.MixinAbstractBlockInvoker",
     "BlockUpdateViewer.MixinBlockEntityNbtCheck",
     "BlockUpdateViewer.MixinWorldIsClientAccessor",
     "BlockUpdateViewer.MixinWorldSim",
     "BlockUpdateViewer.MixinWorldAccessSim",
+//#endif
     "DisableVoidDive.MixinPlayerEntity",
     "EnderChestMaterialList.MixinEnderChestBlock",
     "EnderChestMaterialList.MixinMaterialListUtils",
@@ -18,10 +20,14 @@
   ],
   "client": [
     "AutoFillInventory.MixinHandledScreen",
+//#if MC < 260100
     "BlockUpdateViewer.MixinClientPlayNbtResponse",
     "BlockUpdateViewer.MixinClientWorldSim",
+//#endif
     "EnderChestMaterialList.MixinHandledScreen",
+//#if MC < 260100
     "SearchItems.MixinWorldRenderer",
+//#endif
     "SimpleItemEntityRender.MixinEntityRender",
     "SimpleItemEntityRender.MixinEntityRenderDispatcher",
     "SimpleItemEntityRender.MixinItemEntityRenderer",

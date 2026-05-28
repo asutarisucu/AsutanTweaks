@@ -1,6 +1,6 @@
 package org.asutarisucu.mixin.SearchItems;
 
-import net.minecraft.block.entity.BlockEntity;
+//#if MC < 260100
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
@@ -21,15 +21,18 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(WorldRenderer.class)
+//#endif
 public class MixinWorldRenderer {
 
+//#if MC < 260100
     @Inject(method = "render", at = @At(value = "INVOKE_STRING", target = "Lnet/minecraft/util/profiler/Profiler;swap(Ljava/lang/String;)V", args = "ldc=weather"))
     private void onRenderTail(MatrixStack matrices, float tickDelta, long limitTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f positionMatrix, CallbackInfo ci) {
-        if(FeatureToggle.SEARCH_BLOCK_HIGHLIGHT.getBooleanValue()){
+        if (FeatureToggle.SEARCH_BLOCK_HIGHLIGHT.getBooleanValue()) {
             HighlightBlock.renderHighlightBlock();
         }
-        if(FeatureToggle.SEARCH_CONTAINER_HIGHLIGHT.getBooleanValue()){
+        if (FeatureToggle.SEARCH_CONTAINER_HIGHLIGHT.getBooleanValue()) {
             HighlightContainer.renderHighlightContainer();
         }
     }
+//#endif
 }
