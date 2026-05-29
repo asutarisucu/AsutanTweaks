@@ -17,10 +17,30 @@ import net.minecraft.world.World;
 import org.asutarisucu.Configs.FeatureToggle;
 import org.asutarisucu.mixin.BlockUpdateViewer.MixinAbstractBlockInvoker;
 import org.asutarisucu.mixin.BlockUpdateViewer.MixinWorldIsClientAccessor;
+//#else
+//$$ import net.minecraft.world.level.block.Block;
+//$$ import net.minecraft.world.level.block.state.BlockState;
+//$$ import net.minecraft.world.level.block.Blocks;
+//$$ import net.minecraft.world.level.block.ComparatorBlock;
+//$$ import net.minecraft.world.level.block.RedStoneWireBlock;
+//$$ import net.minecraft.world.level.block.ShulkerBoxBlock;
+//$$ import net.minecraft.world.level.block.entity.BlockEntity;
+//$$ import net.minecraft.world.level.block.entity.ShulkerBoxBlockEntity;
+//$$ import net.minecraft.client.Minecraft;
+//$$ import net.minecraft.server.level.ServerLevel;
+//$$ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+//$$ import net.minecraft.core.BlockPos;
+//$$ import net.minecraft.core.Direction;
+//$$ import net.minecraft.world.level.Level;
+//$$ import org.asutarisucu.Configs.FeatureToggle;
+//$$ import org.asutarisucu.mixin.BlockUpdateViewer.MixinAbstractBlockInvoker;
+//$$ import org.asutarisucu.mixin.BlockUpdateViewer.MixinWorldIsClientAccessor;
+//#endif
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+//#if MC < 260100
 /**
  * Block update chain simulator.
  *
@@ -313,4 +333,265 @@ public class BlockUpdateCalculator {
 
     }
 }
+//#endif
+
+//#if MC >= 260100
+//$$ public class BlockUpdateCalculator {
+//$$
+//$$     public static final Set<BlockPos> CORRUPT_ENTITY_POSITIONS = ConcurrentHashMap.newKeySet();
+//$$     private static volatile boolean cacheInvalid = false;
+//$$
+//$$     private static final int MAX_OPS = 2048;
+//$$     private static final long CACHE_TTL = 5;
+//$$
+//$$     private record CacheEntry(
+//$$             BlockPos pos, Block block, long tick,
+//$$             Set<BlockPos> full, Set<BlockPos> instant, Set<BlockPos> suppressions) {}
+//$$
+//$$     private static volatile CacheEntry breakingCache;
+//$$     private static volatile CacheEntry placementCache;
+//$$
+//$$     public static Set<BlockPos> compute(Level clientWorld, BlockPos source) {
+//$$         return compute(clientWorld, source, null);
+//$$     }
+//$$
+//$$     public static Set<BlockPos> compute(Level clientWorld, BlockPos source, BlockState hypotheticalState) {
+//$$         long tick = clientWorld.getLevelData().getGameTime();
+//$$         boolean isPlacement = hypotheticalState != null;
+//$$         Block effectiveBlock = isPlacement
+//$$                 ? hypotheticalState.getBlock()
+//$$                 : clientWorld.getBlockState(source).getBlock();
+//$$
+//$$         CacheEntry cache = isPlacement ? placementCache : breakingCache;
+//$$         boolean valid = !cacheInvalid && cache != null
+//$$                 && source.equals(cache.pos())
+//$$                 && effectiveBlock == cache.block()
+//$$                 && tick - cache.tick() < CACHE_TTL;
+//$$
+//$$         if (!valid) {
+//$$             cacheInvalid = false;
+//$$             doCompute(clientWorld, source, hypotheticalState);
+//$$             cache = isPlacement ? placementCache : breakingCache;
+//$$         }
+//$$         return FeatureToggle.UPDATE_VIEW_INSTANT_ONLY.getBooleanValue() ? cache.instant() : cache.full();
+//$$     }
+//$$
+//$$     public static Set<BlockPos> getSuppressionPositions() {
+//$$         CacheEntry c = breakingCache;
+//$$         return c != null ? c.suppressions() : Collections.emptySet();
+//$$     }
+//$$
+//$$     public static Set<BlockPos> getCachedFullChain() {
+//$$         CacheEntry c = breakingCache;
+//$$         return c != null ? c.full() : Collections.emptySet();
+//$$     }
+//$$
+//$$     public static Set<BlockPos> getPlacementSuppressionPositions() {
+//$$         CacheEntry c = placementCache;
+//$$         return c != null ? c.suppressions() : Collections.emptySet();
+//$$     }
+//$$
+//$$     public static Set<BlockPos> getCachedPlacementChain() {
+//$$         CacheEntry c = placementCache;
+//$$         return c != null ? c.full() : Collections.emptySet();
+//$$     }
+//$$
+//$$     private static void doCompute(Level clientWorld, BlockPos source, BlockState hypotheticalState) {
+//$$         long tick = clientWorld.getLevelData().getGameTime();
+//$$         boolean isPlacement = hypotheticalState != null;
+//$$
+//$$         BlockState realSourceState = clientWorld.getBlockState(source);
+//$$         Block realSourceBlock = realSourceState.getBlock();
+//$$
+//$$         BlockState initialState = isPlacement ? hypotheticalState : Blocks.AIR.defaultBlockState();
+//$$         Block sourceBlock = isPlacement ? hypotheticalState.getBlock() : realSourceBlock;
+//$$
+//$$         SimulationCapture capture = new SimulationCapture();
+//$$         capture.applyChange(source.immutable(), initialState);
+//$$
+//$$         MixinWorldIsClientAccessor worldAccessor = (MixinWorldIsClientAccessor) clientWorld;
+//$$         worldAccessor.asutantweaks_setIsClient(false);
+//$$         capture.begin();
+//$$         Set<BlockPos> phase1Notified = Collections.emptySet();
+//$$         try {
+//$$             capture.captureUpdateAll(source.immutable(), sourceBlock);
+//$$
+//$$             if (isPlacement) {
+//$$                 ((MixinAbstractBlockInvoker) hypotheticalState.getBlock())
+//$$                         .invokeOnPlace(hypotheticalState, clientWorld, source, realSourceState, false);
+//$$             } else if (!realSourceState.isAir()) {
+//$$                 // affectNeighborsAfterRemoval requires ServerLevel; seed its effect manually for known blocks.
+//$$                 // Equivalent to invokeOnStateReplaced in 1.x builds: fires extra neighbor-update waves
+//$$                 // from each adjacent position so distance-2 blocks are always reached even if the
+//$$                 // adjacent block doesn't change power (e.g. redstone wire with an alternative source).
+//$$                 seedAffectNeighborsAfterRemoval(capture, source, realSourceBlock);
+//$$             }
+//$$
+//$$             int ops = 0;
+//$$
+//$$             while (capture.hasPending() && ops < MAX_OPS) {
+//$$                 ops++;
+//$$                 processOnePending(clientWorld, capture);
+//$$             }
+//$$             phase1Notified = new LinkedHashSet<>(capture.getNotified());
+//$$
+//$$             while ((capture.hasPending() || capture.hasPendingTicks()) && ops < MAX_OPS) {
+//$$
+//$$                 if (capture.hasPendingTicks() && ops < MAX_OPS) {
+//$$                     ops++;
+//$$                     SimulationCapture.PendingTick pendingTick = capture.pollPendingTick();
+//$$
+//$$                     if (pendingTick.block instanceof ComparatorBlock) {
+//$$                         BlockState tickState = clientWorld.getBlockState(pendingTick.pos);
+//$$                         if (tickState.getBlock() instanceof ComparatorBlock
+//$$                                 && tickState.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
+//$$                             simulateComparatorRead(clientWorld, capture, pendingTick.pos, tickState);
+//$$                         }
+//$$                     }
+//$$
+//$$                     capture.captureUpdateAll(pendingTick.pos, pendingTick.block);
+//$$                 }
+//$$
+//$$                 while (capture.hasPending() && ops < MAX_OPS) {
+//$$                     ops++;
+//$$                     processOnePending(clientWorld, capture);
+//$$                 }
+//$$             }
+//$$
+//$$         } finally {
+//$$             capture.end();
+//$$             worldAccessor.asutantweaks_setIsClient(true);
+//$$         }
+//$$
+//$$         Set<BlockPos> all = new LinkedHashSet<>(capture.getNotified());
+//$$         all.remove(source.immutable());
+//$$         Set<BlockPos> fullResult = Collections.unmodifiableSet(all);
+//$$
+//$$         phase1Notified.remove(source.immutable());
+//$$         phase1Notified.removeAll(capture.getScheduledPositions());
+//$$         Set<BlockPos> instantResult = Collections.unmodifiableSet(phase1Notified);
+//$$
+//$$         Set<BlockPos> shulkerSuppressions = new LinkedHashSet<>();
+//$$         for (BlockPos notifiedPos : capture.getNotified()) {
+//$$             BlockState state = clientWorld.getBlockState(notifiedPos);
+//$$             if (!(state.getBlock() instanceof ComparatorBlock)
+//$$                     || !state.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) continue;
+//$$             Direction facing = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
+//$$             BlockPos inputPos = notifiedPos.relative(facing);
+//$$             BlockState inputState = clientWorld.getBlockState(inputPos);
+//$$             BlockPos shulkerPos = null;
+//$$             if (inputState.getBlock() instanceof ShulkerBoxBlock) {
+//$$                 shulkerPos = inputPos;
+//$$             } else if (!inputState.hasAnalogOutputSignal()
+//$$                     && inputState.isSolidRender()
+//$$                     && clientWorld.getSignal(inputPos, facing) < 15) {
+//$$                 BlockPos behindPos = inputPos.relative(facing);
+//$$                 if (clientWorld.getBlockState(behindPos).getBlock() instanceof ShulkerBoxBlock) {
+//$$                     shulkerPos = behindPos;
+//$$                 }
+//$$             }
+//$$             if (shulkerPos != null) {
+//$$                 final BlockPos key = shulkerPos.immutable();
+//$$                 updateCorruptionForShulker(clientWorld, key);
+//$$                 if (CORRUPT_ENTITY_POSITIONS.contains(key)) {
+//$$                     shulkerSuppressions.add(notifiedPos);
+//$$                 }
+//$$             }
+//$$         }
+//$$
+//$$         Set<BlockPos> allSuppressions = new LinkedHashSet<>(capture.getSuppressionPositions());
+//$$         allSuppressions.addAll(shulkerSuppressions);
+//$$         Set<BlockPos> suppressions = Collections.unmodifiableSet(allSuppressions);
+//$$
+//$$         CacheEntry entry = new CacheEntry(source.immutable(), sourceBlock, tick,
+//$$                 fullResult, instantResult, suppressions);
+//$$         if (isPlacement) {
+//$$             placementCache = entry;
+//$$         } else {
+//$$             breakingCache = entry;
+//$$         }
+//$$     }
+//$$
+//$$     private static void simulateComparatorRead(Level world, SimulationCapture capture,
+//$$                                                 BlockPos comparatorPos, BlockState comparatorState) {
+//$$         Direction facing = comparatorState.getValue(BlockStateProperties.HORIZONTAL_FACING);
+//$$         BlockPos inputPos = comparatorPos.relative(facing);
+//$$         BlockState inputState = world.getBlockState(inputPos);
+//$$
+//$$         if (inputState.hasAnalogOutputSignal()) {
+//$$             try {
+//$$                 inputState.getAnalogOutputSignal(world, inputPos, facing.getOpposite());
+//$$             } catch (Exception e) {
+//$$                 capture.captureSuppressionAt(comparatorPos);
+//$$             }
+//$$         } else if (inputState.isSolidRender()
+//$$                 && world.getSignal(inputPos, facing) < 15) {
+//$$             BlockPos behindPos = inputPos.relative(facing);
+//$$             BlockState behindState = world.getBlockState(behindPos);
+//$$             if (behindState.hasAnalogOutputSignal()) {
+//$$                 try {
+//$$                     behindState.getAnalogOutputSignal(world, behindPos, facing.getOpposite());
+//$$                 } catch (Exception e) {
+//$$                     capture.captureSuppressionAt(comparatorPos);
+//$$                 }
+//$$             }
+//$$         }
+//$$     }
+//$$
+//$$     private static void processOnePending(Level world, SimulationCapture capture) {
+//$$         SimulationCapture.PendingUpdate update = capture.pollPending();
+//$$         if (update.singleTarget != null) {
+//$$             dispatchNeighborUpdate(world, capture, update.singleTarget, update.block, update.source);
+//$$         } else {
+//$$             for (Direction dir : Direction.values()) {
+//$$                 if (update.except != null && dir == update.except) continue;
+//$$                 dispatchNeighborUpdate(world, capture, update.source.relative(dir), update.block, update.source);
+//$$             }
+//$$         }
+//$$     }
+//$$
+//$$     private static void updateCorruptionForShulker(Level clientWorld, BlockPos shulkerPos) {
+//$$         var server = Minecraft.getInstance().getSingleplayerServer();
+//$$         if (server == null) return;
+//$$         final BlockPos key = shulkerPos.immutable();
+//$$         final var worldKey = clientWorld.dimension();
+//$$         server.execute(() -> {
+//$$             ServerLevel serverLevel = server.getLevel(worldKey);
+//$$             if (serverLevel == null) return;
+//$$             BlockEntity be = serverLevel.getBlockEntity(key);
+//$$             boolean corrupt = be != null && !(be instanceof ShulkerBoxBlockEntity);
+//$$             boolean changed = corrupt != CORRUPT_ENTITY_POSITIONS.contains(key);
+//$$             if (corrupt) {
+//$$                 CORRUPT_ENTITY_POSITIONS.add(key);
+//$$             } else {
+//$$                 CORRUPT_ENTITY_POSITIONS.remove(key);
+//$$             }
+//$$             if (changed) cacheInvalid = true;
+//$$         });
+//$$     }
+//$$
+//$$     private static void seedAffectNeighborsAfterRemoval(SimulationCapture capture, BlockPos source, Block removedBlock) {
+//$$         // Replicates BlockBehaviour.affectNeighborsAfterRemoval for blocks that fire extra neighbor
+//$$         // update waves when removed. affectNeighborsAfterRemoval requires ServerLevel and cannot be
+//$$         // called directly on ClientLevel during simulation, so we replicate known overrides here.
+//$$         // Most blocks have an empty default; only add cases that actively call updateNeighborsAt.
+//$$         if (removedBlock instanceof RedStoneWireBlock) {
+//$$             for (Direction dir : Direction.values()) {
+//$$                 capture.captureUpdateAll(source.relative(dir), removedBlock);
+//$$             }
+//$$         }
+//$$     }
+//$$
+//$$     private static void dispatchNeighborUpdate(Level world, SimulationCapture capture,
+//$$                                                 BlockPos pos, Block sourceBlock, BlockPos sourcePos) {
+//$$         capture.addNotified(pos);
+//$$         BlockState state = world.getBlockState(pos);
+//$$         try {
+//$$             ((MixinAbstractBlockInvoker) state.getBlock())
+//$$                     .invokeNeighborChanged(state, world, pos, sourceBlock, null, false);
+//$$         } catch (Exception e) {
+//$$             capture.captureSuppressionAt(pos);
+//$$         }
+//$$     }
+//$$ }
 //#endif

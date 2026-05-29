@@ -1,6 +1,5 @@
 package org.asutarisucu.mixin.BlockUpdateViewer;
 
-import net.minecraft.world.WorldAccess;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -10,9 +9,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import net.minecraft.block.Block;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.WorldAccess;
 import net.minecraft.world.tick.TickPriority;
 import org.asutarisucu.tweak.BlockUpdateViewer.SimulationCapture;
-//#endif
 
 /**
  * Intercepts WorldAccess interface defaults during simulation.
@@ -22,8 +21,6 @@ import org.asutarisucu.tweak.BlockUpdateViewer.SimulationCapture;
  */
 @Mixin(WorldAccess.class)
 public interface MixinWorldAccessSim {
-
-//#if MC < 260100
 
     @Inject(
         method = "scheduleBlockTick(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/Block;I)V",
@@ -67,5 +64,59 @@ public interface MixinWorldAccessSim {
         if (SimulationCapture.current() != null) ci.cancel();
     }
 
-//#endif
 }
+//#else
+//$$ import net.minecraft.world.level.block.Block;
+//$$ import net.minecraft.world.level.material.Fluid;
+//$$ import net.minecraft.core.BlockPos;
+//$$ import net.minecraft.world.level.ScheduledTickAccess;
+//$$ import net.minecraft.world.ticks.TickPriority;
+//$$ import org.asutarisucu.tweak.BlockUpdateViewer.SimulationCapture;
+//$$
+//$$ @Mixin(ScheduledTickAccess.class)
+//$$ public interface MixinWorldAccessSim {
+//$$
+//$$     @Inject(
+//$$         method = "scheduleTick(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/Block;I)V",
+//$$         at = @At("HEAD"), cancellable = true, require = 0
+//$$     )
+//$$     default void simScheduleBlockTick(BlockPos pos, Block block, int delay, CallbackInfo ci) {
+//$$         SimulationCapture cap = SimulationCapture.current();
+//$$         if (cap != null) {
+//$$             cap.captureScheduledTick(pos, block);
+//$$             ci.cancel();
+//$$         }
+//$$     }
+//$$
+//$$     @Inject(
+//$$         method = "scheduleTick(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/Block;ILnet/minecraft/world/ticks/TickPriority;)V",
+//$$         at = @At("HEAD"), cancellable = true, require = 0
+//$$     )
+//$$     default void simScheduleBlockTickPriority(BlockPos pos, Block block, int delay,
+//$$                                                TickPriority priority, CallbackInfo ci) {
+//$$         SimulationCapture cap = SimulationCapture.current();
+//$$         if (cap != null) {
+//$$             cap.captureScheduledTick(pos, block);
+//$$             ci.cancel();
+//$$         }
+//$$     }
+//$$
+//$$     @Inject(
+//$$         method = "scheduleTick(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/material/Fluid;I)V",
+//$$         at = @At("HEAD"), cancellable = true, require = 0
+//$$     )
+//$$     default void simScheduleFluidTick(BlockPos pos, Fluid fluid, int delay, CallbackInfo ci) {
+//$$         if (SimulationCapture.current() != null) ci.cancel();
+//$$     }
+//$$
+//$$     @Inject(
+//$$         method = "scheduleTick(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/material/Fluid;ILnet/minecraft/world/ticks/TickPriority;)V",
+//$$         at = @At("HEAD"), cancellable = true, require = 0
+//$$     )
+//$$     default void simScheduleFluidTickPriority(BlockPos pos, Fluid fluid, int delay,
+//$$                                                TickPriority priority, CallbackInfo ci) {
+//$$         if (SimulationCapture.current() != null) ci.cancel();
+//$$     }
+//$$
+//$$ }
+//#endif

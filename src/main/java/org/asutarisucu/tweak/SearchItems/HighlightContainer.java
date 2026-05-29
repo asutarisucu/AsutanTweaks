@@ -6,6 +6,10 @@ import fi.dy.masa.litematica.render.RenderUtils;
 import fi.dy.masa.malilib.util.Color4f;
 import net.minecraft.client.MinecraftClient;
 import org.asutarisucu.Configs.Configs;
+//#else
+//$$ import fi.dy.masa.malilib.render.RenderUtils;
+//$$ import fi.dy.masa.malilib.util.data.Color4f;
+//$$ import org.asutarisucu.Configs.Configs;
 //#endif
 import net.minecraft.util.math.BlockPos;
 
@@ -34,6 +38,11 @@ public class HighlightContainer {
         RenderSystem.enableDepthTest();
         RenderSystem.enableCull();
         RenderSystem.disableBlend();
+//#else
+//$$         Color4f color = Configs.Generic.HIGHLIGHT_CONTAINER_COLOR.getColor();
+//$$         for (var pos : posList) {
+//$$             RenderUtils.renderBlockOutline(pos, 0.0025f, 2.0f, color, false);
+//$$         }
 //#endif
     }
 }

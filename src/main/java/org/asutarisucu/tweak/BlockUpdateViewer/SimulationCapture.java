@@ -5,6 +5,12 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+//#else
+//$$ import net.minecraft.world.level.block.Block;
+//$$ import net.minecraft.world.level.block.state.BlockState;
+//$$ import net.minecraft.core.BlockPos;
+//$$ import net.minecraft.core.Direction;
+//#endif
 
 import java.util.*;
 
@@ -29,7 +35,7 @@ public class SimulationCapture {
     public void end()   { CURRENT.remove(); }
 
     public void applyChange(BlockPos pos, BlockState state) {
-        overlay.put(pos.toImmutable(), state);
+        overlay.put(imm(pos), state);
     }
 
     public BlockState getOverlay(BlockPos pos) { return overlay.get(pos); }
@@ -37,43 +43,43 @@ public class SimulationCapture {
     // ---- called by Mixin interceptors ----
 
     public void captureSetBlockState(BlockPos pos, BlockState state, int flags) {
-        overlay.put(pos.toImmutable(), state);
-        notified.add(pos.toImmutable());
+        overlay.put(imm(pos), state);
+        notified.add(imm(pos));
         // NOTIFY_NEIGHBORS = 0x1
         if ((flags & 1) != 0) {
-            pending.add(new PendingUpdate(pos.toImmutable(), state.getBlock(), null, null));
+            pending.add(new PendingUpdate(imm(pos), state.getBlock(), null, null));
         }
     }
 
     public void captureUpdateAll(BlockPos source, Block block) {
-        pending.add(new PendingUpdate(source.toImmutable(), block, null, null));
+        pending.add(new PendingUpdate(imm(source), block, null, null));
     }
 
     public void captureUpdateExcept(BlockPos source, Block block, Direction except) {
-        pending.add(new PendingUpdate(source.toImmutable(), block, except, null));
+        pending.add(new PendingUpdate(imm(source), block, except, null));
     }
 
     public void captureSingleNeighbor(BlockPos sourcePos, Block sourceBlock, BlockPos target) {
-        pending.add(new PendingUpdate(sourcePos.toImmutable(), sourceBlock, null, target.toImmutable()));
+        pending.add(new PendingUpdate(imm(sourcePos), sourceBlock, null, imm(target)));
     }
 
     private final Set<BlockPos> scheduledPositions = new LinkedHashSet<>();
 
     // Captured instead of cancelled — BFS processes ticks to propagate observer/gate chains
     public void captureScheduledTick(BlockPos pos, Block block) {
-        BlockPos immutable = pos.toImmutable();
+        BlockPos immutable = imm(pos);
         pendingTicks.add(new PendingTick(immutable, block));
         scheduledPositions.add(immutable);
     }
 
     // Pistons use addSyncedBlockEvent instead of scheduleBlockTick — cancel and track position
     public void captureBlockEvent(BlockPos pos) {
-        scheduledPositions.add(pos.toImmutable());
+        scheduledPositions.add(imm(pos));
     }
 
     // ---- BFS helpers ----
 
-    public void addNotified(BlockPos pos)            { notified.add(pos.toImmutable()); }
+    public void addNotified(BlockPos pos)            { notified.add(imm(pos)); }
     public boolean hasPending()                      { return !pending.isEmpty(); }
     public PendingUpdate pollPending()               { return pending.poll(); }
     public boolean hasPendingTicks()                 { return !pendingTicks.isEmpty(); }
@@ -86,7 +92,7 @@ public class SimulationCapture {
     private final Set<BlockPos> suppressionPositions = new LinkedHashSet<>();
 
     public void captureSuppressionAt(BlockPos pos) {
-        suppressionPositions.add(pos.toImmutable());
+        suppressionPositions.add(imm(pos));
     }
 
     public Set<BlockPos> getSuppressionPositions() {
@@ -118,5 +124,12 @@ public class SimulationCapture {
             this.block = block;
         }
     }
-}
+
+    private static BlockPos imm(BlockPos pos) {
+//#if MC >= 260100
+//$$ return pos.immutable();
+//#else
+        return pos.toImmutable();
 //#endif
+    }
+}

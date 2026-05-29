@@ -13,6 +13,11 @@ import net.minecraft.client.util.math.MatrixStack;
 //#endif
 import net.minecraft.item.BlockItem;
 import org.asutarisucu.Configs.FeatureToggle;
+//#else
+//$$ import fi.dy.masa.malilib.render.GuiContext;
+//$$ import net.minecraft.client.Minecraft;
+//$$ import net.minecraft.world.item.BlockItem;
+//$$ import org.asutarisucu.Configs.FeatureToggle;
 //#endif
 
 public class UpdateSuppressionView {
@@ -22,6 +27,25 @@ public class UpdateSuppressionView {
         HudRenderCallback.EVENT.register(UpdateSuppressionView::onHudRender);
 //#endif
     }
+
+//#if MC >= 260100
+//$$ public static void renderHud26(GuiContext ctx) {
+//$$     if (!FeatureToggle.UPDATE_SUPPRESSION_VIEW.getBooleanValue()) return;
+//$$     var mc = Minecraft.getInstance();
+//$$     if (mc.player == null) return;
+//$$     boolean holdingBlockItem = mc.player.getMainHandItem().getItem() instanceof BlockItem;
+//$$     boolean hasSuppression = holdingBlockItem
+//$$             ? !BlockUpdateCalculator.getPlacementSuppressionPositions().isEmpty()
+//$$             : !BlockUpdateCalculator.getSuppressionPositions().isEmpty();
+//$$     if (!hasSuppression) return;
+//$$     int sw = mc.getWindow().getGuiScaledWidth();
+//$$     int sh = mc.getWindow().getGuiScaledHeight();
+//$$     String label = "CCE suppress Ready";
+//$$     int x = (sw - mc.font.width(label)) / 2;
+//$$     int y = sh - 60;
+//$$     ctx.drawString(mc.font, label, x, y, 0xFF5555);
+//$$ }
+//#endif
 
 //#if MC < 260100
     private static boolean hasSuppressions() {

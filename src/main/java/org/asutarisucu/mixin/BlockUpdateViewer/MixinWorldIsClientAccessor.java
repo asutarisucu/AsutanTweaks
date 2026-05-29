@@ -1,9 +1,11 @@
 package org.asutarisucu.mixin.BlockUpdateViewer;
 
-import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.gen.Accessor;
+
+//#if MC < 260100
+import net.minecraft.world.World;
 
 /**
  * Exposes World.isClient as a settable field so BlockUpdateCalculator can
@@ -21,3 +23,17 @@ public interface MixinWorldIsClientAccessor {
     @Accessor("isClient")
     void asutantweaks_setIsClient(boolean isClient);
 }
+//#else
+//$$ import net.minecraft.world.level.Level;
+//$$
+//$$ @Mixin(Level.class)
+//$$ public interface MixinWorldIsClientAccessor {
+//$$
+//$$     @Accessor("isClientSide")
+//$$     boolean asutantweaks_isClient();
+//$$
+//$$     @Mutable
+//$$     @Accessor("isClientSide")
+//$$     void asutantweaks_setIsClient(boolean isClient);
+//$$ }
+//#endif

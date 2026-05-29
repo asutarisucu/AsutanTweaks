@@ -103,7 +103,7 @@ public enum FeatureToggle implements IHotkeyTogglable, IConfigNotifiable<IConfig
 //#if MC >=12101
 //$$    @Override
 //$$    public String getTranslatedName() {
-//$$        return "";
+//$$        return StringUtils.getTranslatedOrFallback("config.name." + this.getName().toLowerCase(), this.getName());
 //$$    }
 //$$
 //$$    @Override

@@ -29,6 +29,22 @@ import org.asutarisucu.Configs.FeatureToggle;
 import org.joml.Matrix4f;
 
 import java.util.Set;
+//#else
+//$$ import com.mojang.blaze3d.pipeline.DepthStencilState;
+//$$ import com.mojang.blaze3d.pipeline.RenderPipeline;
+//$$ import com.mojang.blaze3d.platform.CompareOp;
+//$$ import fi.dy.masa.malilib.render.MaLiLibPipelines;
+//$$ import fi.dy.masa.malilib.render.RenderContext;
+//$$ import fi.dy.masa.malilib.render.RenderUtils;
+//$$ import fi.dy.masa.malilib.util.data.Color4f;
+//$$ import net.minecraft.client.Minecraft;
+//$$ import net.minecraft.core.BlockPos;
+//$$ import net.minecraft.resources.Identifier;
+//$$ import net.minecraft.world.item.BlockItem;
+//$$ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+//$$ import net.minecraft.world.phys.BlockHitResult;
+//$$ import net.minecraft.world.phys.HitResult;
+//$$ import org.asutarisucu.Configs.FeatureToggle;
 //#endif
 
 public class BlockUpdateViewer {
@@ -38,6 +54,147 @@ public class BlockUpdateViewer {
         WorldRenderEvents.AFTER_ENTITIES.register(BlockUpdateViewer::renderOverlay);
 //#endif
     }
+
+//#if MC >= 260100
+//$$ private static RenderPipeline LEQUAL_DEPTH_WRITE_PIPELINE;
+//$$ private static RenderPipeline getLequalDepthWritePipeline() {
+//$$     if (LEQUAL_DEPTH_WRITE_PIPELINE == null) {
+//$$         LEQUAL_DEPTH_WRITE_PIPELINE = RenderPipeline
+//$$             .builder(new RenderPipeline.Snippet[]{ MaLiLibPipelines.POSITION_COLOR_MASA_STAGE })
+//$$             .withLocation(Identifier.fromNamespaceAndPath("asutantweaks", "buv_lequal_depth_write"))
+//$$             .withDepthStencilState(new DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, true))
+//$$             .build();
+//$$     }
+//$$     return LEQUAL_DEPTH_WRITE_PIPELINE;
+//$$ }
+//$$
+//$$ public static void renderOverlay26() {
+//$$     var mc = Minecraft.getInstance();
+//$$     if (mc.player == null || mc.level == null) return;
+//$$
+//$$     boolean placementEnabled = FeatureToggle.PLACEMENT_UPDATE_VIEWER.getBooleanValue();
+//$$     boolean breakingEnabled  = FeatureToggle.BREAKING_UPDATE_VIEWER.getBooleanValue();
+//$$     boolean suppressionNeeds = FeatureToggle.UPDATE_SUPPRESSION_VIEW.getBooleanValue();
+//$$     if (!placementEnabled && !breakingEnabled && !suppressionNeeds) return;
+//$$
+//$$     if (!(mc.hitResult instanceof BlockHitResult blockHit)) return;
+//$$     if (blockHit.getType() == HitResult.Type.MISS) return;
+//$$
+//$$     var hitPos = blockHit.getBlockPos();
+//$$     var heldItem = mc.player.getMainHandItem();
+//$$
+//$$     boolean holdingBlockItem = heldItem.getItem() instanceof BlockItem;
+//$$
+//$$     if ((placementEnabled || suppressionNeeds) && holdingBlockItem) {
+//$$         var blockItem = (BlockItem) heldItem.getItem();
+//$$         var placedPos = hitPos.relative(blockHit.getDirection());
+//$$         var placedBlock = blockItem.getBlock();
+//$$         var approxState = placedBlock.defaultBlockState();
+//$$         if (approxState.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
+//$$             approxState = approxState.setValue(BlockStateProperties.HORIZONTAL_FACING,
+//$$                     mc.player.getDirection().getOpposite());
+//$$         }
+//$$         var updateSet = BlockUpdateCalculator.compute(mc.level, placedPos, approxState);
+//$$         if (placementEnabled) renderBoxes26(updateSet, 1f, 0f, 0f);
+//$$     }
+//$$
+//$$     if ((breakingEnabled && !holdingBlockItem) || (suppressionNeeds && !holdingBlockItem)) {
+//$$         var updateSet = BlockUpdateCalculator.compute(mc.level, hitPos);
+//$$         if (breakingEnabled) renderBoxes26(updateSet, 0f, 0.3f, 1f);
+//$$     }
+//$$ }
+//$$
+//$$ private static void renderBoxes26(java.util.Set<BlockPos> positions, float r, float g, float b) {
+//$$     if (positions.isEmpty()) return;
+//$$     // alpha must be > 0: int_position_color.fsh discards when alpha == 0.0
+//$$     Color4f depthColor = new Color4f(r, g, b, 0.001f);
+//$$     Color4f solid   = new Color4f(r, g, b, 0.04f);
+//$$     Color4f through = new Color4f(r, g, b, 0.02f);
+//$$     Color4f outline = new Color4f(r, g, b, 0.6f);
+//$$     net.minecraft.world.phys.Vec3 cam = RenderUtils.camPos();
+//$$     // Pre-pass: LEQUAL + depth write ON (cull ON default = front faces only).
+//$$     // Nearest front face per pixel wins, same as old RenderSystem.enableDepthTest().
+//$$     try (var ctx = new RenderContext(() -> "BUV/depth", getLequalDepthWritePipeline())) {
+//$$         var buf = ctx.getBuilder();
+//$$         for (var pos : positions) RenderUtils.drawBlockBoundingBoxSidesBatchedQuads(pos, cam, depthColor, 0.0, buf);
+//$$         var mesh = buf.build();
+//$$         if (mesh != null) { ctx.draw(mesh, false, true); mesh.close(); }
+//$$     } catch (Exception ignored) {}
+//$$     try (var ctx = new RenderContext(() -> "BUV/solid", MaLiLibPipelines.POSITION_COLOR_MASA_LEQUAL_DEPTH_NO_CULL)) {
+//$$         var buf = ctx.getBuilder();
+//$$         for (var pos : positions) RenderUtils.drawBlockBoundingBoxSidesBatchedQuads(pos, cam, solid, 0.0, buf);
+//$$         var mesh = buf.build();
+//$$         if (mesh != null) { ctx.draw(mesh, false, true); mesh.close(); }
+//$$     } catch (Exception ignored) {}
+//$$     try (var ctx = new RenderContext(() -> "BUV/through", MaLiLibPipelines.POSITION_COLOR_TRANSLUCENT_NO_DEPTH_NO_CULL)) {
+//$$         var buf = ctx.getBuilder();
+//$$         for (var pos : positions) RenderUtils.drawBlockBoundingBoxSidesBatchedQuads(pos, cam, through, 0.0, buf);
+//$$         var mesh = buf.build();
+//$$         if (mesh != null) { ctx.draw(mesh, false, true); mesh.close(); }
+//$$     } catch (Exception ignored) {}
+//$$     // Outline: adjacency-filtered so shared faces between highlighted blocks have no inner border
+//$$     try (var ctx = new RenderContext(() -> "BUV/outline", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH)) {
+//$$         var buf = ctx.getBuilder();
+//$$         drawOuterBoundaryLines(positions, outline, 0.0025, cam, buf);
+//$$         var mesh = buf.build();
+//$$         if (mesh != null) { ctx.draw(mesh, false, true); mesh.close(); }
+//$$     } catch (Exception ignored) {}
+//$$ }
+//$$
+//$$ // Draws only the outer boundary edges of the block group, hiding shared interior borders.
+//$$ // For each block, each exterior face contributes an edge only when the adjacent block
+//$$ // in that edge's perpendicular direction is also not in the set.
+//$$ private static void drawOuterBoundaryLines(java.util.Set<BlockPos> positions, Color4f color, double offset,
+//$$                                              net.minecraft.world.phys.Vec3 cam, com.mojang.blaze3d.vertex.BufferBuilder buf) {
+//$$     for (var pos : positions) {
+//$$         double bx = pos.getX() - cam.x, by = pos.getY() - cam.y, bz = pos.getZ() - cam.z;
+//$$         float x0 = (float)(bx - offset), y0 = (float)(by - offset), z0 = (float)(bz - offset);
+//$$         float x1 = (float)(bx + 1 + offset), y1 = (float)(by + 1 + offset), z1 = (float)(bz + 1 + offset);
+//$$         if (!positions.contains(pos.above())) {
+//$$             if (!positions.contains(pos.north()))  addLine26(buf,x0,y1,z0,x1,y1,z0,color);
+//$$             if (!positions.contains(pos.south()))  addLine26(buf,x0,y1,z1,x1,y1,z1,color);
+//$$             if (!positions.contains(pos.west()))   addLine26(buf,x0,y1,z0,x0,y1,z1,color);
+//$$             if (!positions.contains(pos.east()))   addLine26(buf,x1,y1,z0,x1,y1,z1,color);
+//$$         }
+//$$         if (!positions.contains(pos.below())) {
+//$$             if (!positions.contains(pos.north()))  addLine26(buf,x0,y0,z0,x1,y0,z0,color);
+//$$             if (!positions.contains(pos.south()))  addLine26(buf,x0,y0,z1,x1,y0,z1,color);
+//$$             if (!positions.contains(pos.west()))   addLine26(buf,x0,y0,z0,x0,y0,z1,color);
+//$$             if (!positions.contains(pos.east()))   addLine26(buf,x1,y0,z0,x1,y0,z1,color);
+//$$         }
+//$$         if (!positions.contains(pos.north())) {
+//$$             if (!positions.contains(pos.below()))  addLine26(buf,x0,y0,z0,x1,y0,z0,color);
+//$$             if (!positions.contains(pos.above()))  addLine26(buf,x0,y1,z0,x1,y1,z0,color);
+//$$             if (!positions.contains(pos.west()))   addLine26(buf,x0,y0,z0,x0,y1,z0,color);
+//$$             if (!positions.contains(pos.east()))   addLine26(buf,x1,y0,z0,x1,y1,z0,color);
+//$$         }
+//$$         if (!positions.contains(pos.south())) {
+//$$             if (!positions.contains(pos.below()))  addLine26(buf,x0,y0,z1,x1,y0,z1,color);
+//$$             if (!positions.contains(pos.above()))  addLine26(buf,x0,y1,z1,x1,y1,z1,color);
+//$$             if (!positions.contains(pos.west()))   addLine26(buf,x0,y0,z1,x0,y1,z1,color);
+//$$             if (!positions.contains(pos.east()))   addLine26(buf,x1,y0,z1,x1,y1,z1,color);
+//$$         }
+//$$         if (!positions.contains(pos.west())) {
+//$$             if (!positions.contains(pos.below()))  addLine26(buf,x0,y0,z0,x0,y0,z1,color);
+//$$             if (!positions.contains(pos.above()))  addLine26(buf,x0,y1,z0,x0,y1,z1,color);
+//$$             if (!positions.contains(pos.north()))  addLine26(buf,x0,y0,z0,x0,y1,z0,color);
+//$$             if (!positions.contains(pos.south()))  addLine26(buf,x0,y0,z1,x0,y1,z1,color);
+//$$         }
+//$$         if (!positions.contains(pos.east())) {
+//$$             if (!positions.contains(pos.below()))  addLine26(buf,x1,y0,z0,x1,y0,z1,color);
+//$$             if (!positions.contains(pos.above()))  addLine26(buf,x1,y1,z0,x1,y1,z1,color);
+//$$             if (!positions.contains(pos.north()))  addLine26(buf,x1,y0,z0,x1,y1,z0,color);
+//$$             if (!positions.contains(pos.south()))  addLine26(buf,x1,y0,z1,x1,y1,z1,color);
+//$$         }
+//$$     }
+//$$ }
+//$$
+//$$ private static void addLine26(com.mojang.blaze3d.vertex.BufferBuilder buf,
+//$$                                float x0, float y0, float z0, float x1, float y1, float z1, Color4f c) {
+//$$     buf.addVertex(x0, y0, z0).setColor(c.r, c.g, c.b, c.a).setLineWidth(1.5f);
+//$$     buf.addVertex(x1, y1, z1).setColor(c.r, c.g, c.b, c.a).setLineWidth(1.5f);
+//$$ }
+//#endif
 
 //#if MC < 260100
     private static void renderOverlay(WorldRenderContext context) {

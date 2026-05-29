@@ -13,6 +13,12 @@ import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.tick.TickPriority;
 import org.asutarisucu.tweak.BlockUpdateViewer.SimulationCapture;
+//#else
+//$$ import net.minecraft.world.level.block.Block;
+//$$ import net.minecraft.world.level.block.state.BlockState;
+//$$ import net.minecraft.core.BlockPos;
+//$$ import net.minecraft.world.ticks.TickPriority;
+//$$ import org.asutarisucu.tweak.BlockUpdateViewer.SimulationCapture;
 //#endif
 
 /**
@@ -80,6 +86,55 @@ public abstract class MixinClientWorldSim {
             ci.cancel();
         }
     }
+
+//#else
+
+    //$$ @Inject(
+    //$$     method = "setBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;II)Z",
+    //$$     at = @At("HEAD"), cancellable = true, require = 0
+    //$$ )
+    //$$ private void simCWSetBlock(BlockPos pos, BlockState state, int flags, int maxUpdateDepth,
+    //$$                             CallbackInfoReturnable<Boolean> cir) {
+    //$$     SimulationCapture cap = SimulationCapture.current();
+    //$$     if (cap != null) {
+    //$$         cap.captureSetBlockState(pos, state, flags);
+    //$$         cir.setReturnValue(true);
+    //$$     }
+    //$$ }
+    //$$
+    //$$ @Inject(
+    //$$     method = "scheduleTick(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/Block;I)V",
+    //$$     at = @At("HEAD"), cancellable = true, require = 0
+    //$$ )
+    //$$ private void simCWScheduleBlockTick(BlockPos pos, Block block, int delay, CallbackInfo ci) {
+    //$$     SimulationCapture cap = SimulationCapture.current();
+    //$$     if (cap != null) {
+    //$$         cap.captureScheduledTick(pos, block);
+    //$$         ci.cancel();
+    //$$     }
+    //$$ }
+    //$$
+    //$$ @Inject(
+    //$$     method = "scheduleTick(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/Block;ILnet/minecraft/world/ticks/TickPriority;)V",
+    //$$     at = @At("HEAD"), cancellable = true, require = 0
+    //$$ )
+    //$$ private void simCWScheduleBlockTickPriority(BlockPos pos, Block block, int delay,
+    //$$                                              TickPriority priority, CallbackInfo ci) {
+    //$$     SimulationCapture cap = SimulationCapture.current();
+    //$$     if (cap != null) {
+    //$$         cap.captureScheduledTick(pos, block);
+    //$$         ci.cancel();
+    //$$     }
+    //$$ }
+    //$$
+    //$$ @Inject(method = "blockEvent", at = @At("HEAD"), cancellable = true, require = 0)
+    //$$ private void simCWBlockEvent(BlockPos pos, Block block, int type, int data, CallbackInfo ci) {
+    //$$     SimulationCapture cap = SimulationCapture.current();
+    //$$     if (cap != null) {
+    //$$         cap.captureBlockEvent(pos);
+    //$$         ci.cancel();
+    //$$     }
+    //$$ }
 
 //#endif
 }

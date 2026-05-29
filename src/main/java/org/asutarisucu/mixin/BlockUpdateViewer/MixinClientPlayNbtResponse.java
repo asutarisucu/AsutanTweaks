@@ -12,14 +12,10 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-//#endif
 
-//#if MC < 260100
 @Mixin(ClientPlayNetworkHandler.class)
-//#endif
 public class MixinClientPlayNbtResponse {
 
-//#if MC < 260100
     @Inject(method = "onBlockEntityUpdate", at = @At("HEAD"))
     private void asutantweaks_onBlockEntityUpdate(BlockEntityUpdateS2CPacket packet, CallbackInfo ci) {
         MinecraftClient client = MinecraftClient.getInstance();
@@ -32,5 +28,34 @@ public class MixinClientPlayNbtResponse {
             BlockUpdateCalculator.CORRUPT_ENTITY_POSITIONS.remove(pos.toImmutable());
         }
     }
-//#endif
 }
+//#else
+//$$ import net.minecraft.world.level.block.ShulkerBoxBlock;
+//$$ import net.minecraft.world.level.block.entity.BlockEntityType;
+//$$ import net.minecraft.client.Minecraft;
+//$$ import net.minecraft.client.multiplayer.ClientPacketListener;
+//$$ import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+//$$ import net.minecraft.core.BlockPos;
+//$$ import org.asutarisucu.tweak.BlockUpdateViewer.BlockUpdateCalculator;
+//$$ import org.spongepowered.asm.mixin.Mixin;
+//$$ import org.spongepowered.asm.mixin.injection.At;
+//$$ import org.spongepowered.asm.mixin.injection.Inject;
+//$$ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+//$$
+//$$ @Mixin(ClientPacketListener.class)
+//$$ public class MixinClientPlayNbtResponse {
+//$$
+//$$     @Inject(method = "handleBlockEntityData", at = @At("HEAD"), require = 0)
+//$$     private void asutantweaks_onBlockEntityUpdate(ClientboundBlockEntityDataPacket packet, CallbackInfo ci) {
+//$$         var mc = Minecraft.getInstance();
+//$$         if (mc.level == null) return;
+//$$         BlockPos pos = packet.getPos();
+//$$         if (!(mc.level.getBlockState(pos).getBlock() instanceof ShulkerBoxBlock)) return;
+//$$         if (packet.getType() != BlockEntityType.SHULKER_BOX) {
+//$$             BlockUpdateCalculator.CORRUPT_ENTITY_POSITIONS.add(pos.immutable());
+//$$         } else {
+//$$             BlockUpdateCalculator.CORRUPT_ENTITY_POSITIONS.remove(pos.immutable());
+//$$         }
+//$$     }
+//$$ }
+//#endif

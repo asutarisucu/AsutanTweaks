@@ -1,17 +1,28 @@
 package org.asutarisucu.mixin.BlockUpdateViewer;
 
-import net.minecraft.block.AbstractBlock;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
 //#if MC < 260100
+import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+//#else
+//$$ import net.minecraft.world.level.block.state.BlockBehaviour;
+//$$ import net.minecraft.world.level.block.Block;
+//$$ import net.minecraft.world.level.block.state.BlockState;
+//$$ import net.minecraft.core.BlockPos;
+//$$ import net.minecraft.world.level.Level;
+//$$ import net.minecraft.world.level.redstone.Orientation;
 //#endif
 
+//#if MC < 260100
 @Mixin(AbstractBlock.class)
+//#else
+//$$ @Mixin(BlockBehaviour.class)
+//#endif
 public interface MixinAbstractBlockInvoker {
 
 //#if MC < 260100
@@ -27,6 +38,16 @@ public interface MixinAbstractBlockInvoker {
     @Invoker("onStateReplaced")
     void invokeOnStateReplaced(BlockState state, World world, BlockPos pos,
                                 BlockState newState, boolean moved);
+
+//#else
+
+    //$$ @Invoker("neighborChanged")
+    //$$ void invokeNeighborChanged(BlockState state, Level level, BlockPos pos,
+    //$$                             Block sourceBlock, Orientation orientation, boolean movedByPiston);
+    //$$
+    //$$ @Invoker("onPlace")
+    //$$ void invokeOnPlace(BlockState state, Level level, BlockPos pos,
+    //$$                     BlockState oldState, boolean movedByPiston);
 
 //#endif
 }

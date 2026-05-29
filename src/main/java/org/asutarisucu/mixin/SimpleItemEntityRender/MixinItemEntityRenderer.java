@@ -29,12 +29,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ItemEntityRenderer.class)
 //#if MC >= 260100
-//$$ public class MixinItemEntityRenderer extends net.minecraft.client.renderer.entity.EntityRenderer<net.minecraft.world.entity.item.ItemEntity, net.minecraft.client.renderer.entity.state.ItemEntityRenderState> {
+//$$ public abstract class MixinItemEntityRenderer extends net.minecraft.client.renderer.entity.EntityRenderer<net.minecraft.world.entity.item.ItemEntity, net.minecraft.client.renderer.entity.state.ItemEntityRenderState> {
 //$$
 //$$     protected MixinItemEntityRenderer(net.minecraft.client.renderer.entity.EntityRendererProvider.Context context) { super(context); }
 //$$
-//$$     @Override
-//$$     public net.minecraft.client.renderer.entity.state.ItemEntityRenderState createRenderState() { return null; }
 //#else
 public abstract class MixinItemEntityRenderer<T extends ItemEntity> extends EntityRenderer<T> {
 
