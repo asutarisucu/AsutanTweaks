@@ -2,7 +2,6 @@ package org.asutarisucu.tweak.SimpleItemEntityRender;
 
 import org.asutarisucu.Configs.FeatureToggle;
 
-//#if MC < 260100
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.EntityType;
@@ -11,6 +10,9 @@ import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.item.Item;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
+//#if MC >= 12111
+//$$ import java.util.WeakHashMap;
+//$$ import net.minecraft.client.render.entity.state.EntityRenderState;
 //#endif
 
 import java.util.ArrayList;
@@ -30,6 +32,10 @@ public class SimpleEntityRender {
     private static final HashMap<Integer, Integer> suppressedById = new HashMap<>();
     // suppressor entity network ID → count of entities it suppresses
     private static final HashMap<Integer, Integer> suppressorCount = new HashMap<>();
+//#if MC >= 12111
+//$$ // EntityRenderState → entity network ID (no entityId field on EntityRenderState)
+//$$ public static final WeakHashMap<EntityRenderState, Integer> stateEntityIds = new WeakHashMap<>();
+//#endif
 
     public static boolean isSuppressed(int entityId) {
         return suppressedById.containsKey(entityId);
@@ -45,14 +51,10 @@ public class SimpleEntityRender {
     }
 
     public static void register() {
-//#if MC < 260100
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (client.world != null) rebuild(client);
         });
-//#endif
     }
-
-//#if MC < 260100
 
     private record ItemGroupKey(Item item, int x, int y, int z) {}
     private record MobGroupKey(EntityType<?> type, int x, int y, int z) {}
@@ -69,7 +71,11 @@ public class SimpleEntityRender {
         // Query loaded entities within render distance.
         // Groups are keyed by (type + block position); within each group the entity
         // with the lowest network ID (oldest) becomes the suppressor.
+//#if MC >= 12111
+//$$ Vec3d playerPos = client.player.getEntityPos();
+//#else
         Vec3d playerPos = client.player.getPos();
+//#endif
         double range = client.options.getViewDistance().getValue() * 16.0 + 16;
         Box searchBox = Box.of(playerPos, range * 2, range * 2, range * 2);
 
@@ -103,6 +109,4 @@ public class SimpleEntityRender {
             suppressorCount.put(suppressorId, ids.size() - 1);
         }
     }
-
-//#endif
 }

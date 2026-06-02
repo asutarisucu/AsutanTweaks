@@ -14,6 +14,9 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
+//#if MC >= 12111
+//$$ import net.minecraft.world.block.WireOrientation;
+//#endif
 import org.asutarisucu.tweak.BlockUpdateViewer.SimulationCapture;
 
 /**
@@ -61,6 +64,16 @@ public abstract class MixinWorldSim {
         }
     }
 
+//#if MC >= 12111
+//$$ @Inject(method = "updateNeighborsAlways", at = @At("HEAD"), cancellable = true)
+//$$ private void simUpdateNeighborsAlways(BlockPos pos, Block block, WireOrientation orientation, CallbackInfo ci) {
+//$$     SimulationCapture cap = SimulationCapture.current();
+//$$     if (cap != null) {
+//$$         cap.captureUpdateAll(pos, block);
+//$$         ci.cancel();
+//$$     }
+//$$ }
+//#else
     @Inject(method = "updateNeighborsAlways", at = @At("HEAD"), cancellable = true)
     private void simUpdateNeighborsAlways(BlockPos pos, Block block, CallbackInfo ci) {
         SimulationCapture cap = SimulationCapture.current();
@@ -69,7 +82,18 @@ public abstract class MixinWorldSim {
             ci.cancel();
         }
     }
+//#endif
 
+//#if MC >= 12111
+//$$ @Inject(method = "updateNeighborsExcept", at = @At("HEAD"), cancellable = true)
+//$$ private void simUpdateNeighborsExcept(BlockPos pos, Block block, Direction direction, WireOrientation orientation, CallbackInfo ci) {
+//$$     SimulationCapture cap = SimulationCapture.current();
+//$$     if (cap != null) {
+//$$         cap.captureUpdateExcept(pos, block, direction);
+//$$         ci.cancel();
+//$$     }
+//$$ }
+//#else
     @Inject(method = "updateNeighborsExcept", at = @At("HEAD"), cancellable = true)
     private void simUpdateNeighborsExcept(BlockPos pos, Block block, Direction direction, CallbackInfo ci) {
         SimulationCapture cap = SimulationCapture.current();
@@ -78,7 +102,34 @@ public abstract class MixinWorldSim {
             ci.cancel();
         }
     }
+//#endif
 
+//#if MC >= 12111
+//$$ @Inject(
+//$$     method = "updateNeighbor(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/Block;Lnet/minecraft/world/block/WireOrientation;)V",
+//$$     at = @At("HEAD"), cancellable = true
+//$$ )
+//$$ private void simUpdateNeighbor(BlockPos target, Block sourceBlock, WireOrientation wireOrientation, CallbackInfo ci) {
+//$$     SimulationCapture cap = SimulationCapture.current();
+//$$     if (cap != null) {
+//$$         cap.captureSingleNeighbor(target, sourceBlock, target);
+//$$         ci.cancel();
+//$$     }
+//$$ }
+//$$
+//$$ @Inject(
+//$$     method = "updateNeighbor(Lnet/minecraft/block/BlockState;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/Block;Lnet/minecraft/world/block/WireOrientation;Z)V",
+//$$     at = @At("HEAD"), cancellable = true
+//$$ )
+//$$ private void simUpdateNeighborWithState(BlockState state, BlockPos target, Block sourceBlock,
+//$$                                          WireOrientation wireOrientation, boolean movedByPiston, CallbackInfo ci) {
+//$$     SimulationCapture cap = SimulationCapture.current();
+//$$     if (cap != null) {
+//$$         cap.captureSingleNeighbor(target, sourceBlock, target);
+//$$         ci.cancel();
+//$$     }
+//$$ }
+//#else
     @Inject(
         method = "updateNeighbor(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/Block;Lnet/minecraft/util/math/BlockPos;)V",
         at = @At("HEAD"), cancellable = true
@@ -103,6 +154,7 @@ public abstract class MixinWorldSim {
             ci.cancel();
         }
     }
+//#endif
 
     @Inject(
         method = "breakBlock(Lnet/minecraft/util/math/BlockPos;ZLnet/minecraft/entity/Entity;I)Z",

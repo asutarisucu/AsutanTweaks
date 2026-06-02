@@ -11,6 +11,8 @@ public class Inventorys {
     public static int findMatchingItemStack(PlayerInventory inventory, ItemStack targetStack) {
 //#if MC >= 260100
 //$$         for (int i = 9; i < inventory.getContainerSize(); i++) {
+//#elseif MC >= 12111
+//$$ for (int i = 9; i < inventory.getMainStacks().size(); i++) {
 //#else
         for (int i = 9; i < inventory.main.size(); i++) {
 //#endif

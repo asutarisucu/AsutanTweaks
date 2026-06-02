@@ -7,7 +7,7 @@ import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.render.entity.ItemEntityRenderer;
-//#if MC < 260100
+//#if MC < 12111
 import net.minecraft.client.render.item.ItemRenderer;
 import net.minecraft.client.render.model.BakedModel;
 //#endif
@@ -32,6 +32,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 //$$ public abstract class MixinItemEntityRenderer extends net.minecraft.client.renderer.entity.EntityRenderer<net.minecraft.world.entity.item.ItemEntity, net.minecraft.client.renderer.entity.state.ItemEntityRenderState> {
 //$$
 //$$     protected MixinItemEntityRenderer(net.minecraft.client.renderer.entity.EntityRendererProvider.Context context) { super(context); }
+//$$
+//#elseif MC >= 12111
+//$$ public abstract class MixinItemEntityRenderer extends net.minecraft.client.render.entity.EntityRenderer<net.minecraft.entity.ItemEntity, net.minecraft.client.render.entity.state.ItemEntityRenderState> {
+//$$
+//$$     protected MixinItemEntityRenderer(net.minecraft.client.render.entity.EntityRendererFactory.Context context) { super(context); }
 //$$
 //#else
 public abstract class MixinItemEntityRenderer<T extends ItemEntity> extends EntityRenderer<T> {

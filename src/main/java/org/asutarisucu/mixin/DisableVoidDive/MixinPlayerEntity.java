@@ -19,6 +19,8 @@ public class MixinPlayerEntity {
                 if(!player.isOnGround()){
 //#if MC >= 260100
 //$$                     String dimension = player.level().dimension().identifier().toString();
+//#elseif MC >= 12111
+//$$                     String dimension = player.getEntityWorld().getRegistryKey().getValue().toString();
 //#else
                     String dimension = player.getWorld().getRegistryKey().getValue().toString();
 //#endif

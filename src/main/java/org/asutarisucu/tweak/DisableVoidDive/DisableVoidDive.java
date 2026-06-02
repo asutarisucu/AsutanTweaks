@@ -88,7 +88,11 @@ public class DisableVoidDive {
 //$$ }
 //#else
                         ScreenHandler handler=player.currentScreenHandler;
+//#if MC >= 12111
+//$$                         int mainSlot=player.getInventory().getSelectedSlot();
+//#else
                         int mainSlot=player.getInventory().selectedSlot;
+//#endif
                         if(handler instanceof PlayerScreenHandler&&player.getVelocity().y<0){
                             client.interactionManager.clickSlot(handler.syncId,RocketSlot,mainSlot, SlotActionType.SWAP,player );
                             player.setPitch(-90);
@@ -101,9 +105,15 @@ public class DisableVoidDive {
         }
     }
     private static void disconnectFromServer(MinecraftClient client) {
+//#if MC >= 12111
+//$$ int[] pos ={(int) client.player.getEntityPos().x,
+//$$         (int) client.player.getEntityPos().y,
+//$$         (int) client.player.getEntityPos().z};
+//#else
         int[] pos ={(int) client.player.getPos().x,
                 (int) client.player.getPos().y,
                 (int) client.player.getPos().z};
+//#endif
         if (client.getNetworkHandler() != null) {
             ClientPlayNetworkHandler networkHandler = client.getNetworkHandler();
             networkHandler.getConnection().disconnect(Text.of(String.format("Disconnect from %d,%d,%d",pos[0],pos[1],pos[2])));

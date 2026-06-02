@@ -12,6 +12,9 @@ public class MixinMinecraftClient {
 //#if MC >= 260100
 //$$ @Inject(method = "disconnect(Lnet/minecraft/client/gui/screens/Screen;Z)V", at = @At("HEAD"))
 //$$ private void onDisconnect(net.minecraft.client.gui.screens.Screen screen, boolean bl, CallbackInfo ci) {
+//#elseif MC >= 12111
+//$$ @Inject(method = "disconnect(Lnet/minecraft/client/gui/screen/Screen;Z)V", at = @At("HEAD"))
+//$$ private void onDisconnect(net.minecraft.client.gui.screen.Screen screen, boolean bl, CallbackInfo ci) {
 //#else
     @Inject(method = "disconnect()V",at = @At("HEAD"))
     private void onDisconnect(CallbackInfo ci){

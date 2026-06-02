@@ -9,17 +9,25 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import net.minecraft.block.Block;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.util.math.BlockPos;
+//#if MC < 12111
 import net.minecraft.world.WorldAccess;
+//#else
+//$$ import net.minecraft.world.tick.ScheduledTickView;
+//#endif
 import net.minecraft.world.tick.TickPriority;
 import org.asutarisucu.tweak.BlockUpdateViewer.SimulationCapture;
 
 /**
- * Intercepts WorldAccess interface defaults during simulation.
+ * Intercepts WorldAccess/ScheduledTickView interface defaults during simulation.
  * scheduleBlockTick is CAPTURED (not cancelled) so the BFS can process ticks
  * and propagate observer/gate/piston update chains.
  * scheduleFluidTick is cancelled (fluid propagation out of scope).
  */
+//#if MC < 12111
 @Mixin(WorldAccess.class)
+//#else
+//$$ @Mixin(ScheduledTickView.class)
+//#endif
 public interface MixinWorldAccessSim {
 
     @Inject(

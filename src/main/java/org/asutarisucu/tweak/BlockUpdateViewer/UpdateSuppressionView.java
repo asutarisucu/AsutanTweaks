@@ -1,7 +1,6 @@
 package org.asutarisucu.tweak.BlockUpdateViewer;
 
 //#if MC < 260100
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.MinecraftClient;
 //#if MC < 12001
 import net.minecraft.client.util.math.MatrixStack;
@@ -10,6 +9,12 @@ import net.minecraft.client.util.math.MatrixStack;
 //#endif
 //#if MC >= 12101
 //$$ import net.minecraft.client.render.RenderTickCounter;
+//#endif
+//#if MC < 12111
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+//#else
+//$$ import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
+//$$ import net.minecraft.util.Identifier;
 //#endif
 import net.minecraft.item.BlockItem;
 import org.asutarisucu.Configs.FeatureToggle;
@@ -24,7 +29,14 @@ public class UpdateSuppressionView {
 
     public static void register() {
 //#if MC < 260100
+//#if MC < 12111
         HudRenderCallback.EVENT.register(UpdateSuppressionView::onHudRender);
+//#else
+//$$ HudElementRegistry.addLast(
+//$$         Identifier.of("asutantweaks", "update_suppression_view"),
+//$$         (context, tickCounter) -> render(context)
+//$$ );
+//#endif
 //#endif
     }
 
@@ -73,7 +85,7 @@ public class UpdateSuppressionView {
 //#else
 //#if MC < 12101
     //$$ private static void onHudRender(DrawContext context, float tickDelta) { render(context); }
-//#else
+//#elseif MC < 12111
     //$$ private static void onHudRender(DrawContext context, RenderTickCounter tickCounter) { render(context); }
 //#endif
     //$$ private static void render(DrawContext context) {

@@ -13,7 +13,9 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.EnderChestBlock;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.ActionResult;
+//#if MC < 12111
 import net.minecraft.util.Hand;
+//#endif
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -29,6 +31,9 @@ public class MixinEnderChestBlock {
 //#if MC >= 260100
 //$$    @Inject(method = "useWithoutItem", at = @At(value = "HEAD"))
 //$$    protected void injectOnUse(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult hit, CallbackInfoReturnable<InteractionResult> cir) {
+//#elseif MC >= 12111
+//$$ @Inject(method = "onUse", at = @At(value = "HEAD"))
+//$$ protected void injectOnUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit, CallbackInfoReturnable<ActionResult> cir) {
 //#else
     @Inject(method = "onUse", at = @At(value = "HEAD"))
     protected void injectOnUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit, CallbackInfoReturnable<ActionResult> cir) {

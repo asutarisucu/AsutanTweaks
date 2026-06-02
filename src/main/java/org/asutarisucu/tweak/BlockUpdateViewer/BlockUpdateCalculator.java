@@ -153,8 +153,16 @@ public class BlockUpdateCalculator {
                 ((MixinAbstractBlockInvoker) hypotheticalState.getBlock())
                         .invokeOnBlockAdded(hypotheticalState, clientWorld, source, realSourceState, false);
             } else if (!realSourceState.isAir()) {
+//#if MC >= 12111
+//$$ // onStateReplaced now requires ServerWorld; cannot call on ClientWorld.
+//$$ // Seed neighbor updates from all adjacent positions as a conservative substitute.
+//$$ for (Direction dir : Direction.values()) {
+//$$     capture.captureUpdateAll(source.offset(dir), realSourceBlock);
+//$$ }
+//#else
                 ((MixinAbstractBlockInvoker) realSourceBlock)
                         .invokeOnStateReplaced(realSourceState, clientWorld, source, initialState, false);
+//#endif
             }
 
             int ops = 0;
@@ -221,7 +229,11 @@ public class BlockUpdateCalculator {
             if (inputState.getBlock() instanceof ShulkerBoxBlock) {
                 shulkerPos = inputPos;
             } else if (!inputState.hasComparatorOutput()
+//#if MC >= 12111
+//$$ && inputState.isOpaqueFullCube()
+//#else
                     && inputState.isOpaqueFullCube(clientWorld, inputPos)
+//#endif
                     && clientWorld.getEmittedRedstonePower(inputPos, facing) < 15) {
                 BlockPos behindPos = inputPos.offset(facing);
                 if (clientWorld.getBlockState(behindPos).getBlock() instanceof ShulkerBoxBlock) {
@@ -263,17 +275,30 @@ public class BlockUpdateCalculator {
 
         if (inputState.hasComparatorOutput()) {
             try {
+//#if MC >= 12111
+//$$                 inputState.getComparatorOutput(world, inputPos, facing.getOpposite());
+//#else
                 inputState.getComparatorOutput(world, inputPos);
+//#endif
             } catch (Exception e) {
                 capture.captureSuppressionAt(comparatorPos);
             }
-        } else if (inputState.isOpaqueFullCube(world, inputPos)
+        } else if (
+//#if MC >= 12111
+//$$ inputState.isOpaqueFullCube()
+//#else
+                inputState.isOpaqueFullCube(world, inputPos)
+//#endif
                 && world.getEmittedRedstonePower(inputPos, facing) < 15) {
             BlockPos behindPos = inputPos.offset(facing);
             BlockState behindState = world.getBlockState(behindPos);
             if (behindState.hasComparatorOutput()) {
                 try {
+//#if MC >= 12111
+//$$                     behindState.getComparatorOutput(world, behindPos, facing.getOpposite());
+//#else
                     behindState.getComparatorOutput(world, behindPos);
+//#endif
                 } catch (Exception e) {
                     capture.captureSuppressionAt(comparatorPos);
                 }
@@ -326,7 +351,11 @@ public class BlockUpdateCalculator {
         // Catch any exception: a crash here means this position is a potential update suppression point.
         try {
             ((MixinAbstractBlockInvoker) state.getBlock())
+//#if MC >= 12111
+//$$ .invokeNeighborUpdate(state, world, pos, sourceBlock, null, false);
+//#else
                     .invokeNeighborUpdate(state, world, pos, sourceBlock, sourcePos, false);
+//#endif
         } catch (Exception e) {
             capture.captureSuppressionAt(pos);
         }

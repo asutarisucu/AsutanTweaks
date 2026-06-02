@@ -1,6 +1,6 @@
 package org.asutarisucu.tweak.BlockUpdateViewer;
 
-//#if MC < 260100
+//#if MC < 12111
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
@@ -29,6 +29,26 @@ import org.asutarisucu.Configs.FeatureToggle;
 import org.joml.Matrix4f;
 
 import java.util.Set;
+//#elseif MC < 260100
+//$$ import fi.dy.masa.malilib.render.MaLiLibPipelines;
+//$$ import fi.dy.masa.malilib.render.RenderContext;
+//$$ import fi.dy.masa.malilib.render.RenderUtils;
+//$$ import fi.dy.masa.malilib.util.data.Color4f;
+//$$ import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext;
+//$$ import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
+//$$ import net.minecraft.block.Block;
+//$$ import net.minecraft.block.BlockState;
+//$$ import net.minecraft.client.MinecraftClient;
+//$$ import net.minecraft.item.BlockItem;
+//$$ import net.minecraft.item.ItemStack;
+//$$ import net.minecraft.state.property.Properties;
+//$$ import net.minecraft.util.hit.BlockHitResult;
+//$$ import net.minecraft.util.hit.HitResult;
+//$$ import net.minecraft.util.math.BlockPos;
+//$$ import net.minecraft.util.math.Vec3d;
+//$$ import org.asutarisucu.Configs.FeatureToggle;
+//$$
+//$$ import java.util.Set;
 //#else
 //$$ import com.mojang.blaze3d.pipeline.DepthStencilState;
 //$$ import com.mojang.blaze3d.pipeline.RenderPipeline;
@@ -196,7 +216,7 @@ public class BlockUpdateViewer {
 //$$ }
 //#endif
 
-//#if MC < 260100
+//#if MC < 12111
     private static void renderOverlay(WorldRenderContext context) {
         MinecraftClient client = MinecraftClient.getInstance();
         if (client.player == null || client.world == null) return;
@@ -371,5 +391,68 @@ public class BlockUpdateViewer {
         b.vertex(m,x0,y0,z1).color(r,g,bl,a).next(); b.vertex(m,x0,y1,z1).color(r,g,bl,a).next();
     }
 //#endif
+//#elseif MC < 260100
+//$$ private static void renderOverlay(WorldRenderContext context) {
+//$$     MinecraftClient client = MinecraftClient.getInstance();
+//$$     if (client.player == null || client.world == null) return;
+//$$
+//$$     boolean placementEnabled = FeatureToggle.PLACEMENT_UPDATE_VIEWER.getBooleanValue();
+//$$     boolean breakingEnabled  = FeatureToggle.BREAKING_UPDATE_VIEWER.getBooleanValue();
+//$$     boolean suppressionNeeds = FeatureToggle.UPDATE_SUPPRESSION_VIEW.getBooleanValue();
+//$$     if (!placementEnabled && !breakingEnabled && !suppressionNeeds) return;
+//$$
+//$$     HitResult hitResult = client.crosshairTarget;
+//$$     if (!(hitResult instanceof BlockHitResult blockHit)) return;
+//$$     if (blockHit.getType() == HitResult.Type.MISS) return;
+//$$
+//$$     BlockPos hitPos = blockHit.getBlockPos();
+//$$     ItemStack heldItem = client.player.getMainHandStack();
+//$$
+//$$     boolean holdingBlockItem = heldItem.getItem() instanceof BlockItem;
+//$$
+//$$     if ((placementEnabled || suppressionNeeds) && holdingBlockItem) {
+//$$         BlockItem blockItem = (BlockItem) heldItem.getItem();
+//$$         BlockPos placedPos = hitPos.offset(blockHit.getSide());
+//$$         Block placedBlock = blockItem.getBlock();
+//$$         BlockState approxState = placedBlock.getDefaultState();
+//$$         if (approxState.contains(Properties.HORIZONTAL_FACING)) {
+//$$             approxState = approxState.with(Properties.HORIZONTAL_FACING,
+//$$                     client.player.getHorizontalFacing().getOpposite());
+//$$         }
+//$$         Set<BlockPos> updateSet = BlockUpdateCalculator.compute(client.world, placedPos, approxState);
+//$$         if (placementEnabled) renderBoxes12111(updateSet, 1f, 0f, 0f);
+//$$     }
+//$$
+//$$     if ((breakingEnabled && !holdingBlockItem) || (suppressionNeeds && !holdingBlockItem)) {
+//$$         Set<BlockPos> updateSet = BlockUpdateCalculator.compute(client.world, hitPos);
+//$$         if (breakingEnabled) renderBoxes12111(updateSet, 0f, 0.3f, 1f);
+//$$     }
+//$$ }
+//$$
+//$$ private static void renderBoxes12111(Set<BlockPos> positions, float r, float g, float b) {
+//$$     if (positions.isEmpty()) return;
+//$$     Color4f solid   = new Color4f(r, g, b, 0.04f);
+//$$     Color4f through = new Color4f(r, g, b, 0.02f);
+//$$     Color4f outline = new Color4f(r, g, b, 0.6f);
+//$$     Vec3d cam = RenderUtils.camPos();
+//$$     try (var ctx = new RenderContext(() -> "BUV/solid", MaLiLibPipelines.POSITION_COLOR_MASA_LEQUAL_DEPTH_NO_CULL)) {
+//$$         var buf = ctx.getBuilder();
+//$$         for (BlockPos pos : positions) RenderUtils.drawBlockBoundingBoxSidesBatchedQuads(pos, cam, solid, 0.0, buf);
+//$$         var mesh = buf.endNullable();
+//$$         if (mesh != null) { ctx.draw(mesh, false, true); mesh.close(); }
+//$$     } catch (Exception ignored) {}
+//$$     try (var ctx = new RenderContext(() -> "BUV/through", MaLiLibPipelines.POSITION_COLOR_TRANSLUCENT_NO_DEPTH_NO_CULL)) {
+//$$         var buf = ctx.getBuilder();
+//$$         for (BlockPos pos : positions) RenderUtils.drawBlockBoundingBoxSidesBatchedQuads(pos, cam, through, 0.0, buf);
+//$$         var mesh = buf.endNullable();
+//$$         if (mesh != null) { ctx.draw(mesh, false, true); mesh.close(); }
+//$$     } catch (Exception ignored) {}
+//$$     try (var ctx = new RenderContext(() -> "BUV/outline", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH)) {
+//$$         var buf = ctx.getBuilder();
+//$$         for (BlockPos pos : positions) RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(pos, cam, outline, 0.0025, 1.5f, buf);
+//$$         var mesh = buf.endNullable();
+//$$         if (mesh != null) { ctx.draw(mesh, false, true); mesh.close(); }
+//$$     } catch (Exception ignored) {}
+//$$ }
 //#endif
 }

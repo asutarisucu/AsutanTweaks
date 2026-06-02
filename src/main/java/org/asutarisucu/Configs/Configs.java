@@ -14,7 +14,7 @@ import fi.dy.masa.malilib.util.JsonUtils;
 import fi.dy.masa.malilib.util.restrictions.UsageRestriction;
 import org.asutarisucu.Reference;
 
-//#if MC < 260100
+//#if MC < 12111
 import java.io.File;
 //#else
 //$$ import java.nio.file.Files;
@@ -65,6 +65,10 @@ public class Configs implements IConfigHandler {
 //$$ Path configFile = FileUtils.getConfigDirectory().resolve(CONFIG_FILE_NAME);
 //$$ if (!Files.exists(configFile) || Files.isDirectory(configFile) || !Files.isReadable(configFile)) return;
 //$$ JsonElement element = JsonUtils.parseJsonFile(configFile);
+//#elseif MC >= 12111
+//$$ Path configFile = FileUtils.getConfigDirectoryAsPath().resolve(CONFIG_FILE_NAME);
+//$$ if (!Files.exists(configFile) || Files.isDirectory(configFile) || !Files.isReadable(configFile)) return;
+//$$ JsonElement element = JsonUtils.parseJsonFileAsPath(configFile);
 //#else
         File configFile = new File(FileUtils.getConfigDirectory(), CONFIG_FILE_NAME);
         if (!configFile.exists() || !configFile.isFile() || !configFile.canRead()) return;
@@ -82,6 +86,9 @@ public class Configs implements IConfigHandler {
 //#if MC >= 260100
 //$$ Path dir = FileUtils.getConfigDirectory();
 //$$ try { Files.createDirectories(dir); } catch (java.io.IOException e) { return; }
+//#elseif MC >= 12111
+//$$ Path dir = FileUtils.getConfigDirectoryAsPath();
+//$$ try { Files.createDirectories(dir); } catch (java.io.IOException e) { return; }
 //#else
         File dir = FileUtils.getConfigDirectory();
         if (!((dir.exists() && dir.isDirectory()) || dir.mkdirs())) return;
@@ -92,6 +99,8 @@ public class Configs implements IConfigHandler {
         ConfigUtils.writeHotkeyToggleOptions(root, "TweakHotkeys", "TweakToggles", FeatureToggle.VALUES);
 //#if MC >= 260100
 //$$ JsonUtils.writeJsonToFile(root, dir.resolve(CONFIG_FILE_NAME));
+//#elseif MC >= 12111
+//$$ JsonUtils.writeJsonToFileAsPath(root, dir.resolve(CONFIG_FILE_NAME));
 //#else
         JsonUtils.writeJsonToFile(root, new File(dir, CONFIG_FILE_NAME));
 //#endif
