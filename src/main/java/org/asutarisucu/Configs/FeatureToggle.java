@@ -23,6 +23,8 @@ public final class FeatureToggle {
     public static final Feature BREAKING_UPDATE_VIEWER              = Feature.BREAKING_UPDATE_VIEWER;
     public static final Feature UPDATE_VIEW_INSTANT_ONLY            = Feature.UPDATE_VIEW_INSTANT_ONLY;
     public static final Feature UPDATE_SUPPRESSION_VIEW             = Feature.UPDATE_SUPPRESSION_VIEW;
+    public static final Feature THIRD_EYE                          = Feature.THIRD_EYE;
+    public static final Feature THIRD_EYE_MOVEMENT                 = Feature.THIRD_EYE_MOVEMENT;
 
     public static final List<Feature> VALUES = Arrays.asList(Feature.values());
 

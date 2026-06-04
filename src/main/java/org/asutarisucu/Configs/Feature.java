@@ -34,7 +34,11 @@ public enum Feature {
     UPDATE_VIEW_INSTANT_ONLY("update_view_instant_only", false, "",
             "Update View Instant Only", "Limit update viewer to instant updates only"),
     UPDATE_SUPPRESSION_VIEW("update_suppression_view", false, "",
-            "Update Suppression View", "Show warning when update chain contains suppression-prone positions");
+            "Update Suppression View", "Show warning when update chain contains suppression-prone positions"),
+    THIRD_EYE("third_eye", false, "",
+            "Third Eye", "Render the world from a second viewpoint in a separate window"),
+    THIRD_EYE_MOVEMENT("third_eye_movement", false, "",
+            "Third Eye Movement", "WASD/Space/Ctrl move the Third Eye camera while enabled");
 
     public final FeatureConfig config;
     public final String displayName;

@@ -26,6 +26,9 @@
   ],
   "client": [
     "AutoFillInventory.MixinHandledScreen",
+    "ThirdEye.MixinMinecraftClientThirdEye",
+    "ThirdEye.MixinGameRendererThirdEye",
+    "ThirdEye.MixinCameraThirdEye",
 //#if MC < 260100
     "BlockUpdateViewer.MixinClientPlayNbtResponse",
     "BlockUpdateViewer.MixinClientWorldSim",
