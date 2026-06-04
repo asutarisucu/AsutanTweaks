@@ -1,7 +1,8 @@
 package org.asutarisucu.tweak.Restriction;
 
 import com.google.common.collect.Lists;
-import fi.dy.masa.malilib.util.InfoUtils;
+import org.asutarisucu.GUI.HudLogger;
+import org.asutarisucu.lib.util.MessageUtils;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.ItemPlacementContext;
@@ -27,7 +28,7 @@ public class RestrictionStateWhiteList {
 
         for (Property<?> property :PROPERTIES) {
             if (stateToPlace.contains(property) && schematicState.contains(property) && stateToPlace.get(property) != schematicState.get(property)) {
-                InfoUtils.printActionbarMessage("wrongBlockState:"+property.getName().toUpperCase());
+                HudLogger.INSTANCE.log("wrongBlockState:" + property.getName().toUpperCase());
                 cir.setReturnValue(false);
             }
         }

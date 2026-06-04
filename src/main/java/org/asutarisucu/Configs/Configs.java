@@ -1,118 +1,83 @@
 package org.asutarisucu.Configs;
 
-import com.google.common.collect.ImmutableList;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import fi.dy.masa.malilib.config.ConfigType;
-import fi.dy.masa.malilib.config.ConfigUtils;
-import fi.dy.masa.malilib.config.IConfigBase;
-import fi.dy.masa.malilib.config.IConfigHandler;
-import fi.dy.masa.malilib.config.options.*;
-import fi.dy.masa.malilib.util.FileUtils;
-import fi.dy.masa.malilib.util.JsonUtils;
+import org.asutarisucu.lib.config.*;
 
-import fi.dy.masa.malilib.util.restrictions.UsageRestriction;
-import org.asutarisucu.Reference;
+import java.util.List;
 
-//#if MC < 12111
-import java.io.File;
-//#else
-//$$ import java.nio.file.Files;
-//$$ import java.nio.file.Path;
-//#endif
+public class Configs {
 
-public class Configs implements IConfigHandler {
-    private static final String CONFIG_FILE_NAME = Reference.MOD_ID + ".json";
-    //Genericタブに表示させたいConfig項目を書く
-    public static class Generic{
-        public static final ConfigInteger RESTOCK_COUNT=new ConfigInteger("RestockCount",32,0,64,"MainHand Item Count using ItemRestock");
-        public static final ConfigDouble VOID_HEIGHT_OW=new ConfigDouble("VoidHeight_OW",-80,-200,-64,"In OverWorld,Below this is Void");
-        public static final ConfigDouble VOID_HEIGHT_NE=new ConfigDouble("VoidHeight_NE",-50,-100,0,"In The Nether,Below this is Void");
-        public static final ConfigDouble VOID_HEIGHT_END=new ConfigDouble("VoidHeight_END",-50,-100,0,"In The End,Below this is Void");
-        public static final ConfigBoolean VOID_DISCONNECT=new ConfigBoolean("VoidDisconnect",false,"if you cant safe yourself,disconnect world");
-        public static final ConfigStringList RESTRICTION_STATE_WHITELIST=new ConfigStringList("RestrictionStateWhiteList",ImmutableList.of("UP","DOWN","NORTH","EAST","SOUTH","WEST"),"Restriction Check State WhiteList");
-        public static final ConfigStringList LAST_USE_CANCEL_BLACKLIST=new ConfigStringList("LastUseCancelBlackList",ImmutableList.of("chest","shulker_box"),"ignore RestockItem Interact this List Block");
-        public static final ConfigStringList ENDERCHEST_MATERIALLIST_WHITELIST=new ConfigStringList("EnderChestMaterialListWhiteList",ImmutableList.of("white"),"MaterialList Check box WhiteList");
-        public static final ConfigStringList ENDERCHEST_MATERIALLIST_BLACKLIST=new ConfigStringList("EnderChestMaterialListBlackList",ImmutableList.of("white"),"MaterialList Check box BlackList");
-        public static final ConfigOptionList ENDERCHEST_MATERIALLIST_FILTERTYPE=new ConfigOptionList("EnderChestMaterialListFilter", UsageRestriction.ListType.NONE,"EnderChestMaterialList Check box Whitelist or Blacklist");
-        public static final ConfigStringList HIGHLIGHT_ITEM_LIST=new ConfigStringList("HighLightItemList",ImmutableList.of(),"HighLight something name list");
-        public static final ConfigColor HIGHLIGHT_BLOCK_COLOR=new ConfigColor("HighlightBlockColor","#FFFF0000","Highlight color BlockOutline");
-        public static final ConfigInteger HIGHLIGHT_BLOCK_RANGE=new ConfigInteger("HighlightBlockRange",32,0,64,true,"Range to Search for blocks to highlight");
-        public static final ConfigColor HIGHLIGHT_CONTAINER_COLOR=new ConfigColor("HighlightContainerColor","#FF0000FF","Highlight color ContainerOutline");
-        public static final ConfigInteger HIGHLIGHT_CONTAINER_RANGE=new ConfigInteger("HighlightBlockRange",32,0,64,true,"Range to Search for Container to highlight");
-
-        public static final ImmutableList<IConfigBase> OPTIONS = ImmutableList.of(
-                RESTOCK_COUNT,
-                VOID_HEIGHT_OW,
-                VOID_HEIGHT_NE,
-                VOID_HEIGHT_END,
-                VOID_DISCONNECT,
-                RESTRICTION_STATE_WHITELIST,
-                LAST_USE_CANCEL_BLACKLIST,
-                ENDERCHEST_MATERIALLIST_WHITELIST,
-                ENDERCHEST_MATERIALLIST_BLACKLIST,
-                ENDERCHEST_MATERIALLIST_FILTERTYPE,
-                HIGHLIGHT_ITEM_LIST,
-                HIGHLIGHT_BLOCK_COLOR,
-                HIGHLIGHT_BLOCK_RANGE,
-                HIGHLIGHT_CONTAINER_COLOR,
-                HIGHLIGHT_CONTAINER_RANGE
-        );
+    public static class Generic {
+        public static final IntegerConfig RESTOCK_COUNT =
+                new IntegerConfig("restock_count", 32, 0, 64);
+        public static final DoubleConfig VOID_HEIGHT_OW =
+                new DoubleConfig("void_height_ow", -80, -200, -64);
+        public static final DoubleConfig VOID_HEIGHT_NE =
+                new DoubleConfig("void_height_ne", -50, -100, 0);
+        public static final DoubleConfig VOID_HEIGHT_END =
+                new DoubleConfig("void_height_end", -50, -100, 0);
+        public static final BooleanConfig VOID_DISCONNECT =
+                new BooleanConfig("void_disconnect", false);
+        public static final StringListConfig RESTRICTION_STATE_WHITELIST =
+                new StringListConfig("restriction_state_whitelist",
+                        List.of("UP", "DOWN", "NORTH", "EAST", "SOUTH", "WEST"));
+        public static final StringListConfig LAST_USE_CANCEL_BLACKLIST =
+                new StringListConfig("last_use_cancel_blacklist",
+                        List.of("chest", "shulker_box"));
+        public static final StringListConfig ENDERCHEST_MATERIALLIST_WHITELIST =
+                new StringListConfig("enderchest_materiallist_whitelist", List.of("white"));
+        public static final StringListConfig ENDERCHEST_MATERIALLIST_BLACKLIST =
+                new StringListConfig("enderchest_materiallist_blacklist", List.of("white"));
+        public static final OptionListConfig<FilterMode> ENDERCHEST_MATERIALLIST_FILTERTYPE =
+                new OptionListConfig<>("enderchest_materiallist_filtertype",
+                        FilterMode.NONE, FilterMode.class);
+        public static final StringListConfig HIGHLIGHT_ITEM_LIST =
+                new StringListConfig("highlight_item_list", List.of());
+        public static final ColorConfig HIGHLIGHT_BLOCK_COLOR =
+                new ColorConfig("highlight_block_color", "#FFFF0000");
+        public static final IntegerConfig HIGHLIGHT_BLOCK_RANGE =
+                new IntegerConfig("highlight_block_range", 32, 0, 64);
+        public static final ColorConfig HIGHLIGHT_CONTAINER_COLOR =
+                new ColorConfig("highlight_container_color", "#FF0000FF");
+        public static final IntegerConfig HIGHLIGHT_CONTAINER_RANGE =
+                new IntegerConfig("highlight_container_range", 32, 0, 64);
+        public static final IntegerConfig HUD_LOG_TIMEOUT =
+                new IntegerConfig("hud_log_timeout", 4, 1, 30);
+        public static final IntegerConfig HUD_LOG_WIDTH =
+                new IntegerConfig("hud_log_width", 200, 80, 600);
+        public static final OptionListConfig<AlignMode> HUD_LOG_ALIGN =
+                new OptionListConfig<>("hud_log_align", AlignMode.LEFT, AlignMode.class);
+        public static final DoubleConfig HUD_LOG_X =
+                new DoubleConfig("hud_log_x", 0.02, 0.0, 1.0);
+        public static final DoubleConfig HUD_LOG_Y =
+                new DoubleConfig("hud_log_y", 0.80, 0.0, 1.0);
+        public static final DoubleConfig PROGRESS_METER_X =
+                new DoubleConfig("progress_meter_x", 0.5, 0.0, 1.0);
+        public static final DoubleConfig PROGRESS_METER_Y =
+                new DoubleConfig("progress_meter_y", 0.02, 0.0, 1.0);
     }
 
-    public static void loadFromFile() {
-//#if MC >= 260100
-//$$ Path configFile = FileUtils.getConfigDirectory().resolve(CONFIG_FILE_NAME);
-//$$ if (!Files.exists(configFile) || Files.isDirectory(configFile) || !Files.isReadable(configFile)) return;
-//$$ JsonElement element = JsonUtils.parseJsonFile(configFile);
-//#elseif MC >= 12111
-//$$ Path configFile = FileUtils.getConfigDirectoryAsPath().resolve(CONFIG_FILE_NAME);
-//$$ if (!Files.exists(configFile) || Files.isDirectory(configFile) || !Files.isReadable(configFile)) return;
-//$$ JsonElement element = JsonUtils.parseJsonFileAsPath(configFile);
-//#else
-        File configFile = new File(FileUtils.getConfigDirectory(), CONFIG_FILE_NAME);
-        if (!configFile.exists() || !configFile.isFile() || !configFile.canRead()) return;
-        JsonElement element = JsonUtils.parseJsonFile(configFile);
-//#endif
-        if (element != null && element.isJsonObject()) {
-            JsonObject root = element.getAsJsonObject();
-            ConfigUtils.readHotkeys(root, "GenericHotkeys", Hotkeys.HOTKEY_LIST);
-            ConfigUtils.readConfigBase(root,"Option", Generic.OPTIONS);
-            ConfigUtils.readHotkeyToggleOptions(root, "TweakHotkeys", "TweakToggles", FeatureToggle.VALUES);
-        }
-    }
-
-    public static void saveToFile() {
-//#if MC >= 260100
-//$$ Path dir = FileUtils.getConfigDirectory();
-//$$ try { Files.createDirectories(dir); } catch (java.io.IOException e) { return; }
-//#elseif MC >= 12111
-//$$ Path dir = FileUtils.getConfigDirectoryAsPath();
-//$$ try { Files.createDirectories(dir); } catch (java.io.IOException e) { return; }
-//#else
-        File dir = FileUtils.getConfigDirectory();
-        if (!((dir.exists() && dir.isDirectory()) || dir.mkdirs())) return;
-//#endif
-        JsonObject root = new JsonObject();
-        ConfigUtils.writeHotkeys(root, "GenericHotkeys", Hotkeys.HOTKEY_LIST);
-        ConfigUtils.writeConfigBase(root,"Option", Generic.OPTIONS);
-        ConfigUtils.writeHotkeyToggleOptions(root, "TweakHotkeys", "TweakToggles", FeatureToggle.VALUES);
-//#if MC >= 260100
-//$$ JsonUtils.writeJsonToFile(root, dir.resolve(CONFIG_FILE_NAME));
-//#elseif MC >= 12111
-//$$ JsonUtils.writeJsonToFileAsPath(root, dir.resolve(CONFIG_FILE_NAME));
-//#else
-        JsonUtils.writeJsonToFile(root, new File(dir, CONFIG_FILE_NAME));
-//#endif
-    }
-
-    @Override
-    public void load() {
-        loadFromFile();
-    }
-
-    @Override
-    public void save() {
-        saveToFile();
+    public static void registerAll() {
+        ConfigManager.INSTANCE.register("options", Generic.RESTOCK_COUNT.getName(),            Generic.RESTOCK_COUNT);
+        ConfigManager.INSTANCE.register("options", Generic.VOID_HEIGHT_OW.getName(),           Generic.VOID_HEIGHT_OW);
+        ConfigManager.INSTANCE.register("options", Generic.VOID_HEIGHT_NE.getName(),           Generic.VOID_HEIGHT_NE);
+        ConfigManager.INSTANCE.register("options", Generic.VOID_HEIGHT_END.getName(),          Generic.VOID_HEIGHT_END);
+        ConfigManager.INSTANCE.register("options", Generic.VOID_DISCONNECT.getName(),          Generic.VOID_DISCONNECT);
+        ConfigManager.INSTANCE.register("options", Generic.RESTRICTION_STATE_WHITELIST.getName(),    Generic.RESTRICTION_STATE_WHITELIST);
+        ConfigManager.INSTANCE.register("options", Generic.LAST_USE_CANCEL_BLACKLIST.getName(),      Generic.LAST_USE_CANCEL_BLACKLIST);
+        ConfigManager.INSTANCE.register("options", Generic.ENDERCHEST_MATERIALLIST_WHITELIST.getName(), Generic.ENDERCHEST_MATERIALLIST_WHITELIST);
+        ConfigManager.INSTANCE.register("options", Generic.ENDERCHEST_MATERIALLIST_BLACKLIST.getName(), Generic.ENDERCHEST_MATERIALLIST_BLACKLIST);
+        ConfigManager.INSTANCE.register("options", Generic.ENDERCHEST_MATERIALLIST_FILTERTYPE.getName(), Generic.ENDERCHEST_MATERIALLIST_FILTERTYPE);
+        ConfigManager.INSTANCE.register("options", Generic.HIGHLIGHT_ITEM_LIST.getName(),      Generic.HIGHLIGHT_ITEM_LIST);
+        ConfigManager.INSTANCE.register("options", Generic.HIGHLIGHT_BLOCK_COLOR.getName(),    Generic.HIGHLIGHT_BLOCK_COLOR);
+        ConfigManager.INSTANCE.register("options", Generic.HIGHLIGHT_BLOCK_RANGE.getName(),    Generic.HIGHLIGHT_BLOCK_RANGE);
+        ConfigManager.INSTANCE.register("options", Generic.HIGHLIGHT_CONTAINER_COLOR.getName(), Generic.HIGHLIGHT_CONTAINER_COLOR);
+        ConfigManager.INSTANCE.register("options", Generic.HIGHLIGHT_CONTAINER_RANGE.getName(), Generic.HIGHLIGHT_CONTAINER_RANGE);
+        ConfigManager.INSTANCE.register("options", Generic.HUD_LOG_TIMEOUT.getName(), Generic.HUD_LOG_TIMEOUT);
+        ConfigManager.INSTANCE.register("options", Generic.HUD_LOG_WIDTH.getName(),   Generic.HUD_LOG_WIDTH);
+        ConfigManager.INSTANCE.register("options", Generic.HUD_LOG_ALIGN.getName(),   Generic.HUD_LOG_ALIGN);
+        ConfigManager.INSTANCE.register("options", Generic.HUD_LOG_X.getName(),           Generic.HUD_LOG_X);
+        ConfigManager.INSTANCE.register("options", Generic.HUD_LOG_Y.getName(),           Generic.HUD_LOG_Y);
+        ConfigManager.INSTANCE.register("options", Generic.PROGRESS_METER_X.getName(),    Generic.PROGRESS_METER_X);
+        ConfigManager.INSTANCE.register("options", Generic.PROGRESS_METER_Y.getName(),    Generic.PROGRESS_METER_Y);
     }
 }

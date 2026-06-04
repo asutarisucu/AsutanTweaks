@@ -1,6 +1,8 @@
 package org.asutarisucu;
 
-import org.asutarisucu.Configs.FeatureToggle;
+import org.asutarisucu.Configs.Feature;
+import org.asutarisucu.GUI.HudLogger;
+import org.asutarisucu.GUI.ProgressMeter;
 import org.asutarisucu.Event.LastUseCancel;
 import org.asutarisucu.Event.RenderCash;
 import org.asutarisucu.tweak.BlockUpdateViewer.BlockUpdateViewer;
@@ -8,60 +10,100 @@ import org.asutarisucu.tweak.BlockUpdateViewer.UpdateSuppressionView;
 import org.asutarisucu.tweak.SearchItems.HighlightBlock;
 import org.asutarisucu.tweak.SearchItems.HighlightContainer;
 import org.asutarisucu.tweak.SimpleItemEntityRender.SimpleEntityRender;
-//#if MC >= 260100
-//$$ import fi.dy.masa.malilib.event.RenderEventHandler;
-//$$ import fi.dy.masa.malilib.interfaces.IRenderer;
-//$$ import fi.dy.masa.malilib.render.GuiContext;
+
+//#if MC >= 12111
+//$$ import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
+//#if MC < 260100
+//$$ import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
+//$$ import net.minecraft.util.Identifier;
+//#else
+//$$ import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
+//$$ import net.minecraft.resources.Identifier;
+//#endif
+//#else
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 //#endif
 
 public class Reference {
     public static final String MOD_ID = "AsutanTweaks";
-    public static final String VERSION = "1.1.0";
+    public static final String VERSION = "1.3.0";
 
-    private static void registerSearchHighlight() {
-//#if MC < 12111
-        // SearchItems highlight rendering handled via MixinWorldRenderer injection
-//#elseif MC < 260100
-//$$     net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents.AFTER_ENTITIES.register(context -> {
-//$$         if (FeatureToggle.SEARCH_BLOCK_HIGHLIGHT.getBooleanValue()) HighlightBlock.renderHighlightBlock();
-//$$         if (FeatureToggle.SEARCH_CONTAINER_HIGHLIGHT.getBooleanValue()) HighlightContainer.renderHighlightContainer();
-//$$     });
-//#endif
-    }
-
-    public static void LoadEvent(){
+    public static void LoadEvent() {
         LastUseCancel.UseBlockEvents();
         RenderCash.registerCash();
         BlockUpdateViewer.register();
         UpdateSuppressionView.register();
         SimpleEntityRender.register();
-        registerSearchHighlight();
+        registerWorldRendering();
+        registerHud();
+    }
+
+    private static void registerWorldRendering() {
 //#if MC >= 260100
-//$$         RenderEventHandler.getInstance().registerWorldLastRenderer(new IRenderer() {
-//$$             @Override
-//$$             public void onRenderWorldLast(
-//$$                     com.mojang.blaze3d.pipeline.RenderTarget renderTarget,
-//$$                     org.joml.Matrix4fc matrix4fc,
-//$$                     net.minecraft.client.renderer.state.level.CameraRenderState cameraRenderState,
-//$$                     net.minecraft.client.renderer.culling.Frustum frustum,
-//$$                     net.minecraft.client.renderer.RenderBuffers renderBuffers,
-//$$                     com.mojang.blaze3d.buffers.GpuBufferSlice gpuBufferSlice,
-//$$                     org.joml.Vector4f vector4f,
-//$$                     net.minecraft.util.profiling.ProfilerFiller profiler) {
-//$$                 if (FeatureToggle.SEARCH_BLOCK_HIGHLIGHT.getBooleanValue()) {
-//$$                     HighlightBlock.renderHighlightBlock();
-//$$                 }
-//$$                 if (FeatureToggle.SEARCH_CONTAINER_HIGHLIGHT.getBooleanValue()) {
-//$$                     HighlightContainer.renderHighlightContainer();
-//$$                 }
-//$$                 BlockUpdateViewer.renderOverlay26();
-//$$             }
-//$$             @Override
-//$$             public void onExtractGuiOverlayPost(GuiContext ctx, float partialTicks,
-//$$                     net.minecraft.util.profiling.ProfilerFiller profiler) {
-//$$                 UpdateSuppressionView.renderHud26(ctx);
-//$$             }
-//$$         });
+//$$ LevelRenderEvents.BEFORE_GIZMOS.register(context -> {
+//$$     if (Feature.SEARCH_BLOCK_HIGHLIGHT.isEnabled())    HighlightBlock.render(context);
+//$$     if (Feature.SEARCH_CONTAINER_HIGHLIGHT.isEnabled()) HighlightContainer.render(context);
+//$$     BlockUpdateViewer.renderOverlay(context);
+//$$ });
+//#else
+        WorldRenderEvents.AFTER_ENTITIES.register(context -> {
+            if (Feature.SEARCH_BLOCK_HIGHLIGHT.isEnabled())    HighlightBlock.render(context);
+            if (Feature.SEARCH_CONTAINER_HIGHLIGHT.isEnabled()) HighlightContainer.render(context);
+//#if MC >= 12111
+//$$ BlockUpdateViewer.renderOverlay(context);
+//#else
+            BlockUpdateViewer.renderOverlay(context);
+//#endif
+        });
+//#endif
+    }
+
+    private static void registerHud() {
+//#if MC < 12001
+        HudRenderCallback.EVENT.register((matrices, tickDelta) -> {
+            UpdateSuppressionView.renderHud(matrices);
+            HudLogger.INSTANCE.render(matrices);
+            ProgressMeter.INSTANCE.render(matrices);
+        });
+//#elseif MC < 12101
+        //$$ HudRenderCallback.EVENT.register((context, tickDelta) -> {
+        //$$     UpdateSuppressionView.renderHud(context);
+        //$$     HudLogger.INSTANCE.render(context);
+        //$$     ProgressMeter.INSTANCE.render(context);
+        //$$ });
+//#elseif MC < 12111
+        //$$ HudRenderCallback.EVENT.register((context, tickCounter) -> {
+        //$$     UpdateSuppressionView.renderHud(context);
+        //$$     HudLogger.INSTANCE.render(context);
+        //$$     ProgressMeter.INSTANCE.render(context);
+        //$$ });
+//#elseif MC < 260100
+//$$ HudElementRegistry.addLast(
+//$$     Identifier.of("asutantweaks", "update_suppression"),
+//$$     (context, tickCounter) -> UpdateSuppressionView.renderHud(context)
+//$$ );
+//$$ HudElementRegistry.addLast(
+//$$     Identifier.of("asutantweaks", "hud_logger"),
+//$$     (context, tickCounter) -> HudLogger.INSTANCE.render(context)
+//$$ );
+//$$ HudElementRegistry.addLast(
+//$$     Identifier.of("asutantweaks", "progress_meter"),
+//$$     (context, tickCounter) -> ProgressMeter.INSTANCE.render(context)
+//$$ );
+//#else
+//$$ HudElementRegistry.addLast(
+//$$     Identifier.fromNamespaceAndPath("asutantweaks", "update_suppression"),
+//$$     (extractor, tickDelta) -> UpdateSuppressionView.renderHud(extractor)
+//$$ );
+//$$ HudElementRegistry.addLast(
+//$$     Identifier.fromNamespaceAndPath("asutantweaks", "hud_logger"),
+//$$     (extractor, tickDelta) -> HudLogger.INSTANCE.render(extractor)
+//$$ );
+//$$ HudElementRegistry.addLast(
+//$$     Identifier.fromNamespaceAndPath("asutantweaks", "progress_meter"),
+//$$     (extractor, tickDelta) -> ProgressMeter.INSTANCE.render(extractor)
+//$$ );
 //#endif
     }
 }

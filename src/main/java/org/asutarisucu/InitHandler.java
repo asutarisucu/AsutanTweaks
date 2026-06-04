@@ -1,20 +1,7 @@
 package org.asutarisucu;
 
-import fi.dy.masa.malilib.config.ConfigManager;
-import fi.dy.masa.malilib.event.InputEventHandler;
-import fi.dy.masa.malilib.interfaces.IInitializationHandler;
-import org.asutarisucu.Configs.Callbacks;
-import org.asutarisucu.Configs.Configs;
-import org.asutarisucu.Event.InputHandler;
-
-public class InitHandler implements IInitializationHandler {
-    @Override
-    public void registerModHandlers() {
-        ConfigManager.getInstance().registerConfigHandler(Reference.MOD_ID,new Configs());
-        InputEventHandler.getKeybindManager().registerKeybindProvider(InputHandler.getInstance());
-        InputEventHandler.getInputManager().registerKeyboardInputHandler(InputHandler.getInstance());
-        InputEventHandler.getInputManager().registerMouseInputHandler(InputHandler.getInstance());
-        Callbacks.init();
-        Reference.LoadEvent();
-    }
+// Initialization is now handled directly in AsutanTweaks.onInitializeClient().
+// This class is kept as a tombstone only — do not use.
+@Deprecated
+public class InitHandler {
 }

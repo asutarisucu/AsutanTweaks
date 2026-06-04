@@ -1,0 +1,11 @@
+{
+  "providers": [
+    {
+      "type": "ttf",
+      "file": "asutantweaks:inter_regular.ttf",
+      "size": 9,
+      "oversample": 4,
+      "shift": [0, 0]
+    }
+  ]
+}

@@ -1,24 +1,27 @@
 package org.asutarisucu.tweak.SearchItems;
 
-//#if MC < 12111
-import com.mojang.blaze3d.systems.RenderSystem;
-import fi.dy.masa.litematica.render.RenderUtils;
-import fi.dy.masa.malilib.util.Color4f;
-import net.minecraft.client.MinecraftClient;
 import org.asutarisucu.Configs.Configs;
-//#elseif MC < 260100
-//$$ import fi.dy.masa.malilib.render.MaLiLibPipelines;
-//$$ import fi.dy.masa.malilib.render.RenderContext;
-//$$ import fi.dy.masa.malilib.render.RenderUtils;
-//$$ import fi.dy.masa.malilib.util.data.Color4f;
-//$$ import net.minecraft.util.math.Vec3d;
-//$$ import org.asutarisucu.Configs.Configs;
-//#else
-//$$ import fi.dy.masa.malilib.render.RenderUtils;
-//$$ import fi.dy.masa.malilib.util.data.Color4f;
-//$$ import org.asutarisucu.Configs.Configs;
-//#endif
+import org.asutarisucu.lib.render.Color;
+import org.asutarisucu.lib.render.WorldRenderer;
+
+//#if MC < 12111
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
+import org.joml.Matrix4f;
+//#elseif MC < 260100
+//$$ import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext;
+//$$ import net.minecraft.client.MinecraftClient;
+//$$ import net.minecraft.util.math.BlockPos;
+//$$ import net.minecraft.util.math.Vec3d;
+//$$ import org.joml.Matrix4f;
+//#else
+//$$ import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
+//$$ import net.minecraft.client.Minecraft;
+//$$ import net.minecraft.core.BlockPos;
+//$$ import org.joml.Matrix4f;
+//#endif
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,40 +30,38 @@ public class HighlightContainer {
 
     public static List<BlockPos> posList = new ArrayList<>();
 
-    public static void renderHighlightContainer() {
 //#if MC < 12111
-        MinecraftClient mc = MinecraftClient.getInstance();
-
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.disableCull();
-        RenderSystem.disableDepthTest();
-        Color4f color = Configs.Generic.HIGHLIGHT_CONTAINER_COLOR.getColor();
-
-        if (posList != null) {
-            for (BlockPos pos : posList) {
-                RenderUtils.renderBlockOutline(pos, 0.0025f, 2.0f, color, mc);
-            }
-        }
-        RenderSystem.enableDepthTest();
-        RenderSystem.enableCull();
-        RenderSystem.disableBlend();
+    public static void render(WorldRenderContext context) {
+        Color color = Configs.Generic.HIGHLIGHT_CONTAINER_COLOR.getColor();
+        Vec3d cam = context.camera().getPos();
+        Matrix4f viewRot = context.matrixStack().peek().getPositionMatrix();
+        WorldRenderer.renderBlockOutlines(new java.util.HashSet<>(posList), color, 0.0025,
+                viewRot, cam.x, cam.y, cam.z);
+    }
 //#elseif MC < 260100
-//$$ Color4f color = Configs.Generic.HIGHLIGHT_CONTAINER_COLOR.getColor();
-//$$ Vec3d cam = RenderUtils.camPos();
-//$$ try (var ctx = new RenderContext(() -> "SearchHL/container", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH)) {
-//$$     var buf = ctx.getBuilder();
-//$$     for (var pos : posList) {
-//$$         RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(pos, cam, color, 0.0025, 2.0f, buf);
-//$$     }
-//$$     var mesh = buf.endNullable();
-//$$     if (mesh != null) { ctx.draw(mesh, false, true); mesh.close(); }
-//$$ } catch (Exception ignored) {}
+//$$ public static void render(WorldRenderContext context) {
+//$$     Color color = Configs.Generic.HIGHLIGHT_CONTAINER_COLOR.getColor();
+//$$     Vec3d cam = context.gameRenderer().getCamera().getCameraPos();
+//$$     Matrix4f viewRot = context.matrices().peek().getPositionMatrix();
+//$$     WorldRenderer.renderBlockOutlines(new java.util.HashSet<>(posList), color, 0.0025,
+//$$             viewRot, cam.x, cam.y, cam.z);
+//$$ }
 //#else
-//$$         Color4f color = Configs.Generic.HIGHLIGHT_CONTAINER_COLOR.getColor();
-//$$         for (var pos : posList) {
-//$$             RenderUtils.renderBlockOutline(pos, 0.0025f, 2.0f, color, false);
-//$$         }
+//$$ public static void render(net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext context) {
+//$$     Color color = Configs.Generic.HIGHLIGHT_CONTAINER_COLOR.getColor();
+//$$     var cam = context.gameRenderer().getMainCamera().position();
+//$$     Matrix4f viewRot = new Matrix4f();
+//$$     WorldRenderer.renderBlockOutlines(new java.util.HashSet<>(posList), color, 0.0025,
+//$$             viewRot, cam.x, cam.y, cam.z);
+//$$ }
+//#endif
+
+    /** Legacy entry point used by scan logic before 12111. */
+    public static void renderHighlightContainer() {
+//#if MC < 260100
+        Color color = Configs.Generic.HIGHLIGHT_CONTAINER_COLOR.getColor();
+        WorldRenderer.renderBlockOutlines(new java.util.HashSet<>(posList), color, 0.0025,
+                new Matrix4f(), 0, 0, 0);
 //#endif
     }
 }

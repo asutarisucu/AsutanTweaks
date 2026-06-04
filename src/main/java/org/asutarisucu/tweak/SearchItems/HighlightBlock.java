@@ -1,117 +1,150 @@
 package org.asutarisucu.tweak.SearchItems;
 
-//#if MC < 12111
-import com.mojang.blaze3d.systems.RenderSystem;
-import fi.dy.masa.litematica.render.RenderUtils;
-import fi.dy.masa.malilib.util.Color4f;
-import net.minecraft.block.Block;
-import net.minecraft.util.Identifier;
-import net.minecraft.registry.Registries;
-import net.minecraft.world.World;
 import org.asutarisucu.Configs.Configs;
-//#elseif MC < 260100
-//$$ import fi.dy.masa.malilib.render.MaLiLibPipelines;
-//$$ import fi.dy.masa.malilib.render.RenderContext;
-//$$ import fi.dy.masa.malilib.render.RenderUtils;
-//$$ import fi.dy.masa.malilib.util.data.Color4f;
-//$$ import net.minecraft.block.Block;
-//$$ import net.minecraft.util.Identifier;
-//$$ import net.minecraft.util.math.Vec3d;
-//$$ import net.minecraft.registry.Registries;
-//$$ import net.minecraft.world.World;
-//$$ import org.asutarisucu.Configs.Configs;
-//#else
-//$$ import fi.dy.masa.malilib.render.RenderUtils;
-//$$ import fi.dy.masa.malilib.util.data.Color4f;
-//$$ import net.minecraft.core.registries.BuiltInRegistries;
-//$$ import org.asutarisucu.Configs.Configs;
-//#endif
+import org.asutarisucu.lib.render.Color;
+import org.asutarisucu.lib.render.WorldRenderer;
+
+//#if MC < 12111
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
+import net.minecraft.block.Block;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.registry.Registries;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
+import org.joml.Matrix4f;
+//#elseif MC < 260100
+//$$ import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext;
+//$$ import net.minecraft.block.Block;
+//$$ import net.minecraft.client.MinecraftClient;
+//$$ import net.minecraft.registry.Registries;
+//$$ import net.minecraft.util.math.BlockPos;
+//$$ import net.minecraft.util.math.Vec3d;
+//$$ import net.minecraft.world.World;
+//$$ import org.joml.Matrix4f;
+//#else
+//$$ import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
+//$$ import net.minecraft.client.Minecraft;
+//$$ import net.minecraft.core.BlockPos;
+//$$ import net.minecraft.core.registries.BuiltInRegistries;
+//$$ import net.minecraft.world.level.Level;
+//$$ import org.joml.Matrix4f;
+//#endif
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class HighlightBlock {
 
-    public static void renderHighlightBlock() {
 //#if MC < 12111
+    public static void render(WorldRenderContext context) {
         MinecraftClient mc = MinecraftClient.getInstance();
         World world = mc.world;
         if (world == null || mc.player == null) return;
 
         BlockPos center = mc.player.getBlockPos();
         int radius = Configs.Generic.HIGHLIGHT_BLOCK_RANGE.getIntegerValue();
+        Color color = Configs.Generic.HIGHLIGHT_BLOCK_COLOR.getColor();
+        Vec3d cam = context.camera().getPos();
+        Matrix4f viewRot = context.matrixStack().peek().getPositionMatrix();
 
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.disableCull();
-        RenderSystem.disableDepthTest();
-        Color4f color = Configs.Generic.HIGHLIGHT_BLOCK_COLOR.getColor();
-
+        Set<BlockPos> positions = new HashSet<>();
         for (int x = -radius; x <= radius; x++) {
             for (int y = -radius; y <= radius; y++) {
                 for (int z = -radius; z <= radius; z++) {
                     BlockPos pos = center.add(x, y, z);
                     Block block = world.getBlockState(pos).getBlock();
-                    Identifier id = Registries.BLOCK.getId(block);
-                    String name = id.getPath();
+                    String name = Registries.BLOCK.getId(block).getPath();
                     if (Configs.Generic.HIGHLIGHT_ITEM_LIST.getStrings().contains(name)) {
-                        RenderUtils.renderBlockOutline(pos, 0.0025f, 2.0f, color, mc);
+                        positions.add(pos);
                     }
                 }
             }
         }
-        RenderSystem.enableDepthTest();
-        RenderSystem.enableCull();
-        RenderSystem.disableBlend();
+        WorldRenderer.renderBlockOutlines(positions, color, 0.0025, viewRot, cam.x, cam.y, cam.z);
+    }
 //#elseif MC < 260100
-//$$ MinecraftClient mc = MinecraftClient.getInstance();
-//$$ World world = mc.world;
-//$$ if (world == null || mc.player == null) return;
+//$$ public static void render(WorldRenderContext context) {
+//$$     MinecraftClient mc = MinecraftClient.getInstance();
+//$$     World world = mc.world;
+//$$     if (world == null || mc.player == null) return;
 //$$
-//$$ BlockPos center = mc.player.getBlockPos();
-//$$ int radius = Configs.Generic.HIGHLIGHT_BLOCK_RANGE.getIntegerValue();
-//$$ Color4f color = Configs.Generic.HIGHLIGHT_BLOCK_COLOR.getColor();
-//$$ Vec3d cam = RenderUtils.camPos();
+//$$     BlockPos center = mc.player.getBlockPos();
+//$$     int radius = Configs.Generic.HIGHLIGHT_BLOCK_RANGE.getIntegerValue();
+//$$     Color color = Configs.Generic.HIGHLIGHT_BLOCK_COLOR.getColor();
+//$$     Vec3d cam = context.gameRenderer().getCamera().getCameraPos();
+//$$     Matrix4f viewRot = context.matrices().peek().getPositionMatrix();
 //$$
-//$$ try (var ctx = new RenderContext(() -> "SearchHL/block", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH)) {
-//$$     var buf = ctx.getBuilder();
+//$$     Set<BlockPos> positions = new HashSet<>();
 //$$     for (int x = -radius; x <= radius; x++) {
 //$$         for (int y = -radius; y <= radius; y++) {
 //$$             for (int z = -radius; z <= radius; z++) {
 //$$                 BlockPos pos = center.add(x, y, z);
 //$$                 Block block = world.getBlockState(pos).getBlock();
-//$$                 Identifier id = Registries.BLOCK.getId(block);
-//$$                 String name = id.getPath();
+//$$                 String name = Registries.BLOCK.getId(block).getPath();
 //$$                 if (Configs.Generic.HIGHLIGHT_ITEM_LIST.getStrings().contains(name)) {
-//$$                     RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(pos, cam, color, 0.0025, 2.0f, buf);
+//$$                     positions.add(pos);
 //$$                 }
 //$$             }
 //$$         }
 //$$     }
-//$$     var mesh = buf.endNullable();
-//$$     if (mesh != null) { ctx.draw(mesh, false, true); mesh.close(); }
-//$$ } catch (Exception ignored) {}
+//$$     WorldRenderer.renderBlockOutlines(positions, color, 0.0025, viewRot, cam.x, cam.y, cam.z);
+//$$ }
 //#else
-//$$         var mc = Minecraft.getInstance();
-//$$         var world = mc.level;
-//$$         if (world == null || mc.player == null) return;
+//$$ public static void render(net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext context) {
+//$$     Minecraft mc = Minecraft.getInstance();
+//$$     var world = mc.level;
+//$$     if (world == null || mc.player == null) return;
 //$$
-//$$         var center = mc.player.blockPosition();
-//$$         int radius = Configs.Generic.HIGHLIGHT_BLOCK_RANGE.getIntegerValue();
-//$$         Color4f color = Configs.Generic.HIGHLIGHT_BLOCK_COLOR.getColor();
+//$$     BlockPos center = mc.player.blockPosition();
+//$$     int radius = Configs.Generic.HIGHLIGHT_BLOCK_RANGE.getIntegerValue();
+//$$     Color color = Configs.Generic.HIGHLIGHT_BLOCK_COLOR.getColor();
+//$$     var cam = context.gameRenderer().getMainCamera().position();
+//$$     Matrix4f viewRot = new Matrix4f();
 //$$
-//$$         for (int x = -radius; x <= radius; x++) {
-//$$             for (int y = -radius; y <= radius; y++) {
-//$$                 for (int z = -radius; z <= radius; z++) {
-//$$                     var pos = center.offset(x, y, z);
-//$$                     var block = world.getBlockState(pos).getBlock();
-//$$                     var id = BuiltInRegistries.BLOCK.getKey(block);
-//$$                     String name = id.getPath();
-//$$                     if (Configs.Generic.HIGHLIGHT_ITEM_LIST.getStrings().contains(name)) {
-//$$                         RenderUtils.renderBlockOutline(pos, 0.0025f, 2.0f, color, false);
-//$$                     }
+//$$     Set<BlockPos> positions = new HashSet<>();
+//$$     for (int x = -radius; x <= radius; x++) {
+//$$         for (int y = -radius; y <= radius; y++) {
+//$$             for (int z = -radius; z <= radius; z++) {
+//$$                 BlockPos pos = center.offset(x, y, z);
+//$$                 var block = world.getBlockState(pos).getBlock();
+//$$                 var id = BuiltInRegistries.BLOCK.getKey(block);
+//$$                 String name = id.getPath();
+//$$                 if (Configs.Generic.HIGHLIGHT_ITEM_LIST.getStrings().contains(name)) {
+//$$                     positions.add(pos);
 //$$                 }
 //$$             }
 //$$         }
+//$$     }
+//$$     WorldRenderer.renderBlockOutlines(positions, color, 0.0025, viewRot, cam.x, cam.y, cam.z);
+//$$ }
+//#endif
+
+    /** Legacy entry point used by MixinWorldRenderer for MC < 12111. */
+    public static void renderHighlightBlock() {
+//#if MC < 260100
+        MinecraftClient mc = MinecraftClient.getInstance();
+        World world = mc.world;
+        if (world == null || mc.player == null) return;
+
+        BlockPos center = mc.player.getBlockPos();
+        int radius = Configs.Generic.HIGHLIGHT_BLOCK_RANGE.getIntegerValue();
+        Color color = Configs.Generic.HIGHLIGHT_BLOCK_COLOR.getColor();
+
+        Set<BlockPos> positions = new HashSet<>();
+        for (int x = -radius; x <= radius; x++) {
+            for (int y = -radius; y <= radius; y++) {
+                for (int z = -radius; z <= radius; z++) {
+                    BlockPos pos = center.add(x, y, z);
+                    Block block = world.getBlockState(pos).getBlock();
+                    String name = Registries.BLOCK.getId(block).getPath();
+                    if (Configs.Generic.HIGHLIGHT_ITEM_LIST.getStrings().contains(name)) {
+                        positions.add(pos);
+                    }
+                }
+            }
+        }
+        WorldRenderer.renderBlockOutlines(positions, color, 0.0025, new Matrix4f(), 0, 0, 0);
 //#endif
     }
 }

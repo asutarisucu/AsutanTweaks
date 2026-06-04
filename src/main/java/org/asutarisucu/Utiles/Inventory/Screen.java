@@ -1,7 +1,6 @@
 package org.asutarisucu.Utiles.Inventory;
 
-import fi.dy.masa.malilib.gui.GuiBase;
-import fi.dy.masa.malilib.util.InfoUtils;
+import org.asutarisucu.GUI.ProgressMeter;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.ItemStack;
 //#if MC >= 260100
@@ -62,13 +61,13 @@ public class Screen {
                 if(!handler.getSlot(i).getStack().isEmpty())fillSlot++;
                 slot++;
             }
-            //残量をアクションバーに表示
-            String child=String.valueOf(fillSlot);
-            String GreenTXT=GuiBase.TXT_GREEN;
-            String RedTXT=GuiBase.TXT_RED;
-            child=(fillSlot==0?GreenTXT:RedTXT)+child;
-            String parent=GuiBase.TXT_GREEN+slot;
-            InfoUtils.printActionbarMessage("Auto Restocked!!(%s/%s)",child,parent);
+            //残量をProgressMeterに表示
+            float pct = slot > 0 ? (float) fillSlot / slot : 0f;
+            int barColor = pct > 0.75f ? 0xFF28B856
+                         : pct > 0.50f ? 0xFF3A58B8
+                         : pct > 0.25f ? 0xFFCCAA44
+                         : 0xFFA04040;
+            ProgressMeter.INSTANCE.show("AutoFill", pct, fillSlot + " / " + slot + " slots", barColor);
             //コンテナ画面を閉じる
             client.setScreen(null);
         }

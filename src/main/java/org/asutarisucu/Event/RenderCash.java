@@ -1,6 +1,5 @@
 package org.asutarisucu.Event;
 
-import fi.dy.masa.malilib.util.InventoryUtils;
 import me.fallenbreath.tweakermore.impl.mod_tweaks.serverDataSyncer.ServerDataSyncer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.block.entity.BlockEntity;

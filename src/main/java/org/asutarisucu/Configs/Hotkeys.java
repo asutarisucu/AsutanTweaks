@@ -1,18 +1,19 @@
 package org.asutarisucu.Configs;
 
-import com.google.common.collect.ImmutableList;
-import fi.dy.masa.malilib.config.options.ConfigHotkey;
-
-import java.util.List;
+import org.asutarisucu.lib.config.ConfigManager;
+import org.asutarisucu.lib.config.FeatureConfig;
 
 public class Hotkeys {
-    //ホットキーのConfig項目
-    public static final ConfigHotkey OPEN_CONFIG_GUI = new ConfigHotkey("OpenConfigGui","B,C","Open Config GUI Screen");
-    public static final ConfigHotkey CLEAR_ITEM_COUNT=new ConfigHotkey("ClearItemCount","","Clear SimpleItemEntityRender Count");
-    public static final ConfigHotkey ADD_HIGHLIGHT_ITEM_LIST=new ConfigHotkey("AddHighlightItemList","","Add main hand item in Highlight item list");
-    public static final List<ConfigHotkey> HOTKEY_LIST = ImmutableList.of(
-            OPEN_CONFIG_GUI,
-            CLEAR_ITEM_COUNT,
-            ADD_HIGHLIGHT_ITEM_LIST
-    );
+    public static final FeatureConfig OPEN_CONFIG_GUI =
+            new FeatureConfig("open_config_gui", false, "B,C");
+    public static final FeatureConfig CLEAR_ITEM_COUNT =
+            new FeatureConfig("clear_item_count", false, "");
+    public static final FeatureConfig ADD_HIGHLIGHT_ITEM =
+            new FeatureConfig("add_highlight_item", false, "");
+
+    public static void registerAll() {
+        ConfigManager.INSTANCE.register("hotkeys", OPEN_CONFIG_GUI.getName(),    OPEN_CONFIG_GUI);
+        ConfigManager.INSTANCE.register("hotkeys", CLEAR_ITEM_COUNT.getName(),   CLEAR_ITEM_COUNT);
+        ConfigManager.INSTANCE.register("hotkeys", ADD_HIGHLIGHT_ITEM.getName(), ADD_HIGHLIGHT_ITEM);
+    }
 }

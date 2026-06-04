@@ -1,105 +1,69 @@
 package org.asutarisucu.tweak.BlockUpdateViewer;
 
-//#if MC < 260100
-import net.minecraft.client.MinecraftClient;
+import org.asutarisucu.Configs.Feature;
+import org.asutarisucu.lib.render.HudRenderer;
+
 //#if MC < 12001
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.util.math.MatrixStack;
-//#else
-//$$ import net.minecraft.client.gui.DrawContext;
-//#endif
-//#if MC >= 12101
-//$$ import net.minecraft.client.render.RenderTickCounter;
-//#endif
-//#if MC < 12111
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
-//#else
-//$$ import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
-//$$ import net.minecraft.util.Identifier;
-//#endif
 import net.minecraft.item.BlockItem;
-import org.asutarisucu.Configs.FeatureToggle;
+//#elseif MC < 260100
+//$$ import net.minecraft.client.MinecraftClient;
+//$$ import net.minecraft.client.gui.DrawContext;
+//$$ import net.minecraft.item.BlockItem;
 //#else
-//$$ import fi.dy.masa.malilib.render.GuiContext;
 //$$ import net.minecraft.client.Minecraft;
+//$$ import net.minecraft.client.gui.GuiGraphicsExtractor;
 //$$ import net.minecraft.world.item.BlockItem;
-//$$ import org.asutarisucu.Configs.FeatureToggle;
 //#endif
 
 public class UpdateSuppressionView {
 
     public static void register() {
-//#if MC < 260100
-//#if MC < 12111
-        HudRenderCallback.EVENT.register(UpdateSuppressionView::onHudRender);
-//#else
-//$$ HudElementRegistry.addLast(
-//$$         Identifier.of("asutantweaks", "update_suppression_view"),
-//$$         (context, tickCounter) -> render(context)
-//$$ );
-//#endif
-//#endif
+        // Registration handled by Reference.registerHud()
     }
 
-//#if MC >= 260100
-//$$ public static void renderHud26(GuiContext ctx) {
-//$$     if (!FeatureToggle.UPDATE_SUPPRESSION_VIEW.getBooleanValue()) return;
-//$$     var mc = Minecraft.getInstance();
+//#if MC < 12001
+    public static void renderHud(MatrixStack matrices) {
+        if (!Feature.UPDATE_SUPPRESSION_VIEW.isEnabled()) return;
+        MinecraftClient mc = MinecraftClient.getInstance();
+        if (mc.player == null) return;
+        if (!hasSuppression(mc.player.getMainHandStack().getItem() instanceof BlockItem)) return;
+        int sw = HudRenderer.getScaledWidth();
+        int sh = HudRenderer.getScaledHeight();
+        String label = "CCE suppress Ready";
+        int x = (sw - HudRenderer.getTextWidth(label)) / 2;
+        HudRenderer.drawText(matrices, label, x, sh - 60, 0xFF5555);
+    }
+//#elseif MC < 260100
+//$$ public static void renderHud(DrawContext context) {
+//$$     if (!Feature.UPDATE_SUPPRESSION_VIEW.isEnabled()) return;
+//$$     MinecraftClient mc = MinecraftClient.getInstance();
 //$$     if (mc.player == null) return;
-//$$     boolean holdingBlockItem = mc.player.getMainHandItem().getItem() instanceof BlockItem;
-//$$     boolean hasSuppression = holdingBlockItem
-//$$             ? !BlockUpdateCalculator.getPlacementSuppressionPositions().isEmpty()
-//$$             : !BlockUpdateCalculator.getSuppressionPositions().isEmpty();
-//$$     if (!hasSuppression) return;
-//$$     int sw = mc.getWindow().getGuiScaledWidth();
-//$$     int sh = mc.getWindow().getGuiScaledHeight();
+//$$     if (!hasSuppression(mc.player.getMainHandStack().getItem() instanceof BlockItem)) return;
+//$$     int sw = HudRenderer.getScaledWidth();
+//$$     int sh = HudRenderer.getScaledHeight();
 //$$     String label = "CCE suppress Ready";
-//$$     int x = (sw - mc.font.width(label)) / 2;
-//$$     int y = sh - 60;
-//$$     ctx.drawString(mc.font, label, x, y, 0xFF5555);
+//$$     int x = (sw - HudRenderer.getTextWidth(label)) / 2;
+//$$     HudRenderer.drawText(context, label, x, sh - 60, 0xFF5555);
+//$$ }
+//#else
+//$$ public static void renderHud(GuiGraphicsExtractor context) {
+//$$     if (!Feature.UPDATE_SUPPRESSION_VIEW.isEnabled()) return;
+//$$     Minecraft mc = Minecraft.getInstance();
+//$$     if (mc.player == null) return;
+//$$     if (!hasSuppression(mc.player.getMainHandItem().getItem() instanceof BlockItem)) return;
+//$$     int sw = HudRenderer.getScaledWidth();
+//$$     int sh = HudRenderer.getScaledHeight();
+//$$     String label = "CCE suppress Ready";
+//$$     int x = (sw - HudRenderer.getTextWidth(label)) / 2;
+//$$     HudRenderer.drawText(context, label, x, sh - 60, 0xFF5555);
 //$$ }
 //#endif
 
-//#if MC < 260100
-    private static boolean hasSuppressions() {
-        MinecraftClient client = MinecraftClient.getInstance();
-        boolean holdingBlockItem = client.player != null
-                && client.player.getMainHandStack().getItem() instanceof BlockItem;
+    private static boolean hasSuppression(boolean holdingBlockItem) {
         return holdingBlockItem
                 ? !BlockUpdateCalculator.getPlacementSuppressionPositions().isEmpty()
                 : !BlockUpdateCalculator.getSuppressionPositions().isEmpty();
     }
-
-//#if MC < 12001
-    private static void onHudRender(MatrixStack matrices, float tickDelta) {
-        if (!FeatureToggle.UPDATE_SUPPRESSION_VIEW.getBooleanValue()) return;
-        if (!hasSuppressions()) return;
-        MinecraftClient client = MinecraftClient.getInstance();
-        if (client.player == null) return;
-        int sw = client.getWindow().getScaledWidth();
-        int sh = client.getWindow().getScaledHeight();
-        String label = "CCE suppress Ready";
-        int x = (sw - client.textRenderer.getWidth(label)) / 2;
-        int y = sh - 60;
-        client.textRenderer.drawWithShadow(matrices, label, (float) x, (float) y, 0xFF5555);
-    }
-//#else
-//#if MC < 12101
-    //$$ private static void onHudRender(DrawContext context, float tickDelta) { render(context); }
-//#elseif MC < 12111
-    //$$ private static void onHudRender(DrawContext context, RenderTickCounter tickCounter) { render(context); }
-//#endif
-    //$$ private static void render(DrawContext context) {
-    //$$     if (!FeatureToggle.UPDATE_SUPPRESSION_VIEW.getBooleanValue()) return;
-    //$$     if (!hasSuppressions()) return;
-    //$$     MinecraftClient client = MinecraftClient.getInstance();
-    //$$     if (client.player == null) return;
-    //$$     int sw = client.getWindow().getScaledWidth();
-    //$$     int sh = client.getWindow().getScaledHeight();
-    //$$     String label = "CCE suppress Ready";
-    //$$     int x = (sw - client.textRenderer.getWidth(label)) / 2;
-    //$$     int y = sh - 60;
-    //$$     context.drawTextWithShadow(client.textRenderer, label, x, y, 0xFF5555);
-    //$$ }
-//#endif
-//#endif
 }

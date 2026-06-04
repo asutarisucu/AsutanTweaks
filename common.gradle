@@ -35,7 +35,8 @@ if (mcVersion < 260100) {
 	}
 }
 
-String MOD_DEP = mcVersion >= 260100 ? 'implementation' : 'modImplementation'
+String MOD_DEP          = mcVersion >= 260100 ? 'implementation' : 'modImplementation'
+String MOD_COMPILE_ONLY = mcVersion >= 260100 ? 'compileOnly'    : 'modCompileOnly'
 
 dependencies {
 	// loom
@@ -48,7 +49,9 @@ dependencies {
 	add(MOD_DEP, "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}")
 
 	add(MOD_DEP, "maven.modrinth:modmenu:${project.modmenu_version}")
-	add(MOD_DEP, "maven.modrinth:malilib:${project.malilib_version}")
+	// malilib kept as compile-only so transitive APIs (ItemType, tweakermore interfaces) resolve;
+	// it is provided at runtime via litematica/tweakeroo transitive deps.
+	add(MOD_COMPILE_ONLY, "maven.modrinth:malilib:${project.malilib_version}")
 	add(MOD_DEP, "maven.modrinth:tweakeroo:${project.tweakeroo_version}")
 	add(MOD_DEP, "maven.modrinth:tweakermore:${project.tweakermore_version}")
 	add(MOD_DEP, "maven.modrinth:item-scroller:${project.itemscroller_version}")
