@@ -12,7 +12,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 //#if MC < 12111
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.render.GameRenderer;
 //#if MC < 12006
 import net.minecraft.client.util.math.MatrixStack;
@@ -53,16 +52,14 @@ public abstract class MixinGameRendererThirdEye {
         if (!ThirdEyeCamera.initialized)       return;
         if (client.world == null)              return;
 
-        // --- Redirect rendering to the ThirdEye framebuffer ---
-        MixinMinecraftClientThirdEye accessor = (MixinMinecraftClientThirdEye)(Object) client;
-        Framebuffer savedFb = accessor.thirdeye$getFramebuffer();
-
-        accessor.thirdeye$setFramebuffer(ThirdEye.thirdEyeFbo);
+        // Clear ThirdEye FBO and bind it. getFramebuffer() is intercepted via
+        // MixinMinecraftClientThirdEye to return thirdEyeFbo while isRenderingThirdEye
+        // is true, so the rendering pipeline writes to ThirdEye FBO automatically.
         ThirdEye.thirdEyeFbo.clear(MinecraftClient.IS_SYSTEM_MAC);
 
         ThirdEye.isRenderingThirdEye = true;
 
-        // Recursive shadow call: renders with Camera mixin overriding position/rotation.
+        // Recursive shadow call: MixinCameraThirdEye overrides position/rotation.
 //#if MC < 12006
         renderWorld(tickDelta, startTime, matrices);
 //#elseif MC < 12101
@@ -73,9 +70,8 @@ public abstract class MixinGameRendererThirdEye {
 
         ThirdEye.isRenderingThirdEye = false;
 
-        // Restore main framebuffer and re-bind it at the GL level.
-        accessor.thirdeye$setFramebuffer(savedFb);
-        savedFb.beginWrite(false);
+        // Rebind the main framebuffer at the GL level so normal rendering resumes.
+        client.getFramebuffer().beginWrite(false);
 
         // --- Blit result to secondary window ---
         ThirdEyeWindow.blit(

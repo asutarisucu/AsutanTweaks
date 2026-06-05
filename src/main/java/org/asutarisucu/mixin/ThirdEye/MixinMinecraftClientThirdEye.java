@@ -1,35 +1,42 @@
 package org.asutarisucu.mixin.ThirdEye;
 
-//#if MC < 260100
+import org.asutarisucu.tweak.ThirdEye.ThirdEye;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+//#if MC < 12111
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.Framebuffer;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.gen.Accessor;
 
 /**
- * Accessor interface mixed into MinecraftClient to allow getting and setting
- * the framebuffer field used by ThirdEye to redirect rendering.
+ * Intercepts MinecraftClient.getFramebuffer() during a ThirdEye render pass
+ * to redirect the rendering pipeline to ThirdEye's FBO without needing to
+ * mutate the final framebuffer field.
  */
 @Mixin(MinecraftClient.class)
-public interface MixinMinecraftClientThirdEye {
-    @Accessor("framebuffer")
-    Framebuffer thirdeye$getFramebuffer();
+public abstract class MixinMinecraftClientThirdEye {
 
-    @Accessor("framebuffer")
-    void thirdeye$setFramebuffer(Framebuffer fb);
+    @Inject(method = "getFramebuffer", at = @At("HEAD"), cancellable = true)
+    private void thirdeye$interceptGetFramebuffer(CallbackInfoReturnable<Framebuffer> cir) {
+        if (ThirdEye.isRenderingThirdEye && ThirdEye.thirdEyeFbo != null) {
+            cir.setReturnValue(ThirdEye.thirdEyeFbo);
+        }
+    }
 }
+//#elseif MC < 260100
+//$$ import net.minecraft.client.MinecraftClient;
+//$$
+//$$ // Stub for MC 1.21.11 — ThirdEye not yet implemented (GpuTexture API changed).
+//$$ @Mixin(MinecraftClient.class)
+//$$ public abstract class MixinMinecraftClientThirdEye {
+//$$ }
 //#else
 //$$ import net.minecraft.client.Minecraft;
-//$$ import com.mojang.blaze3d.pipeline.RenderTarget;
-//$$ import org.spongepowered.asm.mixin.Mixin;
-//$$ import org.spongepowered.asm.mixin.gen.Accessor;
 //$$
+//$$ // Stub for MC 260100+ (Mojang mappings) — ThirdEye not yet implemented.
 //$$ @Mixin(Minecraft.class)
-//$$ public interface MixinMinecraftClientThirdEye {
-//$$     @Accessor("mainRenderTarget")
-//$$     RenderTarget thirdeye$getFramebuffer();
-//$$
-//$$     @Accessor("mainRenderTarget")
-//$$     void thirdeye$setFramebuffer(RenderTarget rt);
+//$$ public abstract class MixinMinecraftClientThirdEye {
 //$$ }
 //#endif
