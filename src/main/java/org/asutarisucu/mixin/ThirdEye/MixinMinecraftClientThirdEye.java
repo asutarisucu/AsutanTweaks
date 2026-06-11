@@ -27,10 +27,21 @@ public abstract class MixinMinecraftClientThirdEye {
 }
 //#elseif MC < 260100
 //$$ import net.minecraft.client.MinecraftClient;
+//$$ import net.minecraft.client.gl.Framebuffer;
 //$$
-//$$ // Stub for MC 1.21.11 — ThirdEye not yet implemented (GpuTexture API changed).
+//$$ /**
+//$$  * Intercepts MinecraftClient.getFramebuffer() during a ThirdEye render pass to
+//$$  * redirect world rendering into ThirdEye's FBO (MC 1.21.11; return type Framebuffer).
+//$$  */
 //$$ @Mixin(MinecraftClient.class)
 //$$ public abstract class MixinMinecraftClientThirdEye {
+//$$
+//$$     @Inject(method = "getFramebuffer", at = @At("HEAD"), cancellable = true)
+//$$     private void thirdeye$interceptGetFramebuffer(CallbackInfoReturnable<Framebuffer> cir) {
+//$$         if (ThirdEye.isRenderingThirdEye && ThirdEye.thirdEyeFbo != null) {
+//$$             cir.setReturnValue(ThirdEye.thirdEyeFbo);
+//$$         }
+//$$     }
 //$$ }
 //#else
 //$$ import net.minecraft.client.Minecraft;

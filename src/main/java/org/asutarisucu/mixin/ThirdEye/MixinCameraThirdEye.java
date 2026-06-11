@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-//#if MC < 260100
+//#if MC < 12111
 import net.minecraft.client.render.Camera;
 import net.minecraft.entity.Entity;
 import net.minecraft.world.BlockView;
@@ -40,6 +40,23 @@ public abstract class MixinCameraThirdEye {
         if (ThirdEye.isRenderingThirdEye) cir.setReturnValue(true);
     }
 }
+//#elseif MC < 260100
+//$$ import net.minecraft.client.render.Camera;
+//$$
+//$$ /**
+//$$  * MC 1.21.11: Camera.update() is not called inside renderWorld(), so the
+//$$  * ThirdEye position override is applied via the invoker in
+//$$  * MixinGameRendererThirdEye instead. Here we only force third-person so the
+//$$  * player model is visible in the ThirdEye view.
+//$$  */
+//$$ @Mixin(Camera.class)
+//$$ public abstract class MixinCameraThirdEye {
+//$$
+//$$     @Inject(method = "isThirdPerson", at = @At("HEAD"), cancellable = true)
+//$$     private void onIsThirdPersonHead(CallbackInfoReturnable<Boolean> cir) {
+//$$         if (ThirdEye.isRenderingThirdEye) cir.setReturnValue(true);
+//$$     }
+//$$ }
 //#else
 //$$ import net.minecraft.client.Camera;
 //$$

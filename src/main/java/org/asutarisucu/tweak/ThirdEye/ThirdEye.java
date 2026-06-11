@@ -30,7 +30,7 @@ public class ThirdEye {
     /** Guard against re-entrance in the renderWorld injection. */
     public static volatile boolean isRenderingThirdEye = false;
 
-//#if MC < 12111
+//#if MC < 260100
     /**
      * The MC framebuffer used as the render target for the ThirdEye pass.
      * Null until the feature is first enabled in-world.
@@ -92,7 +92,11 @@ public class ThirdEye {
         int h = mc.getFramebuffer().textureHeight;
         if (thirdEyeFbo == null || thirdEyeFbo.textureWidth != w || thirdEyeFbo.textureHeight != h) {
             if (thirdEyeFbo != null) thirdEyeFbo.delete();
+//#if MC < 12111
             thirdEyeFbo = new ThirdEyeFbo(w, h, true, MinecraftClient.IS_SYSTEM_MAC);
+//#else
+//$$         thirdEyeFbo = new ThirdEyeFbo(w, h, true);
+//#endif
         }
 
         // Initialise camera from player on first activation
@@ -105,9 +109,6 @@ public class ThirdEye {
             ThirdEyeCamera.tick(mc.getWindow().getHandle());
         }
     }
-//#elseif MC < 260100
-//$$ // TODO: implement ThirdEye for MC 1.21.11 (GpuTexture API changed, SimpleFramebuffer constructor changed)
-//$$ public static void register() {}
 //#else
 //$$ // TODO: implement for MC 260100+ (Mojang mappings)
 //$$ public static void register() {}

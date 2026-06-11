@@ -31,10 +31,24 @@ public abstract class MixinKeyboardInputThirdEye {
     }
 }
 //#elseif MC < 260100
+//$$ import net.minecraft.client.input.Input;
 //$$ import net.minecraft.client.input.KeyboardInput;
+//$$ import net.minecraft.util.PlayerInput;
 //$$
+//$$ /**
+//$$  * MC 1.21.11: movement is driven by Input.playerInput (a PlayerInput record)
+//$$  * rather than individual boolean fields. While ThirdEye movement is active we
+//$$  * overwrite it with PlayerInput.DEFAULT so the player stands still.
+//$$  */
 //$$ @Mixin(KeyboardInput.class)
-//$$ public abstract class MixinKeyboardInputThirdEye {}
+//$$ public abstract class MixinKeyboardInputThirdEye {
+//$$
+//$$     @Inject(method = "tick", at = @At("RETURN"))
+//$$     private void onTickReturn(CallbackInfo ci) {
+//$$         if (!Feature.THIRD_EYE_MOVEMENT.isEnabled()) return;
+//$$         ((Input)(Object)this).playerInput = PlayerInput.DEFAULT;
+//$$     }
+//$$ }
 //#else
 //$$ import net.minecraft.client.Minecraft;
 //$$

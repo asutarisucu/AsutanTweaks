@@ -124,11 +124,81 @@ public abstract class MixinGameRendererThirdEye {
     }
 }
 //#elseif MC < 260100
+//$$ import com.mojang.blaze3d.systems.CommandEncoder;
+//$$ import com.mojang.blaze3d.systems.RenderSystem;
+//$$ import net.minecraft.client.MinecraftClient;
+//$$ import net.minecraft.client.render.Camera;
 //$$ import net.minecraft.client.render.GameRenderer;
+//$$ import net.minecraft.client.render.RenderTickCounter;
+//$$ import net.minecraft.util.math.Vec3d;
 //$$
-//$$ // TODO: implement ThirdEye for MC 1.21.11 (GpuTexture API changed).
+//$$ /**
+//$$  * MC 1.21.11 ThirdEye render hook.
+//$$  *
+//$$  * renderWorld() reads the live Camera (via updateCameraState) and performs its
+//$$  * own chunk culling, so a recursive renderWorld() with the Camera overridden to
+//$$  * the ThirdEye position produces a correct second view. Unlike 1.21.1, the new
+//$$  * render API never calls Camera.update() inside renderWorld(), so the position
+//$$  * override is applied here directly through the protected setters (exposed by
+//$$  * MixinCameraInvokerThirdEye) rather than via a Camera.update() RETURN inject.
+//$$  *
+//$$  * getFramebuffer() is intercepted by MixinMinecraftClientThirdEye to return the
+//$$  * ThirdEye FBO while isRenderingThirdEye is true, redirecting the render target.
+//$$  */
 //$$ @Mixin(GameRenderer.class)
 //$$ public abstract class MixinGameRendererThirdEye {
+//$$
+//$$     @Shadow private MinecraftClient client;
+//$$     @Shadow private Camera camera;
+//$$
+//$$     @Shadow public abstract void renderWorld(RenderTickCounter counter);
+//$$
+//$$     @Inject(method = "renderWorld", at = @At("RETURN"))
+//$$     private void onRenderWorldReturn(RenderTickCounter counter, CallbackInfo ci) {
+//$$         if (!Feature.THIRD_EYE.isEnabled())   return;
+//$$         if (ThirdEye.isRenderingThirdEye)      return;   // prevent recursion via RETURN
+//$$         if (!ThirdEyeWindow.isOpen())          return;
+//$$         if (ThirdEye.thirdEyeFbo == null)      return;
+//$$         if (!ThirdEyeCamera.initialized)       return;
+//$$         if (client.world == null)              return;
+//$$
+//$$         // Snapshot live camera state (player view) to restore afterwards.
+//$$         Vec3d savedPos = camera.getCameraPos();
+//$$         float savedYaw = camera.getYaw();
+//$$         float savedPitch = camera.getPitch();
+//$$
+//$$         // Clear ThirdEye FBO color + depth before the pass. Framebuffer no longer
+//$$         // exposes clear(); the command encoder clears the backing GpuTextures.
+//$$         CommandEncoder encoder = RenderSystem.getDevice().createCommandEncoder();
+//$$         encoder.clearColorAndDepthTextures(
+//$$                 ThirdEye.thirdEyeFbo.getColorAttachment(), 0x00000000,
+//$$                 ThirdEye.thirdEyeFbo.getDepthAttachment(), 1.0);
+//$$
+//$$         ThirdEye.isRenderingThirdEye = true;
+//$$
+//$$         MixinCameraInvokerThirdEye inv = (MixinCameraInvokerThirdEye)(Object) camera;
+//$$         inv.thirdeye$setPos(ThirdEyeCamera.x, ThirdEyeCamera.y, ThirdEyeCamera.z);
+//$$         inv.thirdeye$setRotation(ThirdEyeCamera.yaw, ThirdEyeCamera.pitch);
+//$$
+//$$         try {
+//$$             renderWorld(counter);
+//$$         } finally {
+//$$             ThirdEye.isRenderingThirdEye = false;
+//$$             inv.thirdeye$setPos(savedPos.x, savedPos.y, savedPos.z);
+//$$             inv.thirdeye$setRotation(savedYaw, savedPitch);
+//$$         }
+//$$
+//$$         ThirdEyeWindow.blit(
+//$$                 ThirdEye.thirdEyeFbo.getColorTexId(),
+//$$                 ThirdEye.thirdEyeFbo.textureWidth,
+//$$                 ThirdEye.thirdEyeFbo.textureHeight,
+//$$                 client.getWindow().getHandle());
+//$$     }
+//$$
+//$$     @Inject(method = "renderHand", at = @At("HEAD"), cancellable = true)
+//$$     private void onRenderHandHead(CallbackInfo ci) {
+//$$         if (ThirdEye.isRenderingThirdEye) ci.cancel();
+//$$     }
 //$$ }
 //#else
 //$$ import net.minecraft.client.renderer.GameRenderer;
