@@ -228,10 +228,121 @@ public abstract class MixinGameRendererThirdEye {
 //$$     }
 //$$ }
 //#else
+//$$ import com.mojang.blaze3d.systems.CommandEncoder;
+//$$ import com.mojang.blaze3d.systems.RenderSystem;
+//$$ import net.minecraft.client.Camera;
+//$$ import net.minecraft.client.DeltaTracker;
+//$$ import net.minecraft.client.Minecraft;
+//$$ import net.minecraft.client.TextureFilteringMethod;
 //$$ import net.minecraft.client.renderer.GameRenderer;
+//$$ import net.minecraft.client.renderer.GlobalSettingsUniform;
+//$$ import net.minecraft.client.renderer.state.GameRenderState;
+//$$ import net.minecraft.world.phys.Vec3;
+//$$ import org.spongepowered.asm.mixin.Final;
 //$$
-//$$ // TODO: implement for MC 260100+ (Mojang mappings).
+//$$ /**
+//$$  * MC 26.1 ThirdEye render hook.
+//$$  *
+//$$  * Unlike <=1.21.11, the 26.1 pipeline fully splits extraction from rendering:
+//$$  * renderLevel() consumes the pre-extracted CameraRenderState / chunk culling /
+//$$  * entity render states (filled during GameRenderer.extract() with the player
+//$$  * camera) and never reads the live Camera. Overriding the camera alone would
+//$$  * therefore have no effect. Instead, after the main renderLevel() completes we:
+//$$  *   1. override the live Camera to the ThirdEye position/rotation,
+//$$  *   2. re-run the level extraction (extractCamera + LevelRenderer.extractLevel)
+//$$  *      so all extracted state — including ChunkSectionsToRender culling —
+//$$  *      follows ThirdEye,
+//$$  *   3. re-write the GlobalSettingsUniform (terrain camera-relative origin,
+//$$  *      read from cameraRenderState.pos) for the pass,
+//$$  *   4. recursively call renderLevel() with getMainRenderTarget() intercepted
+//$$  *      to return the ThirdEye target,
+//$$  *   5. restore the camera and re-extract the camera state + uniform so the
+//$$  *      rest of the frame (post FX, GUI) sees player values.
+//$$  */
 //$$ @Mixin(GameRenderer.class)
 //$$ public abstract class MixinGameRendererThirdEye {
+//$$
+//$$     @Shadow @Final private Minecraft minecraft;
+//$$     @Shadow @Final private Camera mainCamera;
+//$$     @Shadow @Final private GameRenderState gameRenderState;
+//$$     @Shadow @Final private GlobalSettingsUniform globalSettingsUniform;
+//$$
+//$$     @Shadow public abstract void renderLevel(DeltaTracker deltaTracker);
+//$$     @Shadow private void extractCamera(DeltaTracker deltaTracker, float tickDelta, float entityTickDelta) {}
+//$$
+//$$     // Mirrors the GlobalSettingsUniform.update(...) call in GameRenderer.render();
+//$$     // cameraRenderState.pos reflects whichever camera was last extracted.
+//$$     private void thirdeye$writeGlobalSettings(DeltaTracker deltaTracker) {
+//$$         globalSettingsUniform.update(
+//$$                 gameRenderState.windowRenderState.width,
+//$$                 gameRenderState.windowRenderState.height,
+//$$                 gameRenderState.optionsRenderState.glintStrength,
+//$$                 minecraft.level != null ? minecraft.level.getGameTime() : 0L,
+//$$                 deltaTracker,
+//$$                 gameRenderState.optionsRenderState.menuBackgroundBlurriness,
+//$$                 gameRenderState.levelRenderState.cameraRenderState.pos,
+//$$                 gameRenderState.optionsRenderState.textureFiltering == TextureFilteringMethod.RGSS);
+//$$     }
+//$$
+//$$     // Re-runs the camera + level extraction with whatever the live Camera holds.
+//$$     private void thirdeye$reextract(DeltaTracker deltaTracker, boolean includeLevel) {
+//$$         float tickDelta = deltaTracker.getGameTimeDeltaPartialTick(false);
+//$$         float entityTickDelta = mainCamera.getCameraEntityPartialTicks(deltaTracker);
+//$$         extractCamera(deltaTracker, tickDelta, entityTickDelta);
+//$$         if (includeLevel) {
+//$$             minecraft.levelRenderer.extractLevel(deltaTracker, mainCamera, tickDelta);
+//$$         }
+//$$         thirdeye$writeGlobalSettings(deltaTracker);
+//$$     }
+//$$
+//$$     @Inject(method = "renderLevel", at = @At("RETURN"))
+//$$     private void onRenderLevelReturn(DeltaTracker deltaTracker, CallbackInfo ci) {
+//$$         if (!Feature.THIRD_EYE.isEnabled())   return;
+//$$         if (ThirdEye.isRenderingThirdEye)      return;   // prevent recursion via RETURN
+//$$         if (!ThirdEyeWindow.isOpen())          return;
+//$$         if (ThirdEye.thirdEyeFbo == null)      return;
+//$$         if (!ThirdEyeCamera.initialized)       return;
+//$$         if (minecraft.level == null)           return;
+//$$
+//$$         // Snapshot live camera state (player view) to restore afterwards.
+//$$         Vec3 savedPos = mainCamera.position();
+//$$         float savedYaw = mainCamera.yRot();
+//$$         float savedPitch = mainCamera.xRot();
+//$$
+//$$         // Clear ThirdEye target color + depth before the pass.
+//$$         CommandEncoder encoder = RenderSystem.getDevice().createCommandEncoder();
+//$$         encoder.clearColorAndDepthTextures(
+//$$                 ThirdEye.thirdEyeFbo.getColorTexture(), 0x00000000,
+//$$                 ThirdEye.thirdEyeFbo.getDepthTexture(), 1.0);
+//$$
+//$$         ThirdEye.isRenderingThirdEye = true;
+//$$
+//$$         MixinCameraInvokerThirdEye inv = (MixinCameraInvokerThirdEye)(Object) mainCamera;
+//$$         inv.thirdeye$setPos(ThirdEyeCamera.x, ThirdEyeCamera.y, ThirdEyeCamera.z);
+//$$         inv.thirdeye$setRotation(ThirdEyeCamera.yaw, ThirdEyeCamera.pitch);
+//$$
+//$$         try {
+//$$             thirdeye$reextract(deltaTracker, true);   // extracted state → ThirdEye view
+//$$             renderLevel(deltaTracker);
+//$$         } finally {
+//$$             ThirdEye.isRenderingThirdEye = false;
+//$$             inv.thirdeye$setPos(savedPos.x, savedPos.y, savedPos.z);
+//$$             inv.thirdeye$setRotation(savedYaw, savedPitch);
+//$$             // Restore camera-derived state for the rest of the frame (post FX, GUI).
+//$$             // Skip the level re-extraction: levelRenderState was already consumed.
+//$$             thirdeye$reextract(deltaTracker, false);
+//$$         }
+//$$
+//$$         ThirdEyeWindow.blit(
+//$$                 ThirdEye.thirdEyeFbo.getColorTexId(),
+//$$                 ThirdEye.thirdEyeFbo.width,
+//$$                 ThirdEye.thirdEyeFbo.height,
+//$$                 minecraft.getWindow().handle());
+//$$     }
+//$$
+//$$     @Inject(method = "renderItemInHand", at = @At("HEAD"), cancellable = true)
+//$$     private void onRenderItemInHandHead(CallbackInfo ci) {
+//$$         if (ThirdEye.isRenderingThirdEye) ci.cancel();
+//$$     }
 //$$ }
 //#endif

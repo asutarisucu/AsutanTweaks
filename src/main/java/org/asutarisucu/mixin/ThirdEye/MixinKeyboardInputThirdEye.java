@@ -55,8 +55,23 @@ public abstract class MixinKeyboardInputThirdEye {
 //$$     }
 //$$ }
 //#else
-//$$ import net.minecraft.client.Minecraft;
+//$$ import net.minecraft.client.player.ClientInput;
+//$$ import net.minecraft.client.player.KeyboardInput;
+//$$ import net.minecraft.world.phys.Vec2;
 //$$
-//$$ @Mixin(Minecraft.class)
-//$$ public abstract class MixinKeyboardInputThirdEye {}
+//$$ /**
+//$$  * MC 26.1: same pattern as 1.21.11 — clear both keyPresses (the Input record)
+//$$  * and the derived moveVector at tick RETURN so the player stands still while
+//$$  * ThirdEye movement is active.
+//$$  */
+//$$ @Mixin(KeyboardInput.class)
+//$$ public abstract class MixinKeyboardInputThirdEye {
+//$$
+//$$     @Inject(method = "tick", at = @At("RETURN"))
+//$$     private void onTickReturn(CallbackInfo ci) {
+//$$         if (!Feature.THIRD_EYE_MOVEMENT.isEnabled()) return;
+//$$         ((ClientInput)(Object)this).keyPresses = net.minecraft.world.entity.player.Input.EMPTY;
+//$$         ((MixinInputThirdEye)(Object)this).thirdeye$setMoveVector(Vec2.ZERO);
+//$$     }
+//$$ }
 //#endif

@@ -25,9 +25,17 @@ public interface MixinInputThirdEye {}
 //$$     void thirdeye$setMovementVector(Vec2f v);
 //$$ }
 //#else
-//$$ import net.minecraft.client.Minecraft;
+//$$ import net.minecraft.client.player.ClientInput;
+//$$ import net.minecraft.world.phys.Vec2;
+//$$ import org.spongepowered.asm.mixin.gen.Accessor;
 //$$
-//$$ // ThirdEye movement is not implemented for MC 260100+; empty stub.
-//$$ @Mixin(Minecraft.class)
-//$$ public interface MixinInputThirdEye {}
+//$$ /**
+//$$  * MC 26.1: ClientInput.moveVector is protected; this accessor lets
+//$$  * MixinKeyboardInputThirdEye zero it while ThirdEye movement is active.
+//$$  */
+//$$ @Mixin(ClientInput.class)
+//$$ public interface MixinInputThirdEye {
+//$$     @Accessor("moveVector")
+//$$     void thirdeye$setMoveVector(Vec2 v);
+//$$ }
 //#endif

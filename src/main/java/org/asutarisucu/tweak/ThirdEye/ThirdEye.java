@@ -110,7 +110,64 @@ public class ThirdEye {
         }
     }
 //#else
-//$$ // TODO: implement for MC 260100+ (Mojang mappings)
-//$$ public static void register() {}
+//$$ /**
+//$$  * The render target for the ThirdEye pass (MC 26.1).
+//$$  * Null until the feature is first enabled in-world.
+//$$  */
+//$$ public static ThirdEyeFbo thirdEyeFbo = null;
+//$$
+//$$ public static void register() {
+//$$     ClientTickEvents.END_CLIENT_TICK.register(client -> tick(client));
+//$$     // DISCONNECT fires on the Netty IO thread; schedule GL teardown on the render thread.
+//$$     ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> client.execute(() -> shutdown(client)));
+//$$ }
+//$$
+//$$ /** Tear down all ThirdEye resources. Safe to call repeatedly. */
+//$$ private static void shutdown(Minecraft mc) {
+//$$     isRenderingThirdEye = false;
+//$$     if (mc != null && ThirdEyeWindow.isOpen()) {
+//$$         ThirdEyeWindow.close(mc.getWindow().handle());
+//$$     }
+//$$     if (thirdEyeFbo != null) {
+//$$         thirdEyeFbo.destroyBuffers();
+//$$         thirdEyeFbo = null;
+//$$     }
+//$$     ThirdEyeCamera.initialized = false;
+//$$ }
+//$$
+//$$ private static void tick(Minecraft mc) {
+//$$     // Defensive: rendering should never be in progress at tick time.
+//$$     isRenderingThirdEye = false;
+//$$
+//$$     if (!Feature.THIRD_EYE.isEnabled()) {
+//$$         shutdown(mc);
+//$$         return;
+//$$     }
+//$$     if (mc.level == null || mc.player == null) {
+//$$         shutdown(mc);
+//$$         return;
+//$$     }
+//$$
+//$$     if (!ThirdEyeWindow.isOpen()) {
+//$$         ThirdEyeWindow.open(mc.getWindow().handle());
+//$$         if (!ThirdEyeWindow.isOpen()) return; // window creation failed
+//$$     }
+//$$
+//$$     // Create or resize the ThirdEye target to match the main render target
+//$$     int w = mc.getMainRenderTarget().width;
+//$$     int h = mc.getMainRenderTarget().height;
+//$$     if (thirdEyeFbo == null || thirdEyeFbo.width != w || thirdEyeFbo.height != h) {
+//$$         if (thirdEyeFbo != null) thirdEyeFbo.destroyBuffers();
+//$$         thirdEyeFbo = new ThirdEyeFbo(w, h, true);
+//$$     }
+//$$
+//$$     if (!ThirdEyeCamera.initialized) {
+//$$         ThirdEyeCamera.initFromPlayer();
+//$$     }
+//$$
+//$$     if (Feature.THIRD_EYE_MOVEMENT.isEnabled()) {
+//$$         ThirdEyeCamera.tick(mc.getWindow().handle());
+//$$     }
+//$$ }
 //#endif
 }

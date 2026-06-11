@@ -44,10 +44,23 @@ public abstract class MixinMinecraftClientThirdEye {
 //$$     }
 //$$ }
 //#else
+//$$ import com.mojang.blaze3d.pipeline.RenderTarget;
 //$$ import net.minecraft.client.Minecraft;
 //$$
-//$$ // Stub for MC 260100+ (Mojang mappings) — ThirdEye not yet implemented.
+//$$ /**
+//$$  * MC 26.1: intercepts Minecraft.getMainRenderTarget() during a ThirdEye render
+//$$  * pass. GameRenderer.renderLevel and LevelRenderer both resolve their output
+//$$  * target through this getter, so returning the ThirdEye target here redirects
+//$$  * the whole recursive level render.
+//$$  */
 //$$ @Mixin(Minecraft.class)
 //$$ public abstract class MixinMinecraftClientThirdEye {
+//$$
+//$$     @Inject(method = "getMainRenderTarget", at = @At("HEAD"), cancellable = true)
+//$$     private void thirdeye$interceptGetMainRenderTarget(CallbackInfoReturnable<RenderTarget> cir) {
+//$$         if (ThirdEye.isRenderingThirdEye && ThirdEye.thirdEyeFbo != null) {
+//$$             cir.setReturnValue(ThirdEye.thirdEyeFbo);
+//$$         }
+//$$     }
 //$$ }
 //#endif

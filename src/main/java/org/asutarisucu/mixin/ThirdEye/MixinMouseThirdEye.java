@@ -74,7 +74,37 @@ public abstract class MixinMouseThirdEye {
 //$$ }
 //#else
 //$$ import net.minecraft.client.Minecraft;
+//$$ import net.minecraft.client.MouseHandler;
+//$$ import org.spongepowered.asm.mixin.Final;
 //$$
-//$$ @Mixin(Minecraft.class)
-//$$ public abstract class MixinMouseThirdEye {}
+//$$ /**
+//$$  * MC 26.1: MouseHandler.turnPlayer(double) applies accumulated mouse movement to
+//$$  * the player. While ThirdEye movement is active we consume the deltas for the
+//$$  * ThirdEye camera and cancel the normal mouse-look.
+//$$  */
+//$$ @Mixin(MouseHandler.class)
+//$$ public abstract class MixinMouseThirdEye {
+//$$
+//$$     @Shadow private double accumulatedDX;
+//$$     @Shadow private double accumulatedDY;
+//$$     @Shadow @Final private Minecraft minecraft;
+//$$
+//$$     @Inject(method = "turnPlayer", at = @At("HEAD"), cancellable = true)
+//$$     private void onTurnPlayerHead(double movementTime, CallbackInfo ci) {
+//$$         if (!Feature.THIRD_EYE_MOVEMENT.isEnabled()) return;
+//$$
+//$$         if (ThirdEyeCamera.initialized && ThirdEyeWindow.isOpen()
+//$$                 && (accumulatedDX != 0 || accumulatedDY != 0)) {
+//$$             double s = minecraft.options.sensitivity().get() * 0.6 + 0.2;
+//$$             double sensitivity = s * s * s * 8.0;
+//$$             ThirdEyeCamera.yaw   += (float)(accumulatedDX * sensitivity * 0.15);
+//$$             ThirdEyeCamera.pitch += (float)(accumulatedDY * sensitivity * 0.15);
+//$$             ThirdEyeCamera.pitch  = Math.max(-90f, Math.min(90f, ThirdEyeCamera.pitch));
+//$$         }
+//$$
+//$$         accumulatedDX = 0;
+//$$         accumulatedDY = 0;
+//$$         ci.cancel();
+//$$     }
+//$$ }
 //#endif

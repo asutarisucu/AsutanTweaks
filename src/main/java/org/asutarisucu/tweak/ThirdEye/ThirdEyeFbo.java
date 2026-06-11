@@ -35,6 +35,21 @@ public class ThirdEyeFbo extends SimpleFramebuffer {
 //$$     }
 //$$ }
 //#else
-//$$ // Stub for MC 260100+ (Mojang mappings): ThirdEye not yet implemented.
-//$$ public class ThirdEyeFbo {}
+//$$ import com.mojang.blaze3d.opengl.GlTexture;
+//$$ import com.mojang.blaze3d.pipeline.TextureTarget;
+//$$
+//$$ /**
+//$$  * TextureTarget subclass for MC 26.1 (Mojang mappings). The color attachment is
+//$$  * a GpuTexture; getColorTexId() unwraps the OpenGL backend handle (GlTexture)
+//$$  * so the ThirdEye blit can read it via raw GL in the secondary window.
+//$$  */
+//$$ public class ThirdEyeFbo extends TextureTarget {
+//$$     public ThirdEyeFbo(int width, int height, boolean useDepth) {
+//$$         super("ThirdEye", width, height, useDepth);
+//$$     }
+//$$
+//$$     public int getColorTexId() {
+//$$         return getColorTexture() instanceof GlTexture gl ? gl.glId() : 0;
+//$$     }
+//$$ }
 //#endif

@@ -60,8 +60,17 @@ public abstract class MixinCameraThirdEye {
 //#else
 //$$ import net.minecraft.client.Camera;
 //$$
-//$$ // ThirdEye is not yet implemented for MC 260100+; empty to avoid injection failures.
+//$$ /**
+//$$  * MC 26.1: the position override happens in MixinGameRendererThirdEye (the
+//$$  * extracted state is rebuilt there). Here we only force detached (third-person)
+//$$  * mode during the ThirdEye extraction so the player model is included.
+//$$  */
 //$$ @Mixin(Camera.class)
 //$$ public abstract class MixinCameraThirdEye {
+//$$
+//$$     @Inject(method = "isDetached", at = @At("HEAD"), cancellable = true)
+//$$     private void onIsDetachedHead(CallbackInfoReturnable<Boolean> cir) {
+//$$         if (ThirdEye.isRenderingThirdEye) cir.setReturnValue(true);
+//$$     }
 //$$ }
 //#endif
