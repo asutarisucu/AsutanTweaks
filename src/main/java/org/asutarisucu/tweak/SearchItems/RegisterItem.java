@@ -14,6 +14,7 @@ import net.minecraft.registry.Registries;
 //$$ import net.minecraft.core.registries.BuiltInRegistries;
 //#endif
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class RegisterItem {
@@ -31,7 +32,7 @@ public class RegisterItem {
 //$$ String itemName = BuiltInRegistries.ITEM.getKey(item).getPath();
 //#endif
         if (!itemName.equals("air")) {
-            List<String> list = Configs.Generic.HIGHLIGHT_ITEM_LIST.getStrings();
+            List<String> list = new ArrayList<>(Configs.Generic.HIGHLIGHT_ITEM_LIST.getStrings());
             if (!list.contains(itemName)) {
                 list.add(itemName);
                 Configs.Generic.HIGHLIGHT_ITEM_LIST.setValue(list);
