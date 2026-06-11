@@ -46,13 +46,12 @@ public abstract class MixinKeyboardInputThirdEye {
 //$$ @Mixin(KeyboardInput.class)
 //$$ public abstract class MixinKeyboardInputThirdEye {
 //$$
-//$$     @Shadow protected Vec2f movementVector;
-//$$
 //$$     @Inject(method = "tick", at = @At("RETURN"))
 //$$     private void onTickReturn(CallbackInfo ci) {
 //$$         if (!Feature.THIRD_EYE_MOVEMENT.isEnabled()) return;
 //$$         ((Input)(Object)this).playerInput = PlayerInput.DEFAULT;
-//$$         this.movementVector = Vec2f.ZERO;
+//$$         // movementVector is protected on Input; set it via the accessor mixin.
+//$$         ((MixinInputThirdEye)(Object)this).thirdeye$setMovementVector(Vec2f.ZERO);
 //$$     }
 //$$ }
 //#else

@@ -31,6 +31,7 @@
     "ThirdEye.MixinCameraThirdEye",
     "ThirdEye.MixinCameraInvokerThirdEye",
     "ThirdEye.MixinKeyboardInputThirdEye",
+    "ThirdEye.MixinInputThirdEye",
     "ThirdEye.MixinMouseThirdEye",
 //#if MC < 260100
     "BlockUpdateViewer.MixinClientPlayNbtResponse",
