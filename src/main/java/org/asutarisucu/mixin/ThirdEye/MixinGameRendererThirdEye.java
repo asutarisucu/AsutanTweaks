@@ -127,6 +127,8 @@ public abstract class MixinGameRendererThirdEye {
 //$$ import com.mojang.blaze3d.systems.CommandEncoder;
 //$$ import com.mojang.blaze3d.systems.RenderSystem;
 //$$ import net.minecraft.client.MinecraftClient;
+//$$ import net.minecraft.client.gl.GlobalSettings;
+//$$ import net.minecraft.client.option.TextureFilteringMode;
 //$$ import net.minecraft.client.render.Camera;
 //$$ import net.minecraft.client.render.GameRenderer;
 //$$ import net.minecraft.client.render.RenderTickCounter;
@@ -142,6 +144,13 @@ public abstract class MixinGameRendererThirdEye {
 //$$  * override is applied here directly through the protected setters (exposed by
 //$$  * MixinCameraInvokerThirdEye) rather than via a Camera.update() RETURN inject.
 //$$  *
+//$$  * The camera-relative POSITION used by the terrain shader lives in the
+//$$  * GlobalSettings UBO, which GameRenderer.render() writes once per frame (with the
+//$$  * player camera) BEFORE renderWorld(). The recursive renderWorld() does not touch
+//$$  * it, so without re-writing it the terrain would render relative to the player
+//$$  * while entities (positioned CPU-side) follow ThirdEye. We re-write GlobalSettings
+//$$  * with the overridden camera for the pass and restore it afterwards.
+//$$  *
 //$$  * getFramebuffer() is intercepted by MixinMinecraftClientThirdEye to return the
 //$$  * ThirdEye FBO while isRenderingThirdEye is true, redirecting the render target.
 //$$  */
@@ -150,8 +159,24 @@ public abstract class MixinGameRendererThirdEye {
 //$$
 //$$     @Shadow private MinecraftClient client;
 //$$     @Shadow private Camera camera;
+//$$     @Shadow private GlobalSettings globalSettings;
 //$$
 //$$     @Shadow public abstract void renderWorld(RenderTickCounter counter);
+//$$
+//$$     // Mirrors the GlobalSettings.set(...) call in GameRenderer.render(), reading
+//$$     // the (currently overridden) this.camera so the terrain shader's camera-relative
+//$$     // origin matches the ThirdEye view.
+//$$     private void thirdeye$writeGlobalSettings(RenderTickCounter counter) {
+//$$         globalSettings.set(
+//$$                 client.getWindow().getFramebufferWidth(),
+//$$                 client.getWindow().getFramebufferHeight(),
+//$$                 (double) client.options.getGlintStrength().getValue(),
+//$$                 client.world != null ? client.world.getTime() : 0L,
+//$$                 counter,
+//$$                 client.options.getMenuBackgroundBlurrinessValue(),
+//$$                 camera,
+//$$                 client.options.getTextureFiltering().getValue() == TextureFilteringMode.RGSS);
+//$$     }
 //$$
 //$$     @Inject(method = "renderWorld", at = @At("RETURN"))
 //$$     private void onRenderWorldReturn(RenderTickCounter counter, CallbackInfo ci) {
@@ -179,6 +204,7 @@ public abstract class MixinGameRendererThirdEye {
 //$$         MixinCameraInvokerThirdEye inv = (MixinCameraInvokerThirdEye)(Object) camera;
 //$$         inv.thirdeye$setPos(ThirdEyeCamera.x, ThirdEyeCamera.y, ThirdEyeCamera.z);
 //$$         inv.thirdeye$setRotation(ThirdEyeCamera.yaw, ThirdEyeCamera.pitch);
+//$$         thirdeye$writeGlobalSettings(counter);   // terrain camera-relative origin → ThirdEye
 //$$
 //$$         try {
 //$$             renderWorld(counter);
@@ -186,6 +212,7 @@ public abstract class MixinGameRendererThirdEye {
 //$$             ThirdEye.isRenderingThirdEye = false;
 //$$             inv.thirdeye$setPos(savedPos.x, savedPos.y, savedPos.z);
 //$$             inv.thirdeye$setRotation(savedYaw, savedPitch);
+//$$             thirdeye$writeGlobalSettings(counter);   // restore UBO to player view
 //$$         }
 //$$
 //$$         ThirdEyeWindow.blit(
