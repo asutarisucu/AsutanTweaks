@@ -1,6 +1,7 @@
 package org.asutarisucu.tweak.ThirdEye;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import org.asutarisucu.Configs.Feature;
 
 //#if MC < 260100
@@ -38,23 +39,47 @@ public class ThirdEye {
 
     public static void register() {
         ClientTickEvents.END_CLIENT_TICK.register(client -> tick(client));
+        // Closes the ThirdEye window immediately when the player disconnects
+        // from a world (Save & Quit, server disconnect, etc.). Relying on the
+        // tick-based world==null check alone is fragile because the tick event
+        // may not fire promptly after disconnect, and on some flows mc.world
+        // is briefly non-null while the disconnect screen renders.
+        // DISCONNECT fires on the Netty IO thread, where no GL context is
+        // current. Schedule shutdown() on the render thread via execute() so
+        // the FBO/window GL teardown happens with a valid context.
+        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> client.execute(() -> shutdown(client)));
+    }
+
+    /** Tear down all ThirdEye resources. Safe to call repeatedly. */
+    private static void shutdown(MinecraftClient mc) {
+        isRenderingThirdEye = false;
+        if (mc != null && ThirdEyeWindow.isOpen()) {
+            ThirdEyeWindow.close(mc.getWindow().getHandle());
+        }
+        if (thirdEyeFbo != null) {
+            thirdEyeFbo.delete();
+            thirdEyeFbo = null;
+        }
+        ThirdEyeCamera.initialized = false;
     }
 
     private static void tick(MinecraftClient mc) {
+        // Defensive: rendering should never be in progress at tick time. If a
+        // prior frame's recursive render somehow left this flag set (e.g. via
+        // an exception bypassing the try/finally in MixinGameRendererThirdEye),
+        // clear it here so subsequent frames don't keep treating the main
+        // render pass as a ThirdEye pass.
+        isRenderingThirdEye = false;
+
         if (!Feature.THIRD_EYE.isEnabled()) {
-            // Clean up when feature is turned off
-            if (ThirdEyeWindow.isOpen()) {
-                ThirdEyeWindow.close(mc.getWindow().getHandle());
-            }
-            if (thirdEyeFbo != null) {
-                thirdEyeFbo.delete();
-                thirdEyeFbo = null;
-            }
-            ThirdEyeCamera.initialized = false;
+            shutdown(mc);
             return;
         }
 
-        if (mc.world == null || mc.player == null) return;
+        if (mc.world == null || mc.player == null) {
+            shutdown(mc);
+            return;
+        }
 
         // (Re-)open window if needed
         if (!ThirdEyeWindow.isOpen()) {

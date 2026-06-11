@@ -29,6 +29,9 @@
     "ThirdEye.MixinMinecraftClientThirdEye",
     "ThirdEye.MixinGameRendererThirdEye",
     "ThirdEye.MixinCameraThirdEye",
+    "ThirdEye.MixinCameraInvokerThirdEye",
+    "ThirdEye.MixinKeyboardInputThirdEye",
+    "ThirdEye.MixinMouseThirdEye",
 //#if MC < 260100
     "BlockUpdateViewer.MixinClientPlayNbtResponse",
     "BlockUpdateViewer.MixinClientWorldSim",

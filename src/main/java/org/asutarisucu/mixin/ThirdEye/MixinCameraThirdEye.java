@@ -7,6 +7,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 //#if MC < 260100
 import net.minecraft.client.render.Camera;
@@ -33,6 +34,11 @@ public abstract class MixinCameraThirdEye {
         setPos(ThirdEyeCamera.x, ThirdEyeCamera.y, ThirdEyeCamera.z);
         setRotation(ThirdEyeCamera.yaw, ThirdEyeCamera.pitch);
     }
+
+    @Inject(method = "isThirdPerson", at = @At("HEAD"), cancellable = true)
+    private void onIsThirdPersonHead(CallbackInfoReturnable<Boolean> cir) {
+        if (ThirdEye.isRenderingThirdEye) cir.setReturnValue(true);
+    }
 }
 //#else
 //$$ import net.minecraft.client.Camera;
@@ -52,6 +58,11 @@ public abstract class MixinCameraThirdEye {
 //$$         if (!ThirdEye.isRenderingThirdEye) return;
 //$$         setPosition(ThirdEyeCamera.x, ThirdEyeCamera.y, ThirdEyeCamera.z);
 //$$         setRotation(ThirdEyeCamera.yaw, ThirdEyeCamera.pitch);
+//$$     }
+//$$
+//$$     @Inject(method = "isThirdPerson", at = @At("HEAD"), cancellable = true)
+//$$     private void onIsThirdPersonHead(CallbackInfoReturnable<Boolean> cir) {
+//$$         if (ThirdEye.isRenderingThirdEye) cir.setReturnValue(true);
 //$$     }
 //$$ }
 //#endif

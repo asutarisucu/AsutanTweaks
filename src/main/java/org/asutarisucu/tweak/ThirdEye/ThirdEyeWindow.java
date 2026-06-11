@@ -30,6 +30,7 @@ public class ThirdEyeWindow {
         GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_PROFILE,        GLFW.GLFW_OPENGL_CORE_PROFILE);
         GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 3);
         GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 2);
+        GLFW.glfwWindowHint(GLFW.GLFW_FOCUSED,               GLFW.GLFW_FALSE);
 
         // Share the main context so texture IDs are accessible from this window.
         handle = GLFW.glfwCreateWindow(640, 360, "ThirdEye", 0L, mainContextHandle);
@@ -71,10 +72,9 @@ public class ThirdEyeWindow {
         GL11.glClearColor(0f, 0f, 0f, 1f);
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
 
-        // MC framebuffers store pixels bottom-up; flip srcY to get a right-side-up image.
         GL30.glBlitFramebuffer(
-                0, texH, texW, 0,
-                0, 0,   ww,   wh,
+                0, 0, texW, texH,
+                0, 0, ww,   wh,
                 GL11.GL_COLOR_BUFFER_BIT, GL11.GL_LINEAR);
 
         GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, 0);

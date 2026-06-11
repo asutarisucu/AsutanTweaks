@@ -1,5 +1,6 @@
 package org.asutarisucu.tweak.ThirdEye;
 
+import fi.dy.masa.tweakeroo.config.Configs;
 import org.lwjgl.glfw.GLFW;
 
 public class ThirdEyeCamera {
@@ -7,8 +8,24 @@ public class ThirdEyeCamera {
     public static float yaw, pitch;
     public static boolean initialized = false;
 
-    private static final double MOVE_SPEED = 0.2;
-    private static final double FAST_MULT  = 5.0;
+    /** Fallback move speed if tweakeroo's FLY_SPEED_PRESET resolves to an unexpected index. */
+    private static final double DEFAULT_MOVE_SPEED = 0.2;
+    private static final double FAST_MULT          = 5.0;
+
+    /**
+     * Returns tweakeroo's currently-selected fly speed preset value.
+     * FLY_SPEED_PRESET is 0-indexed (0..3) → FLY_SPEED_PRESET_1..4.
+     */
+    private static double tweakerooFlySpeed() {
+        int preset = Configs.Internal.FLY_SPEED_PRESET.getIntegerValue();
+        switch (preset) {
+            case 0:  return Configs.Generic.FLY_SPEED_PRESET_1.getDoubleValue();
+            case 1:  return Configs.Generic.FLY_SPEED_PRESET_2.getDoubleValue();
+            case 2:  return Configs.Generic.FLY_SPEED_PRESET_3.getDoubleValue();
+            case 3:  return Configs.Generic.FLY_SPEED_PRESET_4.getDoubleValue();
+            default: return DEFAULT_MOVE_SPEED;
+        }
+    }
 
     public static void initFromPlayer() {
 //#if MC < 260100
@@ -33,16 +50,17 @@ public class ThirdEyeCamera {
 
     // Called every tick when THIRD_EYE_MOVEMENT is enabled.
     // Uses GLFW key state so it works regardless of screen focus.
+    // Key mapping mirrors creative-mode flying: Space=up, Shift=down, Ctrl=sprint.
     public static void tick(long window) {
-        boolean fast  = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_LEFT_SHIFT)   == GLFW.GLFW_PRESS;
-        double  speed = MOVE_SPEED * (fast ? FAST_MULT : 1.0);
+        boolean fast  = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_LEFT_CONTROL) == GLFW.GLFW_PRESS;
+        double  speed = tweakerooFlySpeed() * (fast ? FAST_MULT : 1.0);
 
         float yr = (float) Math.toRadians(yaw);
         float pr = (float) Math.toRadians(pitch);
 
         double fwd  = key(window, GLFW.GLFW_KEY_W) - key(window, GLFW.GLFW_KEY_S);
-        double str  = key(window, GLFW.GLFW_KEY_D) - key(window, GLFW.GLFW_KEY_A);
-        double vert = key(window, GLFW.GLFW_KEY_SPACE) - key(window, GLFW.GLFW_KEY_LEFT_CONTROL);
+        double str  = key(window, GLFW.GLFW_KEY_A) - key(window, GLFW.GLFW_KEY_D);
+        double vert = key(window, GLFW.GLFW_KEY_SPACE) - key(window, GLFW.GLFW_KEY_LEFT_SHIFT);
 
         // forward vector (pitch-aware)
         double fx = -Math.sin(yr) * Math.cos(pr);
@@ -52,6 +70,8 @@ public class ThirdEyeCamera {
         double rx =  Math.cos(yr);
         double rz =  Math.sin(yr);
 
+        // horizontal movement sign is negated relative to the standard MC direction
+        // because the ThirdEye FBO rendering inverts the horizontal world-space mapping
         x += (fx * fwd + rx * str) * speed;
         y += (fy * fwd + vert)     * speed;
         z += (fz * fwd + rz * str) * speed;
