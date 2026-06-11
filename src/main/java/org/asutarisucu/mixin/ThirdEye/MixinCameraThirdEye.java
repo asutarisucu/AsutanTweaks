@@ -42,27 +42,9 @@ public abstract class MixinCameraThirdEye {
 }
 //#else
 //$$ import net.minecraft.client.Camera;
-//$$ import net.minecraft.world.entity.Entity;
-//$$ import net.minecraft.world.level.BlockGetter;
 //$$
+//$$ // ThirdEye is not yet implemented for MC 260100+; empty to avoid injection failures.
 //$$ @Mixin(Camera.class)
 //$$ public abstract class MixinCameraThirdEye {
-//$$
-//$$     @Shadow protected abstract void setRotation(float yaw, float pitch);
-//$$     @Shadow protected abstract void setPosition(double x, double y, double z);
-//$$
-//$$     @Inject(method = "setup", at = @At("RETURN"))
-//$$     private void onSetupReturn(BlockGetter area, Entity focusedEntity,
-//$$                                boolean detached, boolean mirrorView,
-//$$                                float partialTick, CallbackInfo ci) {
-//$$         if (!ThirdEye.isRenderingThirdEye) return;
-//$$         setPosition(ThirdEyeCamera.x, ThirdEyeCamera.y, ThirdEyeCamera.z);
-//$$         setRotation(ThirdEyeCamera.yaw, ThirdEyeCamera.pitch);
-//$$     }
-//$$
-//$$     @Inject(method = "isThirdPerson", at = @At("HEAD"), cancellable = true)
-//$$     private void onIsThirdPersonHead(CallbackInfoReturnable<Boolean> cir) {
-//$$         if (ThirdEye.isRenderingThirdEye) cir.setReturnValue(true);
-//$$     }
 //$$ }
 //#endif
