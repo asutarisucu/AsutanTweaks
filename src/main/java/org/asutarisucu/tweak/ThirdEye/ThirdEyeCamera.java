@@ -8,9 +8,13 @@ public class ThirdEyeCamera {
     public static float yaw, pitch;
     public static boolean initialized = false;
 
-    /** Fallback move speed if tweakeroo's FLY_SPEED_PRESET resolves to an unexpected index. */
-    private static final double DEFAULT_MOVE_SPEED = 0.2;
-    private static final double FAST_MULT          = 5.0;
+    /**
+     * Minimum move speed ≈ vanilla walking speed (4.32 blocks/s ÷ 20 ticks).
+     * tweakeroo's fly-speed presets can raise the speed above this, but the
+     * camera never moves slower than a walking player.
+     */
+    private static final double WALK_SPEED = 0.22;
+    private static final double FAST_MULT  = 5.0;
 
     /**
      * Returns tweakeroo's currently-selected fly speed preset value.
@@ -23,7 +27,7 @@ public class ThirdEyeCamera {
             case 1:  return Configs.Generic.FLY_SPEED_PRESET_2.getDoubleValue();
             case 2:  return Configs.Generic.FLY_SPEED_PRESET_3.getDoubleValue();
             case 3:  return Configs.Generic.FLY_SPEED_PRESET_4.getDoubleValue();
-            default: return DEFAULT_MOVE_SPEED;
+            default: return WALK_SPEED;
         }
     }
 
@@ -53,7 +57,7 @@ public class ThirdEyeCamera {
     // Key mapping mirrors creative-mode flying: Space=up, Shift=down, Ctrl=sprint.
     public static void tick(long window) {
         boolean fast  = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_LEFT_CONTROL) == GLFW.GLFW_PRESS;
-        double  speed = tweakerooFlySpeed() * (fast ? FAST_MULT : 1.0);
+        double  speed = Math.max(tweakerooFlySpeed(), WALK_SPEED) * (fast ? FAST_MULT : 1.0);
 
         float yr = (float) Math.toRadians(yaw);
         float pr = (float) Math.toRadians(pitch);

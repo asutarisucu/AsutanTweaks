@@ -23,6 +23,9 @@ public interface MixinCameraInvokerThirdEye {
 }
 //#else
 //$$ import net.minecraft.client.Camera;
+//$$ import net.minecraft.world.phys.Vec3;
+//$$ import org.joml.Matrix4f;
+//$$ import org.joml.Matrix4fc;
 //$$
 //$$ @Mixin(Camera.class)
 //$$ public interface MixinCameraInvokerThirdEye {
@@ -32,5 +35,14 @@ public interface MixinCameraInvokerThirdEye {
 //$$
 //$$     @Invoker("setRotation")
 //$$     void thirdeye$setRotation(float yaw, float pitch);
+//$$
+//$$     // The cull frustum is computed once in Camera.update() and NOT refreshed by
+//$$     // setPosition/setRotation. These two invokers let the ThirdEye pass rebuild
+//$$     // it after overriding the camera (mirrors the tail of Camera.update()).
+//$$     @Invoker("createProjectionMatrixForCulling")
+//$$     Matrix4f thirdeye$createProjectionMatrixForCulling();
+//$$
+//$$     @Invoker("prepareCullFrustum")
+//$$     void thirdeye$prepareCullFrustum(Matrix4fc viewRotMatrix, Matrix4f projectionMatrix, Vec3 pos);
 //$$ }
 //#endif

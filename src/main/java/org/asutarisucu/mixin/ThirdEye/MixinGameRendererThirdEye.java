@@ -238,6 +238,7 @@ public abstract class MixinGameRendererThirdEye {
 //$$ import net.minecraft.client.renderer.GlobalSettingsUniform;
 //$$ import net.minecraft.client.renderer.state.GameRenderState;
 //$$ import net.minecraft.world.phys.Vec3;
+//$$ import org.joml.Matrix4f;
 //$$ import org.spongepowered.asm.mixin.Final;
 //$$
 //$$ /**
@@ -284,6 +285,15 @@ public abstract class MixinGameRendererThirdEye {
 //$$                 gameRenderState.optionsRenderState.textureFiltering == TextureFilteringMethod.RGSS);
 //$$     }
 //$$
+//$$     // Rebuilds the camera's cull frustum from its current pos/rotation
+//$$     // (replicates the tail of Camera.update()).
+//$$     private void thirdeye$rebuildCullFrustum(MixinCameraInvokerThirdEye inv) {
+//$$         inv.thirdeye$prepareCullFrustum(
+//$$                 mainCamera.getViewRotationMatrix(new Matrix4f()),
+//$$                 inv.thirdeye$createProjectionMatrixForCulling(),
+//$$                 mainCamera.position());
+//$$     }
+//$$
 //$$     // Re-runs the camera + level extraction with whatever the live Camera holds.
 //$$     private void thirdeye$reextract(DeltaTracker deltaTracker, boolean includeLevel) {
 //$$         float tickDelta = deltaTracker.getGameTimeDeltaPartialTick(false);
@@ -322,14 +332,25 @@ public abstract class MixinGameRendererThirdEye {
 //$$         inv.thirdeye$setRotation(ThirdEyeCamera.yaw, ThirdEyeCamera.pitch);
 //$$
 //$$         try {
+//$$             // The cull frustum is only computed in Camera.update() (player view), so
+//$$             // rebuild it from the overridden pos/rotation (mirrors update()'s tail) —
+//$$             // otherwise both terrain sections and entities stay culled to the
+//$$             // player's view direction.
+//$$             thirdeye$rebuildCullFrustum(inv);
+//$$             // Terrain visibility (cullTerrain → visible section set) was computed in
+//$$             // the update phase with the player frustum; re-run it for ThirdEye.
+//$$             minecraft.levelRenderer.update(mainCamera);
+//$$
 //$$             thirdeye$reextract(deltaTracker, true);   // extracted state → ThirdEye view
 //$$             renderLevel(deltaTracker);
 //$$         } finally {
 //$$             ThirdEye.isRenderingThirdEye = false;
 //$$             inv.thirdeye$setPos(savedPos.x, savedPos.y, savedPos.z);
 //$$             inv.thirdeye$setRotation(savedYaw, savedPitch);
+//$$             thirdeye$rebuildCullFrustum(inv);
 //$$             // Restore camera-derived state for the rest of the frame (post FX, GUI).
-//$$             // Skip the level re-extraction: levelRenderState was already consumed.
+//$$             // Skip the level re-extraction: levelRenderState was already consumed,
+//$$             // and the next frame's update phase re-culls terrain from the player.
 //$$             thirdeye$reextract(deltaTracker, false);
 //$$         }
 //$$
