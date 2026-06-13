@@ -125,6 +125,10 @@ public class TweaksConfigScreen extends Screen {
     private boolean dragMode         = false;
     private boolean progressDragMode = false;
 
+    // scrollbar drag state
+    private boolean scrollbarDragging   = false;
+    private int     scrollbarGrabOffset = 0;
+
     // color picker state
     private int    colorPickerIdx = -1;
     private int    cpR, cpG, cpB, cpA;
@@ -568,9 +572,32 @@ public class TweaksConfigScreen extends Screen {
         if (totalH <= sbH) return;
         int tH = Math.max(16, sbH * sbH / totalH);
         int tY = sbY + (int) ((long) (sbH - tH) * scrollTarget / Math.max(1, totalH - sbH));
-        dc.fill(sbX, tY, sbX + sbW, tY + tH, C_SBAR_FG);
+        dc.fill(sbX, tY, sbX + sbW, tY + tH, scrollbarDragging ? C_ACCENT : C_SBAR_FG);
         // scrollbar highlight
-        dc.fill(sbX, tY, sbX + 1, tY + tH, C_BORDER_LT);
+        dc.fill(sbX, tY, sbX + 1, tY + tH, scrollbarDragging ? C_ACCENT_LT : C_BORDER_LT);
+    }
+
+    // scrollbar geometry: { sbX, sbY, sbW, sbH, thumbH, thumbY, totalH } or null when no scroll needed
+    private int[] scrollbarMetrics() {
+        int px = 8, pw = width - 16;
+        int sbX = px + pw - 6, sbW = 4;
+        int sbY = listY, sbH = listH;
+        int rowH = activeTab == 0 ? ROW_H_F : ROW_H_O;
+        int totalH = rowCount() * rowH;
+        if (totalH <= sbH) return null;
+        int tH = Math.max(16, sbH * sbH / totalH);
+        int tY = sbY + (int) ((long) (sbH - tH) * scrollTarget / Math.max(1, totalH - sbH));
+        return new int[] { sbX, sbY, sbW, sbH, tH, tY, totalH };
+    }
+
+    private void dragScrollbarTo(int imy, int[] sb) {
+        int sbY = sb[1], sbH = sb[3], tH = sb[4], totalH = sb[6];
+        int denom = sbH - tH;
+        if (denom <= 0) return;
+        int topY = imy - scrollbarGrabOffset;
+        scrollTarget = (int) ((long) (topY - sbY) * (totalH - sbH) / denom);
+        clampScroll();
+        scrollOffsetF = scrollTarget; // follow the cursor instantly while dragging
     }
 
     private List<String> wrapText(String text, int maxWidth, DrawCtx dc) {
@@ -655,6 +682,7 @@ public class TweaksConfigScreen extends Screen {
         list.add(new OptionEntry("Void Height (End)",         Configs.Generic.VOID_HEIGHT_END));
         list.add(new OptionEntry("Void Disconnect",           Configs.Generic.VOID_DISCONNECT));
         list.add(new OptionEntry("Restriction Whitelist",     Configs.Generic.RESTRICTION_STATE_WHITELIST));
+        list.add(new OptionEntry("Restriction Whitelist Msg", Configs.Generic.RESTRICTION_WHITELIST_MESSAGE_TYPE));
         list.add(new OptionEntry("Last Use Blacklist",        Configs.Generic.LAST_USE_CANCEL_BLACKLIST));
         list.add(new OptionEntry("EC Materiallist Whitelist", Configs.Generic.ENDERCHEST_MATERIALLIST_WHITELIST));
         list.add(new OptionEntry("EC Materiallist Blacklist", Configs.Generic.ENDERCHEST_MATERIALLIST_BLACKLIST));
@@ -748,6 +776,18 @@ public class TweaksConfigScreen extends Screen {
                 if (imx >= tx && imx < tx + tw0) {
                     activeTab = i; scrollTarget = 0; scrollOffsetF = 0f; stopRec(); return true;
                 }
+            }
+        }
+
+        // scrollbar grab
+        int[] sb = scrollbarMetrics();
+        if (sb != null) {
+            int sbX = sb[0], sbY = sb[1], sbW = sb[2], sbH = sb[3], tH = sb[4], tY = sb[5];
+            if (imx >= sbX - 2 && imx < sbX + sbW + 2 && imy >= sbY && imy < sbY + sbH) {
+                scrollbarGrabOffset = (imy >= tY && imy < tY + tH) ? imy - tY : tH / 2;
+                scrollbarDragging = true;
+                dragScrollbarTo(imy, sb);
+                return true;
             }
         }
 
@@ -851,6 +891,49 @@ public class TweaksConfigScreen extends Screen {
 //$$     if (popupListIdx >= 0) { popupScrTgt -= (int)(sy * 20); return true; }
 //$$     scrollTarget -= (int) (sy * ROW_H_F / 2);
 //#endif
+        return true;
+    }
+
+    // ── mouse drag / release (scrollbar) ─────────────────────────
+//#if MC < 12111
+    @Override
+    public boolean mouseDragged(double mx, double my, int btn, double dx, double dy) {
+        return handleMouseDragged((int) mx, (int) my, btn);
+    }
+    @Override
+    public boolean mouseReleased(double mx, double my, int btn) {
+        return handleMouseReleased();
+    }
+//#elseif MC < 260100
+//$$ @Override
+//$$ public boolean mouseDragged(net.minecraft.client.gui.Click click, double dx, double dy) {
+//$$     return handleMouseDragged((int) click.x(), (int) click.y(), click.button());
+//$$ }
+//$$ @Override
+//$$ public boolean mouseReleased(net.minecraft.client.gui.Click click) {
+//$$     return handleMouseReleased();
+//$$ }
+//#else
+//$$ @Override
+//$$ public boolean mouseDragged(net.minecraft.client.input.MouseButtonEvent event, double dx, double dy) {
+//$$     return handleMouseDragged((int) event.x(), (int) event.y(), event.button());
+//$$ }
+//$$ @Override
+//$$ public boolean mouseReleased(net.minecraft.client.input.MouseButtonEvent event) {
+//$$     return handleMouseReleased();
+//$$ }
+//#endif
+
+    private boolean handleMouseDragged(int imx, int imy, int btn) {
+        if (btn != 0 || !scrollbarDragging) return false;
+        int[] sb = scrollbarMetrics();
+        if (sb != null) dragScrollbarTo(imy, sb);
+        return true;
+    }
+
+    private boolean handleMouseReleased() {
+        if (!scrollbarDragging) return false;
+        scrollbarDragging = false;
         return true;
     }
 

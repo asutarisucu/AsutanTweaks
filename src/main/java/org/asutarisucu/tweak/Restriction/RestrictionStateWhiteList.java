@@ -28,7 +28,12 @@ public class RestrictionStateWhiteList {
 
         for (Property<?> property :PROPERTIES) {
             if (stateToPlace.contains(property) && schematicState.contains(property) && stateToPlace.get(property) != schematicState.get(property)) {
-                HudLogger.INSTANCE.log("wrongBlockState:" + property.getName().toUpperCase());
+                String message = "wrongBlockState:" + property.getName().toUpperCase();
+                switch (Configs.Generic.RESTRICTION_WHITELIST_MESSAGE_TYPE.getValue()) {
+                    case LOG       -> HudLogger.INSTANCE.log(message);
+                    case ACTIONBAR -> MessageUtils.sendActionBar(message);
+                    case NONE      -> {}
+                }
                 cir.setReturnValue(false);
             }
         }

@@ -20,6 +20,9 @@ public class Configs {
         public static final StringListConfig RESTRICTION_STATE_WHITELIST =
                 new StringListConfig("restriction_state_whitelist",
                         List.of("UP", "DOWN", "NORTH", "EAST", "SOUTH", "WEST"));
+        public static final OptionListConfig<RestrictionWhitelistMessageType> RESTRICTION_WHITELIST_MESSAGE_TYPE =
+                new OptionListConfig<>("restriction_whitelist_message_type",
+                        RestrictionWhitelistMessageType.LOG, RestrictionWhitelistMessageType.class);
         public static final StringListConfig LAST_USE_CANCEL_BLACKLIST =
                 new StringListConfig("last_use_cancel_blacklist",
                         List.of("chest", "shulker_box"));
@@ -63,6 +66,7 @@ public class Configs {
         ConfigManager.INSTANCE.register("options", Generic.VOID_HEIGHT_END.getName(),          Generic.VOID_HEIGHT_END);
         ConfigManager.INSTANCE.register("options", Generic.VOID_DISCONNECT.getName(),          Generic.VOID_DISCONNECT);
         ConfigManager.INSTANCE.register("options", Generic.RESTRICTION_STATE_WHITELIST.getName(),    Generic.RESTRICTION_STATE_WHITELIST);
+        ConfigManager.INSTANCE.register("options", Generic.RESTRICTION_WHITELIST_MESSAGE_TYPE.getName(), Generic.RESTRICTION_WHITELIST_MESSAGE_TYPE);
         ConfigManager.INSTANCE.register("options", Generic.LAST_USE_CANCEL_BLACKLIST.getName(),      Generic.LAST_USE_CANCEL_BLACKLIST);
         ConfigManager.INSTANCE.register("options", Generic.ENDERCHEST_MATERIALLIST_WHITELIST.getName(), Generic.ENDERCHEST_MATERIALLIST_WHITELIST);
         ConfigManager.INSTANCE.register("options", Generic.ENDERCHEST_MATERIALLIST_BLACKLIST.getName(), Generic.ENDERCHEST_MATERIALLIST_BLACKLIST);
