@@ -47,7 +47,9 @@
     "SimpleItemEntityRender.MixinEntityRender",
     "SimpleItemEntityRender.MixinEntityRenderDispatcher",
     "SimpleItemEntityRender.MixinItemEntityRenderer",
-    "SimpleItemEntityRender.MixinMinecraftClient"
+    "SimpleItemEntityRender.MixinMinecraftClient",
+    "VisualiseLazyEntity.MixinFallingBlockLazy",
+    "VisualiseLazyEntity.MixinTntLazy"
   ],
   "injectors": {
     "defaultRequire": 1

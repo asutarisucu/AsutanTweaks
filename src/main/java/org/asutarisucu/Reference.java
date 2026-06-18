@@ -11,6 +11,7 @@ import org.asutarisucu.tweak.SearchItems.HighlightBlock;
 import org.asutarisucu.tweak.SearchItems.HighlightContainer;
 import org.asutarisucu.tweak.SimpleItemEntityRender.SimpleEntityRender;
 import org.asutarisucu.tweak.ThirdEye.ThirdEye;
+import org.asutarisucu.tweak.VisualiseLazyEntity.VisualiseLazyEntity;
 
 //#if MC >= 12111
 //$$ import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
@@ -37,6 +38,7 @@ public class Reference {
         UpdateSuppressionView.register();
         SimpleEntityRender.register();
         ThirdEye.register();
+        VisualiseLazyEntity.register();
         registerWorldRendering();
         registerHud();
     }

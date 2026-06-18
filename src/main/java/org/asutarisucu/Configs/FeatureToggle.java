@@ -25,6 +25,7 @@ public final class FeatureToggle {
     public static final Feature UPDATE_SUPPRESSION_VIEW             = Feature.UPDATE_SUPPRESSION_VIEW;
     public static final Feature THIRD_EYE                          = Feature.THIRD_EYE;
     public static final Feature THIRD_EYE_MOVEMENT                 = Feature.THIRD_EYE_MOVEMENT;
+    public static final Feature VISUALISE_LAZY_ENTITY             = Feature.VISUALISE_LAZY_ENTITY;
 
     public static final List<Feature> VALUES = Arrays.asList(Feature.values());
 

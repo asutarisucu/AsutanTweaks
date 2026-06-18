@@ -38,7 +38,9 @@ public enum Feature {
     THIRD_EYE("third_eye", false, "",
             "Third Eye", "Render the world from a second viewpoint in a separate window"),
     THIRD_EYE_MOVEMENT("third_eye_movement", false, "",
-            "Third Eye Movement", "WASD/Space/Ctrl move the Third Eye camera while enabled");
+            "Third Eye Movement", "WASD/Space/Ctrl move the Third Eye camera while enabled"),
+    VISUALISE_LAZY_ENTITY("visualise_lazy_entity", false, "",
+            "Visualise Lazy Entity", "Render entities in lazy chunks at their real server position");
 
     public final FeatureConfig config;
     public final String displayName;

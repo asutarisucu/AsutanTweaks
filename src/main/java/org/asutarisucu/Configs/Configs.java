@@ -57,6 +57,8 @@ public class Configs {
                 new DoubleConfig("progress_meter_x", 0.5, 0.0, 1.0);
         public static final DoubleConfig PROGRESS_METER_Y =
                 new DoubleConfig("progress_meter_y", 0.02, 0.0, 1.0);
+        public static final IntegerConfig LAZY_ENTITY_SYNC_INTERVAL =
+                new IntegerConfig("lazy_entity_sync_interval", 20, 5, 200);
     }
 
     public static void registerAll() {
@@ -83,5 +85,6 @@ public class Configs {
         ConfigManager.INSTANCE.register("options", Generic.HUD_LOG_Y.getName(),           Generic.HUD_LOG_Y);
         ConfigManager.INSTANCE.register("options", Generic.PROGRESS_METER_X.getName(),    Generic.PROGRESS_METER_X);
         ConfigManager.INSTANCE.register("options", Generic.PROGRESS_METER_Y.getName(),    Generic.PROGRESS_METER_Y);
+        ConfigManager.INSTANCE.register("options", Generic.LAZY_ENTITY_SYNC_INTERVAL.getName(), Generic.LAZY_ENTITY_SYNC_INTERVAL);
     }
 }
