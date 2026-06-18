@@ -51,3 +51,16 @@ AsutanTweaksはクライアントサイドで動作するFabricMODです。<br>
 >採掘ツールを持っているときに`BreakingUpdateViewer`を有効にすると、アップデート対象を**青色**でハイライト表示します。<br>
 >`UpdateViewInstantOnly`を有効にすると、ピストンやオブザーバーなどスケジュール更新されるブロックを除いた即時アップデートのみを表示します。<br>
 >`UpdateSuppressionView`を有効にすると、アップデートチェーンにアップデート抑制を引き起こす可能性のある座標が含まれている場合にHUDに警告（`CCE suppress Ready`）を表示します。
+### ThirdEye
+>ワールドを別ウィンドウに第2視点（自由に動かせるカメラ）から描画します。<br>
+>有効にすると、第2カメラは現在の自分の視点位置から開始します。<br>
+>`ThirdEyeMovement`を有効にすると、`WASD`（移動）・`Space`（上昇）・`Shift`（下降）・`Ctrl`（加速）でカメラを操作できます。<br>
+>移動速度は[tweakeroo](https://github.com/maruohon/tweakeroo)のフライ速度プリセットに従います。
+### VisualiseLazyEntity
+>サーバーがシミュレーションしていないチャンク（Lazy Chunk）にあるエンティティを、本来のサーバー位置に固定して正しく描画します。<br>
+>通常このようなアイテムや落下ブロックはクライアント側で落下し続け、着火済みTNTはクライアント側の信管が尽きると消えてしまいますが、本機能はそれらを本来の位置で静止させます。<br>
+>生物（Mob）は元々正しく表示されるため対象外です。<br>
+>シングルプレイでは統合サーバーから実際の状態を読み取ります。<br>
+>マルチプレイで使用したい場合は[tweakermore](https://github.com/Fallen-Breath/tweakermore/tree/master)の`serverDataSyncer`を有効にして、
+>[Carpet](https://github.com/gnembon/fabric-carpet)の`debugNbtQueryNoPermission`を有効にしてください。<br>
+>`LazyEntitySyncInterval`でサーバー位置を取得する間隔を調整できます。
