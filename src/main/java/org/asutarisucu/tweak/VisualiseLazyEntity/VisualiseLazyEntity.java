@@ -78,6 +78,11 @@ public class VisualiseLazyEntity {
                 && FROZEN.containsKey(entity.getId());
     }
 
+    /** Mixin hook: feature is on and this is a client-side entity (regardless of frozen state). */
+    public static boolean isActiveClientEntity(Entity entity) {
+        return Feature.VISUALISE_LAZY_ENTITY.isEnabled() && isClientEntity(entity);
+    }
+
     private static void tick() {
         if (!Feature.VISUALISE_LAZY_ENTITY.isEnabled()) {
             if (!FROZEN.isEmpty()) FROZEN.clear();
