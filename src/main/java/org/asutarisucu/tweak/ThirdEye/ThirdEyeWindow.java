@@ -31,6 +31,10 @@ public class ThirdEyeWindow {
         GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 3);
         GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 2);
         GLFW.glfwWindowHint(GLFW.GLFW_FOCUSED,               GLFW.GLFW_FALSE);
+        // Keep the ThirdEye window above the Minecraft window. Without this the
+        // OS drops it behind the (focused) game window as soon as the game is
+        // clicked, which hides the whole point of the second view.
+        GLFW.glfwWindowHint(GLFW.GLFW_FLOATING,              GLFW.GLFW_TRUE);
 
         // Share the main context so texture IDs are accessible from this window.
         handle = GLFW.glfwCreateWindow(640, 360, "ThirdEye", 0L, mainContextHandle);
@@ -42,8 +46,23 @@ public class ThirdEyeWindow {
         GLFW.glfwMakeContextCurrent(mainContextHandle);
     }
 
+    /** True while the window is alive and has no pending close request. */
     public static boolean isOpen() {
         return handle != 0L && !GLFW.glfwWindowShouldClose(handle);
+    }
+
+    /**
+     * True while the OS window object still exists, even if the user already
+     * requested it to close. Teardown must test this rather than isOpen(),
+     * otherwise a close-requested window is never destroyed and stays on screen.
+     */
+    public static boolean exists() {
+        return handle != 0L;
+    }
+
+    /** True once the user clicked the window's close button. */
+    public static boolean closeRequested() {
+        return handle != 0L && GLFW.glfwWindowShouldClose(handle);
     }
 
     /**

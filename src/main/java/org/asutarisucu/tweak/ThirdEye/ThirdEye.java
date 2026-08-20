@@ -53,7 +53,7 @@ public class ThirdEye {
     /** Tear down all ThirdEye resources. Safe to call repeatedly. */
     private static void shutdown(MinecraftClient mc) {
         isRenderingThirdEye = false;
-        if (mc != null && ThirdEyeWindow.isOpen()) {
+        if (mc != null && ThirdEyeWindow.exists()) {
             ThirdEyeWindow.close(mc.getWindow().getHandle());
         }
         if (thirdEyeFbo != null) {
@@ -81,6 +81,15 @@ public class ThirdEye {
             return;
         }
 
+        // The close button only sets GLFW's should-close flag; the window has to
+        // be destroyed explicitly. Do it here and turn the feature off, otherwise
+        // the block below would immediately reopen it.
+        if (ThirdEyeWindow.closeRequested()) {
+            shutdown(mc);
+            Feature.THIRD_EYE.setEnabled(false);
+            return;
+        }
+
         // (Re-)open window if needed
         if (!ThirdEyeWindow.isOpen()) {
             ThirdEyeWindow.open(mc.getWindow().getHandle());
@@ -94,6 +103,10 @@ public class ThirdEye {
             if (thirdEyeFbo != null) thirdEyeFbo.delete();
 //#if MC < 12111
             thirdEyeFbo = new ThirdEyeFbo(w, h, true, MinecraftClient.IS_SYSTEM_MAC);
+            // Framebuffer's default clear colour is opaque white. MinecraftClient
+            // overrides its own framebuffer to transparent black; match that so a
+            // region the world render does not cover reads as black, not white.
+            thirdEyeFbo.setClearColor(0.0F, 0.0F, 0.0F, 0.0F);
 //#else
 //$$         thirdEyeFbo = new ThirdEyeFbo(w, h, true);
 //#endif
@@ -125,7 +138,7 @@ public class ThirdEye {
 //$$ /** Tear down all ThirdEye resources. Safe to call repeatedly. */
 //$$ private static void shutdown(Minecraft mc) {
 //$$     isRenderingThirdEye = false;
-//$$     if (mc != null && ThirdEyeWindow.isOpen()) {
+//$$     if (mc != null && ThirdEyeWindow.exists()) {
 //$$         ThirdEyeWindow.close(mc.getWindow().handle());
 //$$     }
 //$$     if (thirdEyeFbo != null) {
@@ -145,6 +158,15 @@ public class ThirdEye {
 //$$     }
 //$$     if (mc.level == null || mc.player == null) {
 //$$         shutdown(mc);
+//$$         return;
+//$$     }
+//$$
+//$$     // The close button only sets GLFW's should-close flag; the window has to
+//$$     // be destroyed explicitly. Do it here and turn the feature off, otherwise
+//$$     // the block below would immediately reopen it.
+//$$     if (ThirdEyeWindow.closeRequested()) {
+//$$         shutdown(mc);
+//$$         Feature.THIRD_EYE.setEnabled(false);
 //$$         return;
 //$$     }
 //$$

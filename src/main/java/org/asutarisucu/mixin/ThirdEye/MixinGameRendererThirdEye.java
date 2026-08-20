@@ -38,45 +38,52 @@ public abstract class MixinGameRendererThirdEye {
 //$$     private void renderWorld(RenderTickCounter counter) {}
 //#endif
 
-    // Hooked at RETURN — after the main world render is fully complete.
-    // Doing the ThirdEye pass here (instead of HEAD) guarantees that whatever
-    // state the recursive call leaves behind cannot affect the main view of
-    // the current frame, which has already finished rendering.
+    // Hooked at HEAD — the ThirdEye pass has to run BEFORE the player's world
+    // render, not after it. Third-party world renderers (map mods and their
+    // waypoint overlays in particular) cache camera-derived state while the
+    // world is drawn and read it back later in the frame; whichever pass runs
+    // last is the one they end up with. With the pass at RETURN the ThirdEye
+    // camera was the last writer, so those overlays followed the ThirdEye
+    // rotation instead of the player's. Running first makes the player's pass
+    // the last writer again.
     //
-    // Additionally, we explicitly save/restore the shared Camera's pos and
-    // rotation around the recursive call so any code that reads camera state
-    // AFTER renderWorld() returns (HUD, post-FX, next-frame setup, etc.) sees
-    // the player's values rather than the ThirdEye values written by the
-    // RETURN inject in MixinCameraThirdEye.
+    // The shared Camera's pos/rotation are still saved and restored explicitly
+    // around the recursive call (via MixinCameraInvokerThirdEye) so nothing
+    // observes ThirdEye values in between — the outer renderWorld() re-derives
+    // them from the player anyway on its own Camera.update() call.
 //#if MC < 12006
-    @Inject(method = "renderWorld", at = @At("RETURN"))
-    private void onRenderWorldReturn(float tickDelta, long startTime, MatrixStack matrices, CallbackInfo ci) {
+    @Inject(method = "renderWorld", at = @At("HEAD"))
+    private void onRenderWorldHead(float tickDelta, long startTime, MatrixStack matrices, CallbackInfo ci) {
 //#elseif MC < 12101
-//$$     @Inject(method = "renderWorld", at = @At("RETURN"))
-//$$     private void onRenderWorldReturn(float tickDelta, long startTime, CallbackInfo ci) {
+//$$     @Inject(method = "renderWorld", at = @At("HEAD"))
+//$$     private void onRenderWorldHead(float tickDelta, long startTime, CallbackInfo ci) {
 //#else
-//$$     @Inject(method = "renderWorld", at = @At("RETURN"))
-//$$     private void onRenderWorldReturn(RenderTickCounter counter, CallbackInfo ci) {
+//$$     @Inject(method = "renderWorld", at = @At("HEAD"))
+//$$     private void onRenderWorldHead(RenderTickCounter counter, CallbackInfo ci) {
 //#endif
         if (!Feature.THIRD_EYE.isEnabled())   return;
-        if (ThirdEye.isRenderingThirdEye)      return;   // prevent recursion via RETURN
+        if (ThirdEye.isRenderingThirdEye)      return;   // prevent infinite recursion
         if (!ThirdEyeWindow.isOpen())          return;
         if (ThirdEye.thirdEyeFbo == null)      return;
         if (!ThirdEyeCamera.initialized)       return;
         if (client.world == null)              return;
 
-        // Snapshot the shared Camera state BEFORE we modify it for the
-        // ThirdEye pass. The main world render is already complete; this
-        // snapshot is what we restore afterwards so the player's camera
-        // state is exactly what any post-renderWorld code expects.
+        // Snapshot the shared Camera state before the ThirdEye pass writes to it.
         Vec3d savedPos = camera.getPos();
         float savedYaw = camera.getYaw();
         float savedPitch = camera.getPitch();
 
-        // Clear ThirdEye FBO. getFramebuffer() is intercepted by
-        // MixinMinecraftClientThirdEye to return thirdEyeFbo while
-        // isRenderingThirdEye is true.
+        // Clear the ThirdEye FBO and bind it as the render target.
+        //
+        // The bind is not redundant: Framebuffer.clear() ends with endWrite(),
+        // which unbinds to framebuffer 0, and nothing in renderWorld() /
+        // WorldRenderer.render() binds the target before the sky and the terrain
+        // are drawn — the first client.getFramebuffer().beginWrite() call sits in
+        // the fabulous-graphics / entity-outline branches, well after "sky" and
+        // "terrain". Without this the sky pass writes to the default framebuffer
+        // and the ThirdEye FBO keeps its clear colour where the sky should be.
         ThirdEye.thirdEyeFbo.clear(MinecraftClient.IS_SYSTEM_MAC);
+        ThirdEye.thirdEyeFbo.beginWrite(true);
 
         ThirdEye.isRenderingThirdEye = true;
 
@@ -104,10 +111,9 @@ public abstract class MixinGameRendererThirdEye {
             inv.thirdeye$setRotation(savedYaw, savedPitch);
         }
 
-        // Rebind the main framebuffer at the GL level so any subsequent
-        // rendering (HUD, screen overlays) writes to the screen, not the
-        // ThirdEye FBO.
-        client.getFramebuffer().beginWrite(false);
+        // Rebind the main framebuffer and its viewport so the player's world
+        // render — and everything after it — writes to the screen.
+        client.getFramebuffer().beginWrite(true);
 
         // Blit ThirdEye FBO result to the secondary OS window.
         ThirdEyeWindow.blit(
