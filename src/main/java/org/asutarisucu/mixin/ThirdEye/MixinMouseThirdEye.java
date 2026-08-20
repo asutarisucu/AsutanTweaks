@@ -1,8 +1,7 @@
 package org.asutarisucu.mixin.ThirdEye;
 
-import org.asutarisucu.Configs.Feature;
+import org.asutarisucu.tweak.ThirdEye.ThirdEye;
 import org.asutarisucu.tweak.ThirdEye.ThirdEyeCamera;
-import org.asutarisucu.tweak.ThirdEye.ThirdEyeWindow;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -22,9 +21,9 @@ public abstract class MixinMouseThirdEye {
 
     @Inject(method = "updateMouse", at = @At("HEAD"), cancellable = true)
     private void onUpdateMouseHead(CallbackInfo ci) {
-        if (!Feature.THIRD_EYE_MOVEMENT.isEnabled()) return;
+        if (!ThirdEye.isMovementActive()) return;
 
-        if (ThirdEyeCamera.initialized && ThirdEyeWindow.isOpen()
+        if (ThirdEyeCamera.initialized
                 && (cursorDeltaX != 0 || cursorDeltaY != 0)) {
             double s = client.options.getMouseSensitivity().getValue() * 0.6 + 0.2;
             double sensitivity = s * s * s * 8.0;
@@ -56,9 +55,9 @@ public abstract class MixinMouseThirdEye {
 //$$
 //$$     @Inject(method = "updateMouse", at = @At("HEAD"), cancellable = true)
 //$$     private void onUpdateMouseHead(CallbackInfo ci) {
-//$$         if (!Feature.THIRD_EYE_MOVEMENT.isEnabled()) return;
+//$$         if (!ThirdEye.isMovementActive()) return;
 //$$
-//$$         if (ThirdEyeCamera.initialized && ThirdEyeWindow.isOpen()
+//$$         if (ThirdEyeCamera.initialized
 //$$                 && (cursorDeltaX != 0 || cursorDeltaY != 0)) {
 //$$             double s = client.options.getMouseSensitivity().getValue() * 0.6 + 0.2;
 //$$             double sensitivity = s * s * s * 8.0;
@@ -91,9 +90,9 @@ public abstract class MixinMouseThirdEye {
 //$$
 //$$     @Inject(method = "turnPlayer", at = @At("HEAD"), cancellable = true)
 //$$     private void onTurnPlayerHead(double movementTime, CallbackInfo ci) {
-//$$         if (!Feature.THIRD_EYE_MOVEMENT.isEnabled()) return;
+//$$         if (!ThirdEye.isMovementActive()) return;
 //$$
-//$$         if (ThirdEyeCamera.initialized && ThirdEyeWindow.isOpen()
+//$$         if (ThirdEyeCamera.initialized
 //$$                 && (accumulatedDX != 0 || accumulatedDY != 0)) {
 //$$             double s = minecraft.options.sensitivity().get() * 0.6 + 0.2;
 //$$             double sensitivity = s * s * s * 8.0;

@@ -1,6 +1,6 @@
 package org.asutarisucu.mixin.ThirdEye;
 
-import org.asutarisucu.Configs.Feature;
+import org.asutarisucu.tweak.ThirdEye.ThirdEye;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -16,7 +16,7 @@ public abstract class MixinKeyboardInputThirdEye {
 
     @Inject(method = "tick", at = @At("RETURN"))
     private void onTickReturn(CallbackInfo ci) {
-        if (!Feature.THIRD_EYE_MOVEMENT.isEnabled()) return;
+        if (!ThirdEye.isMovementActive()) return;
         // pressingForward etc. live in the parent Input class; @Shadow can't cross
         // class boundaries in Mixin, so cast to the concrete type instead.
         Input self = (Input)(Object)this;
@@ -48,7 +48,7 @@ public abstract class MixinKeyboardInputThirdEye {
 //$$
 //$$     @Inject(method = "tick", at = @At("RETURN"))
 //$$     private void onTickReturn(CallbackInfo ci) {
-//$$         if (!Feature.THIRD_EYE_MOVEMENT.isEnabled()) return;
+//$$         if (!ThirdEye.isMovementActive()) return;
 //$$         ((Input)(Object)this).playerInput = PlayerInput.DEFAULT;
 //$$         // movementVector is protected on Input; set it via the accessor mixin.
 //$$         ((MixinInputThirdEye)(Object)this).thirdeye$setMovementVector(Vec2f.ZERO);
@@ -69,7 +69,7 @@ public abstract class MixinKeyboardInputThirdEye {
 //$$
 //$$     @Inject(method = "tick", at = @At("RETURN"))
 //$$     private void onTickReturn(CallbackInfo ci) {
-//$$         if (!Feature.THIRD_EYE_MOVEMENT.isEnabled()) return;
+//$$         if (!ThirdEye.isMovementActive()) return;
 //$$         ((ClientInput)(Object)this).keyPresses = net.minecraft.world.entity.player.Input.EMPTY;
 //$$         ((MixinInputThirdEye)(Object)this).thirdeye$setMoveVector(Vec2.ZERO);
 //$$     }

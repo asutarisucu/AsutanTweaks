@@ -30,6 +30,19 @@ public class ThirdEye {
     /** Guard against re-entrance in the renderWorld injection. */
     public static volatile boolean isRenderingThirdEye = false;
 
+    /**
+     * True while camera control belongs to ThirdEye: the feature and its movement
+     * option are both on AND the secondary window is actually open. The input
+     * mixins have to test this rather than THIRD_EYE_MOVEMENT alone — otherwise
+     * leaving the movement option enabled with ThirdEye off swallows the player's
+     * mouse and keyboard input entirely.
+     */
+    public static boolean isMovementActive() {
+        return Feature.THIRD_EYE.isEnabled()
+                && Feature.THIRD_EYE_MOVEMENT.isEnabled()
+                && ThirdEyeWindow.isOpen();
+    }
+
 //#if MC < 260100
     /**
      * The MC framebuffer used as the render target for the ThirdEye pass.
