@@ -90,10 +90,17 @@ public abstract class MixinGameRendererThirdEye {
         try {
             // Recursive shadow call. MixinCameraThirdEye's RETURN inject on
             // Camera.update() overrides position/rotation to ThirdEye values
-            // while isRenderingThirdEye is true. The HEAD/RETURN guards above
-            // prevent infinite recursion.
+            // while isRenderingThirdEye is true. The guard above prevents
+            // infinite recursion.
 //#if MC < 12006
-            renderWorld(tickDelta, startTime, matrices);
+            // The recursive pass gets its OWN MatrixStack. renderWorld() multiplies
+            // the camera's pitch/yaw into the stack it is handed and never pushes or
+            // pops around it, so handing it `matrices` would leave the ThirdEye
+            // rotation baked in and the player's render — which runs after us and
+            // shares that stack — would stack its own rotation on top, offsetting
+            // the main view by the ThirdEye camera's rotation. From 1.20.6 on
+            // renderWorld() allocates the stack itself, so there is nothing to pass.
+            renderWorld(tickDelta, startTime, new MatrixStack());
 //#elseif MC < 12101
 //$$             renderWorld(tickDelta, startTime);
 //#else
