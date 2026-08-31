@@ -68,6 +68,12 @@ public abstract class MixinGameRendererThirdEye {
         if (!ThirdEyeCamera.initialized)       return;
         if (client.world == null)              return;
 
+        // Advance the ThirdEye camera here, once per rendered frame, so its motion is
+        // as smooth as the frame rate rather than stepping at the 20 Hz tick rate.
+        if (ThirdEye.isMovementActive()) {
+            ThirdEyeCamera.updateMovement(client.getWindow().getHandle());
+        }
+
         // Snapshot the shared Camera state before the ThirdEye pass writes to it.
         Vec3d savedPos = camera.getPos();
         float savedYaw = camera.getYaw();
@@ -200,6 +206,12 @@ public abstract class MixinGameRendererThirdEye {
 //$$         if (!ThirdEyeCamera.initialized)       return;
 //$$         if (client.world == null)              return;
 //$$
+//$$         // Advance the ThirdEye camera here, once per rendered frame, so its motion is
+//$$         // as smooth as the frame rate rather than stepping at the 20 Hz tick rate.
+//$$         if (ThirdEye.isMovementActive()) {
+//$$             ThirdEyeCamera.updateMovement(client.getWindow().getHandle());
+//$$         }
+//$$
 //$$         // Snapshot live camera state (player view) to restore afterwards.
 //$$         Vec3d savedPos = camera.getCameraPos();
 //$$         float savedYaw = camera.getYaw();
@@ -313,7 +325,14 @@ public abstract class MixinGameRendererThirdEye {
 //$$         float entityTickDelta = mainCamera.getCameraEntityPartialTicks(deltaTracker);
 //$$         extractCamera(deltaTracker, tickDelta, entityTickDelta);
 //$$         if (includeLevel) {
+//#if MC < 260200
 //$$             minecraft.levelRenderer.extractLevel(deltaTracker, mainCamera, tickDelta);
+//#else
+//$$             // MC 26.2 moved level extraction into LevelExtractor, which also
+//$$             // applies the camera's cull frustum — so the separate
+//$$             // levelRenderer.update(camera) call is gone.
+//$$             minecraft.levelExtractor.extract(deltaTracker, mainCamera, tickDelta);
+//#endif
 //$$         }
 //$$         thirdeye$writeGlobalSettings(deltaTracker);
 //$$     }
@@ -327,6 +346,12 @@ public abstract class MixinGameRendererThirdEye {
 //$$         if (!ThirdEyeCamera.initialized)       return;
 //$$         if (minecraft.level == null)           return;
 //$$
+//$$         // Advance the ThirdEye camera here, once per rendered frame, so its motion is
+//$$         // as smooth as the frame rate rather than stepping at the 20 Hz tick rate.
+//$$         if (ThirdEye.isMovementActive()) {
+//$$             ThirdEyeCamera.updateMovement(minecraft.getWindow().handle());
+//$$         }
+//$$
 //$$         // Snapshot live camera state (player view) to restore afterwards.
 //$$         Vec3 savedPos = mainCamera.position();
 //$$         float savedYaw = mainCamera.yRot();
@@ -334,9 +359,16 @@ public abstract class MixinGameRendererThirdEye {
 //$$
 //$$         // Clear ThirdEye target color + depth before the pass.
 //$$         CommandEncoder encoder = RenderSystem.getDevice().createCommandEncoder();
+//#if MC < 260200
 //$$         encoder.clearColorAndDepthTextures(
 //$$                 ThirdEye.thirdEyeFbo.getColorTexture(), 0x00000000,
 //$$                 ThirdEye.thirdEyeFbo.getDepthTexture(), 1.0);
+//#else
+//$$         // MC 26.2 takes the clear colour as a float vector rather than packed ARGB.
+//$$         encoder.clearColorAndDepthTextures(
+//$$                 ThirdEye.thirdEyeFbo.getColorTexture(), new org.joml.Vector4f(0.0f, 0.0f, 0.0f, 0.0f),
+//$$                 ThirdEye.thirdEyeFbo.getDepthTexture(), 1.0);
+//#endif
 //$$
 //$$         ThirdEye.isRenderingThirdEye = true;
 //$$
@@ -350,9 +382,11 @@ public abstract class MixinGameRendererThirdEye {
 //$$             // otherwise both terrain sections and entities stay culled to the
 //$$             // player's view direction.
 //$$             thirdeye$rebuildCullFrustum(inv);
+//#if MC < 260200
 //$$             // Terrain visibility (cullTerrain → visible section set) was computed in
 //$$             // the update phase with the player frustum; re-run it for ThirdEye.
 //$$             minecraft.levelRenderer.update(mainCamera);
+//#endif
 //$$
 //$$             thirdeye$reextract(deltaTracker, true);   // extracted state → ThirdEye view
 //$$             renderLevel(deltaTracker);

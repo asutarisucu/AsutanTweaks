@@ -40,7 +40,13 @@ public enum Feature {
     THIRD_EYE_MOVEMENT("third_eye_movement", false, "",
             "Third Eye Movement", "WASD/Space/Ctrl move the Third Eye camera while enabled"),
     VISUALISE_LAZY_ENTITY("visualise_lazy_entity", false, "",
-            "Visualise Lazy Entity", "Render entities in lazy chunks at their real server position");
+            "Visualise Lazy Entity", "Render entities in lazy chunks at their real server position"),
+    PICK_BLOCK_ULTIMATE("pick_block_ultimate", false, "",
+            "Pick Block Ultimate", "Middle-click pick block with unlimited reach"),
+    WORLDEDIT_GUI("worldedit_gui", false, "",
+            "WorldEdit GUI", "Draw the WorldEdit selection as a grid (needs WorldEdit)"),
+    CLEAR_BLOCK_RENDER("clear_block_render", false, "",
+            "Clear Block Render", "Render the WorldEdit selection to a transparent video");
 
     public final FeatureConfig config;
     public final String displayName;

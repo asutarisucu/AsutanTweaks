@@ -24,7 +24,11 @@ public abstract class MixinClientPlayer {
     private void UseItemAfter(ClientPlayerEntity player, Hand hand, BlockHitResult hitResult, CallbackInfoReturnable<ActionResult> cir){
         if(FeatureToggle.ITEM_RESTOCK.getBooleanValue()){
             MinecraftClient client=MinecraftClient.getInstance();
+//#if MC < 260200
             Screen screen= client.currentScreen;
+//#else
+            //$$ Screen screen= client.gui.screen();
+//#endif
             ItemStack MainItem=player.getMainHandStack();
             if(MainItem.getCount()< Configs.Generic.RESTOCK_COUNT.getIntegerValue()
             &&MainItem.getMaxCount()!=1){
@@ -38,7 +42,11 @@ public abstract class MixinClientPlayer {
     private void UseUnstackbleItemAfter(ClientPlayerEntity player, Hand hand, BlockHitResult hitResult, CallbackInfoReturnable<ActionResult> cir){
         if(FeatureToggle.ITEM_RESTOCK.getBooleanValue()){
             MinecraftClient client=MinecraftClient.getInstance();
+//#if MC < 260200
             Screen screen= client.currentScreen;
+//#else
+            //$$ Screen screen= client.gui.screen();
+//#endif
             ItemStack MainItem=player.getMainHandStack();
             if(MainItem.getCount()< Configs.Generic.RESTOCK_COUNT.getIntegerValue()
                     &&MainItem.getMaxCount()==1){

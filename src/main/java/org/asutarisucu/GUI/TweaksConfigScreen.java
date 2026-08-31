@@ -127,6 +127,13 @@ public class TweaksConfigScreen extends Screen {
 
     // scrollbar drag state
     private boolean scrollbarDragging   = false;
+
+    // ── preview navigation (Clear Block Render mode) ─────────────
+    /** Pane the preview was last drawn in: {x0, y0, x1, y1}. */
+    private int[] previewRect = null;
+    /** 0 = not dragging, 1 = orbit, 2 = pan. */
+    private int previewDrag = 0;
+    private int previewLastX, previewLastY;
     private int     scrollbarGrabOffset = 0;
 
     // color picker state
@@ -148,23 +155,45 @@ public class TweaksConfigScreen extends Screen {
 
     private record OptionEntry(String label, IConfig<?> cfg) {}
 
-    private static final String[]        HK_NAMES = { "Open Config GUI", "Clear Item Count", "Add Highlight Item" };
+    private static final String[]        HK_NAMES = { "Open Config GUI", "Clear Item Count", "Add Highlight Item",
+                                                      "Pick Block State", "Clear Block Render Screen",
+                                                      "Clear Block Render Rec" };
     private static final org.asutarisucu.lib.config.FeatureConfig[] HK_CFGS = {
-        Hotkeys.OPEN_CONFIG_GUI, Hotkeys.CLEAR_ITEM_COUNT, Hotkeys.ADD_HIGHLIGHT_ITEM
+        Hotkeys.OPEN_CONFIG_GUI, Hotkeys.CLEAR_ITEM_COUNT, Hotkeys.ADD_HIGHLIGHT_ITEM,
+        Hotkeys.PICK_BLOCK_ULTIMATE_COMPONENT, Hotkeys.CLEAR_BLOCK_RENDER_TOGGLE,
+        Hotkeys.CLEAR_BLOCK_RENDER_RECORD
     };
+
+    /**
+     * Clear Block Render mode: one list holding only that feature's settings,
+     * with a record button, opened by its hotkey rather than from the option list.
+     */
+    private final boolean cbrMode;
 
     // ── constructors ─────────────────────────────────────────────
 //#if MC < 260100
     public TweaksConfigScreen(Screen parent) {
-        super(Text.literal("AsutanTweaks Config"));
+        this(parent, false);
+    }
+
+    public TweaksConfigScreen(Screen parent, boolean cbrMode) {
+        super(Text.literal(cbrMode ? "Clear Block Render" : "AsutanTweaks Config"));
         this.parent = parent;
+        this.cbrMode = cbrMode;
         this.optionEntries = buildOptionEntries();
+        if (cbrMode) activeTab = 1;
     }
 //#else
 //$$ public TweaksConfigScreen(Screen parent) {
-//$$     super(Component.literal("AsutanTweaks Config"));
+//$$     this(parent, false);
+//$$ }
+//$$
+//$$ public TweaksConfigScreen(Screen parent, boolean cbrMode) {
+//$$     super(Component.literal(cbrMode ? "Clear Block Render" : "AsutanTweaks Config"));
 //$$     this.parent = parent;
+//$$     this.cbrMode = cbrMode;
 //$$     this.optionEntries = buildOptionEntries();
+//$$     if (cbrMode) activeTab = 1;
 //$$ }
 //#endif
 
@@ -175,6 +204,14 @@ public class TweaksConfigScreen extends Screen {
         int tw(String s);
         void scissor(int x1, int y1, int x2, int y2);
         void unscissor();
+
+        /**
+         * Draws the Clear Block Render preview into the given rectangle.
+         *
+         * @return false when no preview frame has been rendered yet, so the caller
+         *         can put a note in the pane instead
+         */
+        boolean previewPane(int x0, int y0, int x1, int y1);
     }
 
 //#if MC < 12001
@@ -189,6 +226,13 @@ public class TweaksConfigScreen extends Screen {
             public int tw(String s) { return fontWidth(s); }
             public void scissor(int x1, int y1, int x2, int y2) { DrawableHelper.enableScissor(x1, y1, x2, y2); }
             public void unscissor() { DrawableHelper.disableScissor(); }
+            public boolean previewPane(int x0, int y0, int x1, int y1) {
+                int texture = org.asutarisucu.tweak.ClearBlockRender.ClearBlockRender.previewTexture();
+                if (texture == 0) return false;
+                org.asutarisucu.tweak.ClearBlockRender.PreviewBlit.draw(
+                        ms.peek().getPositionMatrix(), texture, x0, y0, x1, y1);
+                return true;
+            }
         };
     }
 //#elseif MC < 260100
@@ -201,6 +245,33 @@ public class TweaksConfigScreen extends Screen {
 //$$         public int tw(String s) { return fontWidth(s); }
 //$$         public void scissor(int x1, int y1, int x2, int y2) { ctx.enableScissor(x1, y1, x2, y2); }
 //$$         public void unscissor() { ctx.disableScissor(); }
+//#if MC < 12111
+//$$         public boolean previewPane(int x0, int y0, int x1, int y1) {
+//$$             int texture = org.asutarisucu.tweak.ClearBlockRender.ClearBlockRender.previewTexture();
+//$$             if (texture == 0) return false;
+//$$             // Flush the batched GUI elements first; the quad below is drawn immediately.
+//$$             ctx.draw();
+//$$             org.asutarisucu.tweak.ClearBlockRender.PreviewBlit.draw(
+//$$                     ctx.getMatrices().peek().getPositionMatrix(), texture, x0, y0, x1, y1);
+//$$             return true;
+//$$         }
+//#else
+//$$         public boolean previewPane(int x0, int y0, int x1, int y1) {
+//$$             var texture = org.asutarisucu.tweak.ClearBlockRender.ClearBlockRender.previewTexture();
+//$$             if (texture == null) return false;
+//$$             var sampler = com.mojang.blaze3d.systems.RenderSystem.getSamplerCache().get(
+//$$                     com.mojang.blaze3d.textures.AddressMode.CLAMP_TO_EDGE,
+//$$                     com.mojang.blaze3d.textures.AddressMode.CLAMP_TO_EDGE,
+//$$                     com.mojang.blaze3d.textures.FilterMode.LINEAR,
+//$$                     com.mojang.blaze3d.textures.FilterMode.LINEAR, false);
+//$$             // v flipped: the render target's first row is the bottom of the image.
+//$$             ((org.asutarisucu.mixin.ClearBlockRender.MixinDrawContextPreview) ctx)
+//$$                     .asutantweaks$drawTexturedQuad(
+//$$                             net.minecraft.client.gl.RenderPipelines.GUI_TEXTURED, texture, sampler,
+//$$                             x0, y0, x1, y1, 0.0f, 1.0f, 1.0f, 0.0f, -1);
+//$$             return true;
+//$$         }
+//#endif
 //$$     };
 //$$ }
 //#else
@@ -213,6 +284,18 @@ public class TweaksConfigScreen extends Screen {
 //$$         public int tw(String s) { return fontWidth(s); }
 //$$         public void scissor(int x1, int y1, int x2, int y2) { g.enableScissor(x1, y1, x2, y2); }
 //$$         public void unscissor() { g.disableScissor(); }
+//$$         public boolean previewPane(int x0, int y0, int x1, int y1) {
+//$$             var texture = org.asutarisucu.tweak.ClearBlockRender.ClearBlockRender.previewTexture();
+//$$             if (texture == null) return false;
+//$$             var sampler = com.mojang.blaze3d.systems.RenderSystem.getSamplerCache().getSampler(
+//$$                     com.mojang.blaze3d.textures.AddressMode.CLAMP_TO_EDGE,
+//$$                     com.mojang.blaze3d.textures.AddressMode.CLAMP_TO_EDGE,
+//$$                     com.mojang.blaze3d.textures.FilterMode.LINEAR,
+//$$                     com.mojang.blaze3d.textures.FilterMode.LINEAR, false);
+//$$             // v flipped: the render target's first row is the bottom of the image.
+//$$             g.blit(texture, sampler, x0, y0, x1, y1, 0.0f, 1.0f, 1.0f, 0.0f);
+//$$             return true;
+//$$         }
 //$$     };
 //$$ }
 //#endif
@@ -248,6 +331,9 @@ public class TweaksConfigScreen extends Screen {
         listY = py + HEADER_H;
         listW = pw - 14;
         listH = ph - HEADER_H - 4;
+        // In capture mode the right half of the panel is the preview, so the
+        // settings list is narrowed to make room for it.
+        if (cbrMode) listW = Math.max(160, pw / 2 - 14);
 
         // smooth scroll advance then clamp
         scrollOffsetF += (scrollTarget - scrollOffsetF) * 0.25f;
@@ -293,7 +379,7 @@ public class TweaksConfigScreen extends Screen {
         dc.fill(listX, listY - 1, listX + listW, listY, C_HDR_LINE);
 
         // title (vertically centered in the top 28px of the header)
-        String title = "AsutanTweaks";
+        String title = cbrMode ? "Clear Block Render" : "AsutanTweaks";
         String version = "v" + org.asutarisucu.Reference.VERSION;
         int titleW = dc.tw(title), versionW = dc.tw(version);
         int totalW = titleW + 6 + versionW;
@@ -336,26 +422,170 @@ public class TweaksConfigScreen extends Screen {
         // ── panel border ────────────────────────────────────
         border(dc, px, py, pw, ph);
 
+        // ── preview ─────────────────────────────────────────
+        if (cbrMode) drawPreview(dc, listX + listW + 10, listY, px + pw - 6, listY + listH);
+
         // ── scrollbar ───────────────────────────────────────
-        drawScrollbar(dc, px + pw - 6, listY, 4, listH);
+        drawScrollbar(dc, cbrMode ? listX + listW + 2 : px + pw - 6, listY, 4, listH);
 
         // ── tabs ────────────────────────────────────────────
-        drawTabs(dc, mx, my);
+        if (!cbrMode) drawTabs(dc, mx, my);
 
-        // ── done button ─────────────────────────────────────
-        int bw = 84, bh = 20, bx = px + (pw - bw) / 2, by = height - 28;
-        boolean bhov = mx >= bx && mx < bx + bw && my >= by && my < by + bh;
-        dc.fill(bx, by, bx + bw, by + bh, bhov ? C_BTN_HOV : C_BTN);
-        // button top highlight
-        dc.fill(bx + 1, by, bx + bw - 1, by + 1, bhov ? C_ACCENT_LT : C_BORDER_LT);
-        border(dc, bx, by, bw, bh);
-        String done = "Done";
-        dc.text(done, bx + (bw - dc.tw(done)) / 2, by + 6, C_WHITE);
+        // ── footer buttons ──────────────────────────────────
+        int bh = 20, by = height - 28;
+        if (cbrMode) {
+            String status = cbrStatusLine();
+            dc.text(status, px + (pw - dc.tw(status)) / 2, by - 12, C_DIM);
+            int[] save = cbrSaveButton();
+            drawButton(dc, save[0], by, save[1], bh, "Save Image", mx, my, C_CYAN);
+            int[] done = cbrDoneButton();
+            drawButton(dc, done[0], by, done[1], bh, "Done", mx, my, C_WHITE);
+        } else {
+            int bw = 84, bx = px + (pw - bw) / 2;
+            drawButton(dc, bx, by, bw, bh, "Done", mx, my, C_WHITE);
+        }
 
         // overlays on top of everything
         drawListEditorPopup(dc, mx, my);
         drawColorPickerPopup(dc, mx, my);
         renderDragMode(dc, mx, my);
+    }
+
+    private void drawButton(DrawCtx dc, int bx, int by, int bw, int bh, String label,
+                            int mx, int my, int labelColor) {
+        boolean hov = mx >= bx && mx < bx + bw && my >= by && my < by + bh;
+        dc.fill(bx, by, bx + bw, by + bh, hov ? C_BTN_HOV : C_BTN);
+        dc.fill(bx + 1, by, bx + bw - 1, by + 1, hov ? C_ACCENT_LT : C_BORDER_LT);
+        border(dc, bx, by, bw, bh);
+        dc.text(label, bx + (bw - dc.tw(label)) / 2, by + 6, labelColor);
+    }
+
+    private static final int CBR_SAVE_W = 96, CBR_DONE_W = 84, CBR_BTN_GAP = 6;
+
+    /** @return {x, width} of the Save Image button in Clear Block Render mode. */
+    private int[] cbrSaveButton() {
+        int total = CBR_SAVE_W + CBR_BTN_GAP + CBR_DONE_W;
+        return new int[] { (width - total) / 2, CBR_SAVE_W };
+    }
+
+    /** @return {x, width} of the Done button in Clear Block Render mode. */
+    private int[] cbrDoneButton() {
+        int total = CBR_SAVE_W + CBR_BTN_GAP + CBR_DONE_W;
+        return new int[] { (width - total) / 2 + CBR_SAVE_W + CBR_BTN_GAP, CBR_DONE_W };
+    }
+
+    /**
+     * Draws the live capture preview, letterboxed to the configured output aspect
+     * so what is shown matches what a capture would produce.
+     */
+    private void drawPreview(DrawCtx dc, int x0, int y0, int x1, int y1) {
+        previewRect = new int[] { x0, y0, x1, y1 };
+        dc.fill(x0, y0, x1, y1, C_KEY);
+        border(dc, x0, y0, x1 - x0, y1 - y0);
+
+        int paneW = x1 - x0 - 2, paneH = y1 - y0 - 2;
+        if (paneW < 16 || paneH < 16) return;
+
+        double aspect = (double) Configs.Generic.CBR_WIDTH.getIntegerValue()
+                      / Math.max(1, Configs.Generic.CBR_HEIGHT.getIntegerValue());
+        int w = paneW, h = (int) Math.round(paneW / aspect);
+        if (h > paneH) { h = paneH; w = (int) Math.round(paneH * aspect); }
+        int ix = x0 + 1 + (paneW - w) / 2, iy = y0 + 1 + (paneH - h) / 2;
+
+        String note = previewNote();
+        if (note != null) {
+            dc.text(note, x0 + (x1 - x0 - dc.tw(note)) / 2, (y0 + y1) / 2 - 4, C_DIM);
+            org.asutarisucu.tweak.ClearBlockRender.ClearBlockRender.releasePreview();
+            return;
+        }
+
+        org.asutarisucu.tweak.ClearBlockRender.ClearBlockRender.requestPreview(w, h);
+        if (!dc.previewPane(ix, iy, ix + w, iy + h)) {
+            // The pass runs on the frame hook, so the first frame after the pane
+            // is sized has nothing to show yet.
+            String msg = "Rendering preview...";
+            dc.text(msg, x0 + (x1 - x0 - dc.tw(msg)) / 2, (y0 + y1) / 2 - 4, C_DIM);
+            return;
+        }
+        String hint = "drag: orbit / right or shift+drag: pan / wheel: zoom / middle: reset";
+        if (dc.tw(hint) < x1 - x0 - 8) dc.text(hint, x0 + 4, y1 - 11, C_DIM);
+    }
+
+    private static boolean shiftDown() {
+//#if MC < 260100
+        long win = net.minecraft.client.MinecraftClient.getInstance().getWindow().getHandle();
+//#else
+        //$$ long win = net.minecraft.client.Minecraft.getInstance().getWindow().handle();
+//#endif
+        return GLFW.glfwGetKey(win, GLFW.GLFW_KEY_LEFT_SHIFT)  == GLFW.GLFW_PRESS
+            || GLFW.glfwGetKey(win, GLFW.GLFW_KEY_RIGHT_SHIFT) == GLFW.GLFW_PRESS;
+    }
+
+    private boolean inPreview(int mx, int my) {
+        return cbrMode && previewRect != null
+            && mx >= previewRect[0] && mx < previewRect[2]
+            && my >= previewRect[1] && my < previewRect[3];
+    }
+
+    /** Blocks per pixel of drag, so panning tracks the cursor at any zoom. */
+    private double panScale() {
+        int[] b = org.asutarisucu.tweak.WorldEditGUI.WorldEditSelection.getBounds();
+        if (b == null || previewRect == null) return 0.05;
+        double sizeX = b[3] - b[0] + 1, sizeY = b[4] - b[1] + 1, sizeZ = b[5] - b[2] + 1;
+        double radius = Math.sqrt(sizeX * sizeX + sizeY * sizeY + sizeZ * sizeZ) / 2.0
+                / Math.max(0.01, Configs.Generic.CBR_ZOOM.getDoubleValue());
+        int paneH = Math.max(1, previewRect[3] - previewRect[1]);
+        return 2.0 * radius / paneH;
+    }
+
+    private void dragPreview(int mx, int my) {
+        int dx = mx - previewLastX, dy = my - previewLastY;
+        previewLastX = mx;
+        previewLastY = my;
+        if (previewDrag == 1) {
+            Configs.Generic.CBR_YAW.setValue(wrapDegrees(Configs.Generic.CBR_YAW.getDoubleValue() - dx * 0.5));
+            Configs.Generic.CBR_PITCH.setValue(Configs.Generic.CBR_PITCH.getDoubleValue() - dy * 0.5);
+        } else if (previewDrag == 2) {
+            double scale = panScale();
+            // The picture follows the cursor, so the camera moves the other way.
+            Configs.Generic.CBR_PAN_X.setValue(Configs.Generic.CBR_PAN_X.getDoubleValue() + dx * scale);
+            Configs.Generic.CBR_PAN_Y.setValue(Configs.Generic.CBR_PAN_Y.getDoubleValue() + dy * scale);
+        }
+    }
+
+    /** Keeps yaw inside the config's own range so the slider stays usable. */
+    private static double wrapDegrees(double deg) {
+        while (deg > 180.0) deg -= 360.0;
+        while (deg < -180.0) deg += 360.0;
+        return deg;
+    }
+
+    private void resetPreviewView() {
+        Configs.Generic.CBR_PAN_X.setValue(0.0);
+        Configs.Generic.CBR_PAN_Y.setValue(0.0);
+        Configs.Generic.CBR_ZOOM.setValue((double) Configs.Generic.CBR_ZOOM.getDefaultValue());
+    }
+
+    /** @return why the preview cannot be shown, or null when it can */
+    private String previewNote() {
+        if (!Feature.CLEAR_BLOCK_RENDER.isEnabled()) return "Feature is off";
+        if (org.asutarisucu.tweak.WorldEditGUI.WorldEditSelection.getBounds() == null) return "No selection";
+        return null;
+    }
+
+    /** One line under the list saying whether a capture can start right now. */
+    private String cbrStatusLine() {
+        if (org.asutarisucu.tweak.ClearBlockRender.ClearBlockRender.isRecording()) {
+            return "Recording — press the record hotkey to finish";
+        }
+        if (!Feature.CLEAR_BLOCK_RENDER.isEnabled()) {
+            return "Enable Clear Block Render in the Features tab first";
+        }
+        int[] b = org.asutarisucu.tweak.WorldEditGUI.WorldEditSelection.getBounds();
+        if (b == null) return "No WorldEdit cuboid selection";
+        String key = fmtKey(Hotkeys.CLEAR_BLOCK_RENDER_RECORD.getHotkey().getStorageString());
+        return (b[3] - b[0] + 1) + " x " + (b[4] - b[1] + 1) + " x " + (b[5] - b[2] + 1)
+                + " blocks selected — close this screen and press " + key + " to record";
     }
 
     private void cornerMark(DrawCtx dc, int x, int y, boolean leftAnchor, boolean topAnchor) {
@@ -517,6 +747,19 @@ public class TweaksConfigScreen extends Screen {
             border(dc, x, y, w, h);
             String v = "< " + olc.getValue() + " >";
             dc.text(v, x + (w - dc.tw(v)) / 2, y + 3, C_WHITE);
+        } else if (cfg instanceof StringConfig sc) {
+            boolean editing = numEditCfg == cfg;
+            dc.fill(x, y, x + w, y + h, editing ? C_KEY_REC : C_KEY);
+            border(dc, x, y, w, h);
+            String v = editing ? numEditStr : sc.getValue();
+            // trim from the left so the end of a long path stays visible
+            while (dc.tw(v) > w - 8 && v.length() > 1) v = v.substring(1);
+            dc.text(v, x + 4, y + 3, C_WHITE);
+            if (editing && (System.currentTimeMillis() / 530) % 2 == 0) {
+                int shown = Math.min(numEditCursor, v.length());
+                int cx = x + 4 + dc.tw(v.substring(0, shown));
+                dc.fill(cx, y + 2, cx + 1, y + h - 2, C_WHITE);
+            }
         } else if (cfg instanceof StringListConfig slc) {
             dc.fill(x, y, x + w, y + h, C_KEY);
             border(dc, x, y, w, h);
@@ -676,6 +919,24 @@ public class TweaksConfigScreen extends Screen {
 
     private List<OptionEntry> buildOptionEntries() {
         List<OptionEntry> list = new ArrayList<>();
+        if (cbrMode) {
+            list.add(new OptionEntry("Width",            Configs.Generic.CBR_WIDTH));
+            list.add(new OptionEntry("Height",           Configs.Generic.CBR_HEIGHT));
+            list.add(new OptionEntry("FPS",              Configs.Generic.CBR_FPS));
+            list.add(new OptionEntry("Playback Speed",   Configs.Generic.CBR_SPEED));
+            list.add(new OptionEntry("Projection",       Configs.Generic.CBR_PROJECTION));
+            list.add(new OptionEntry("FOV",              Configs.Generic.CBR_FOV));
+            list.add(new OptionEntry("Zoom",             Configs.Generic.CBR_ZOOM));
+            list.add(new OptionEntry("Yaw",              Configs.Generic.CBR_YAW));
+            list.add(new OptionEntry("Pitch",            Configs.Generic.CBR_PITCH));
+            list.add(new OptionEntry("Pan X",            Configs.Generic.CBR_PAN_X));
+            list.add(new OptionEntry("Pan Y",            Configs.Generic.CBR_PAN_Y));
+            list.add(new OptionEntry("Orbit (deg/s)",    Configs.Generic.CBR_ORBIT_SPEED));
+            list.add(new OptionEntry("Block Entities",   Configs.Generic.CBR_BLOCK_ENTITIES));
+            list.add(new OptionEntry("Format",           Configs.Generic.CBR_FORMAT));
+            list.add(new OptionEntry("FFmpeg Path",      Configs.Generic.CBR_FFMPEG_PATH));
+            return list;
+        }
         list.add(new OptionEntry("Restock Count",             Configs.Generic.RESTOCK_COUNT));
         list.add(new OptionEntry("Void Height (Overworld)",   Configs.Generic.VOID_HEIGHT_OW));
         list.add(new OptionEntry("Void Height (Nether)",      Configs.Generic.VOID_HEIGHT_NE));
@@ -697,6 +958,15 @@ public class TweaksConfigScreen extends Screen {
         list.add(new OptionEntry("HUD Log Alignment",        Configs.Generic.HUD_LOG_ALIGN));
         list.add(new OptionEntry("HUD Log Position",         HUD_DRAG_SENTINEL));
         list.add(new OptionEntry("Meter Position",           PROGRESS_DRAG_SENTINEL));
+        list.add(new OptionEntry("Pick Block Reach",         Configs.Generic.PICK_BLOCK_REACH));
+        list.add(new OptionEntry("WE Grid Color",            Configs.Generic.WORLDEDIT_GRID_COLOR));
+        list.add(new OptionEntry("WE Edge Color",            Configs.Generic.WORLDEDIT_EDGE_COLOR));
+        list.add(new OptionEntry("WE Pos1 Color",            Configs.Generic.WORLDEDIT_POS1_COLOR));
+        list.add(new OptionEntry("WE Pos2 Color",            Configs.Generic.WORLDEDIT_POS2_COLOR));
+        list.add(new OptionEntry("WE Grid Spacing",          Configs.Generic.WORLDEDIT_GRID_SPACING));
+        list.add(new OptionEntry("WE Grid Max Lines",        Configs.Generic.WORLDEDIT_GRID_MAX_LINES));
+        // Clear Block Render options are edited in its own screen, opened by its
+        // hotkey, rather than from this list.
         return list;
     }
 
@@ -721,6 +991,16 @@ public class TweaksConfigScreen extends Screen {
 //#endif
 
     private boolean handleMouseClick(int imx, int imy, int btn) {
+        // Preview navigation takes every button, so it has to come before the
+        // left-button-only gate below.
+        if (inPreview(imx, imy) && popupListIdx < 0 && colorPickerIdx < 0) {
+            if (numEditCfg != null) commitNumEdit();
+            previewLastX = imx;
+            previewLastY = imy;
+            if (btn == 2) { resetPreviewView(); return true; }
+            previewDrag = (btn == 1 || shiftDown()) ? 2 : 1;
+            return true;
+        }
         if (btn != 0) return false;
 
         if (numEditCfg != null) commitNumEdit();
@@ -763,18 +1043,33 @@ public class TweaksConfigScreen extends Screen {
             return true;
         }
 
-        int bw = 84, bh = 20, bx = 8 + (width - 16 - bw) / 2, by = height - 28;
-        if (imx >= bx && imx < bx + bw && imy >= by && imy < by + bh) {
-            doClose(); return true;
+        int bh = 20, by = height - 28;
+        if (cbrMode) {
+            int[] save = cbrSaveButton();
+            if (imx >= save[0] && imx < save[0] + save[1] && imy >= by && imy < by + bh) {
+                org.asutarisucu.tweak.ClearBlockRender.ClearBlockRender.saveStill();
+                return true;
+            }
+            int[] done = cbrDoneButton();
+            if (imx >= done[0] && imx < done[0] + done[1] && imy >= by && imy < by + bh) {
+                doClose(); return true;
+            }
+        } else {
+            int bw = 84, bx = 8 + (width - 16 - bw) / 2;
+            if (imx >= bx && imx < bx + bw && imy >= by && imy < by + bh) {
+                doClose(); return true;
+            }
         }
 
-        int tw0 = 82, gap = 2;
-        int tabX = (width - (tw0 * 3 + gap * 2)) / 2;
-        if (imy >= 2 && imy < TAB_H) {
-            for (int i = 0; i < 3; i++) {
-                int tx = tabX + i * (tw0 + gap);
-                if (imx >= tx && imx < tx + tw0) {
-                    activeTab = i; scrollTarget = 0; scrollOffsetF = 0f; stopRec(); return true;
+        if (!cbrMode) {
+            int tw0 = 82, gap = 2;
+            int tabX = (width - (tw0 * 3 + gap * 2)) / 2;
+            if (imy >= 2 && imy < TAB_H) {
+                for (int i = 0; i < 3; i++) {
+                    int tx = tabX + i * (tw0 + gap);
+                    if (imx >= tx && imx < tx + tw0) {
+                        activeTab = i; scrollTarget = 0; scrollOffsetF = 0f; stopRec(); return true;
+                    }
                 }
             }
         }
@@ -853,6 +1148,8 @@ public class TweaksConfigScreen extends Screen {
                 else openNumEdit(dbl);
             } else if (cfg instanceof OptionListConfig<?> olc) {
                 cycleOption(olc);
+            } else if (cfg instanceof StringConfig sc) {
+                openNumEdit(sc);
             }
             return;
         }
@@ -885,12 +1182,22 @@ public class TweaksConfigScreen extends Screen {
 //#if MC < 12004
     public boolean mouseScrolled(double mx, double my, double amount) {
         if (popupListIdx >= 0) { popupScrTgt -= (int)(amount * 20); return true; }
+        if (zoomPreview((int) mx, (int) my, amount)) return true;
         scrollTarget -= (int) (amount * ROW_H_F / 2);
 //#else
 //$$ public boolean mouseScrolled(double mx, double my, double sx, double sy) {
 //$$     if (popupListIdx >= 0) { popupScrTgt -= (int)(sy * 20); return true; }
+//$$     if (zoomPreview((int) mx, (int) my, sy)) return true;
 //$$     scrollTarget -= (int) (sy * ROW_H_F / 2);
 //#endif
+        return true;
+    }
+
+    /** Wheel over the preview zooms it instead of scrolling the settings list. */
+    private boolean zoomPreview(int mx, int my, double amount) {
+        if (!inPreview(mx, my) || amount == 0) return false;
+        double zoom = Configs.Generic.CBR_ZOOM.getDoubleValue() * Math.pow(1.1, amount);
+        Configs.Generic.CBR_ZOOM.setValue(zoom);
         return true;
     }
 
@@ -925,6 +1232,7 @@ public class TweaksConfigScreen extends Screen {
 //#endif
 
     private boolean handleMouseDragged(int imx, int imy, int btn) {
+        if (previewDrag != 0) { dragPreview(imx, imy); return true; }
         if (btn != 0 || !scrollbarDragging) return false;
         int[] sb = scrollbarMetrics();
         if (sb != null) dragScrollbarTo(imy, sb);
@@ -932,6 +1240,7 @@ public class TweaksConfigScreen extends Screen {
     }
 
     private boolean handleMouseReleased() {
+        if (previewDrag != 0) { previewDrag = 0; return true; }
         if (!scrollbarDragging) return false;
         scrollbarDragging = false;
         return true;
@@ -1061,9 +1370,10 @@ public class TweaksConfigScreen extends Screen {
                 stopRec(); return true;
             }
             heldKeys.add(keyCode);
-            if (!isMod(keyCode)) {
-                pendingCombo = buildCombo(heldKeys);
-            }
+            // Rebuild on every press, modifiers included, so a modifier on its own
+            // (Alt, Ctrl, Shift) is bindable. Pressing a second key just rebuilds
+            // the combo with both keys in it.
+            pendingCombo = buildCombo(heldKeys);
             return true;
         }
         if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
@@ -1115,63 +1425,22 @@ public class TweaksConfigScreen extends Screen {
         return false;
     }
 
+    /**
+     * Builds the storage string for the keys currently held, modifiers first.
+     *
+     * Names come from {@link org.asutarisucu.lib.hotkey.ComboKey#nameOf}, the same
+     * table the parser uses, so every key GLFW reports round-trips. The screen
+     * used to carry its own smaller table and dropped anything missing from it,
+     * which is how numpad and other keys ended up binding to nothing.
+     */
     private String buildCombo(java.util.Set<Integer> keys) {
         List<String> mods = new ArrayList<>(), regs = new ArrayList<>();
         for (int k : keys) {
-            String n = keyName(k);
-            if (n == null) continue;
-            if (isMod(k)) mods.add(n); else regs.add(n);
+            String n = org.asutarisucu.lib.hotkey.ComboKey.nameOf(k);
+            if (org.asutarisucu.lib.hotkey.ComboKey.isModifier(k)) mods.add(n); else regs.add(n);
         }
         mods.addAll(regs);
         return String.join(",", mods);
-    }
-
-    private static boolean isMod(int k) {
-        return k == GLFW.GLFW_KEY_LEFT_SHIFT  || k == GLFW.GLFW_KEY_RIGHT_SHIFT
-            || k == GLFW.GLFW_KEY_LEFT_CONTROL || k == GLFW.GLFW_KEY_RIGHT_CONTROL
-            || k == GLFW.GLFW_KEY_LEFT_ALT     || k == GLFW.GLFW_KEY_RIGHT_ALT;
-    }
-
-    private static String keyName(int c) {
-        if (c >= GLFW.GLFW_KEY_A && c <= GLFW.GLFW_KEY_Z)
-            return String.valueOf((char)('A' + c - GLFW.GLFW_KEY_A));
-        if (c >= GLFW.GLFW_KEY_0 && c <= GLFW.GLFW_KEY_9)
-            return String.valueOf((char)('0' + c - GLFW.GLFW_KEY_0));
-        if (c >= GLFW.GLFW_KEY_F1 && c <= GLFW.GLFW_KEY_F12)
-            return "F" + (1 + c - GLFW.GLFW_KEY_F1);
-        if (c >= GLFW.GLFW_KEY_KP_0 && c <= GLFW.GLFW_KEY_KP_9)
-            return "KP_" + (c - GLFW.GLFW_KEY_KP_0);
-        if (c == GLFW.GLFW_KEY_LEFT_SHIFT)    return "LSHIFT";
-        if (c == GLFW.GLFW_KEY_LEFT_CONTROL)  return "LCTRL";
-        if (c == GLFW.GLFW_KEY_LEFT_ALT)      return "LALT";
-        if (c == GLFW.GLFW_KEY_RIGHT_SHIFT)   return "RIGHT_SHIFT";
-        if (c == GLFW.GLFW_KEY_RIGHT_CONTROL) return "RIGHT_CONTROL";
-        if (c == GLFW.GLFW_KEY_RIGHT_ALT)     return "RIGHT_ALT";
-        if (c == GLFW.GLFW_KEY_SPACE)         return "SPACE";
-        if (c == GLFW.GLFW_KEY_ENTER)         return "ENTER";
-        if (c == GLFW.GLFW_KEY_TAB)           return "TAB";
-        if (c == GLFW.GLFW_KEY_UP)            return "UP";
-        if (c == GLFW.GLFW_KEY_DOWN)          return "DOWN";
-        if (c == GLFW.GLFW_KEY_LEFT)          return "LEFT";
-        if (c == GLFW.GLFW_KEY_RIGHT)         return "RIGHT";
-        if (c == GLFW.GLFW_KEY_HOME)          return "HOME";
-        if (c == GLFW.GLFW_KEY_END)           return "END";
-        if (c == GLFW.GLFW_KEY_INSERT)        return "INSERT";
-        if (c == GLFW.GLFW_KEY_DELETE)        return "DELETE";
-        if (c == GLFW.GLFW_KEY_PAGE_UP)       return "PAGE_UP";
-        if (c == GLFW.GLFW_KEY_PAGE_DOWN)     return "PAGE_DOWN";
-        if (c == GLFW.GLFW_KEY_MINUS)         return "MINUS";
-        if (c == GLFW.GLFW_KEY_EQUAL)         return "EQUAL";
-        if (c == GLFW.GLFW_KEY_BACKSLASH)     return "BACKSLASH";
-        if (c == GLFW.GLFW_KEY_SEMICOLON)     return "SEMICOLON";
-        if (c == GLFW.GLFW_KEY_APOSTROPHE)    return "APOSTROPHE";
-        if (c == GLFW.GLFW_KEY_COMMA)         return "COMMA";
-        if (c == GLFW.GLFW_KEY_PERIOD)        return "PERIOD";
-        if (c == GLFW.GLFW_KEY_SLASH)         return "SLASH";
-        if (c == GLFW.GLFW_KEY_GRAVE_ACCENT)  return "GRAVE_ACCENT";
-        if (c == GLFW.GLFW_KEY_LEFT_BRACKET)  return "LEFT_BRACKET";
-        if (c == GLFW.GLFW_KEY_RIGHT_BRACKET) return "RIGHT_BRACKET";
-        return null;
     }
 
     private void startRec(int tab, int row) { recTab = tab; recRow = row; heldKeys.clear(); pendingCombo = null; }
@@ -1181,6 +1450,10 @@ public class TweaksConfigScreen extends Screen {
 //#if MC < 12111
     @Override
     public boolean charTyped(char c, int modifiers) {
+        // While a hotkey is being recorded the press is consumed by
+        // handleKeyPress, but GLFW's character callback fires independently of
+        // the key callback, so the key would also be typed into the search box.
+        if (recTab >= 0) return true;
         if (colorPickerIdx >= 0) {
             char u = Character.toUpperCase(c);
             if ((u >= '0' && u <= '9') || (u >= 'A' && u <= 'F')) {
@@ -1191,7 +1464,9 @@ public class TweaksConfigScreen extends Screen {
             return true;
         }
         if (numEditCfg != null) {
-            if (c >= '0' && c <= '9' || c == '-' || c == '.') {
+            // free text for a StringConfig (file paths), digits only for the rest
+            if (numEditCfg instanceof StringConfig ? c >= 32
+                    : (c >= '0' && c <= '9' || c == '-' || c == '.')) {
                 numEditStr = numEditStr.substring(0, numEditCursor) + c + numEditStr.substring(numEditCursor);
                 numEditCursor++;
             }
@@ -1247,6 +1522,7 @@ public class TweaksConfigScreen extends Screen {
         numEditCfg = cfg;
         if (cfg instanceof IntegerConfig ic) numEditStr = String.valueOf(ic.getIntegerValue());
         else if (cfg instanceof DoubleConfig dbl) numEditStr = String.format("%.2f", dbl.getDoubleValue());
+        else if (cfg instanceof StringConfig sc) numEditStr = sc.getValue();
         numEditCursor = numEditStr.length();
     }
 
@@ -1256,6 +1532,8 @@ public class TweaksConfigScreen extends Screen {
             try { ic.setValue(Integer.parseInt(numEditStr)); } catch (NumberFormatException ignored) {}
         } else if (numEditCfg instanceof DoubleConfig dbl) {
             try { dbl.setValue(Double.parseDouble(numEditStr)); } catch (NumberFormatException ignored) {}
+        } else if (numEditCfg instanceof StringConfig sc) {
+            sc.setValue(numEditStr);
         }
         numEditCfg = null; numEditStr = ""; numEditCursor = 0;
     }
@@ -1270,7 +1548,9 @@ public class TweaksConfigScreen extends Screen {
 //#endif
         boolean shift = GLFW.glfwGetKey(win, GLFW.GLFW_KEY_LEFT_SHIFT) == GLFW.GLFW_PRESS
                      || GLFW.glfwGetKey(win, GLFW.GLFW_KEY_RIGHT_SHIFT) == GLFW.GLFW_PRESS;
-        char c = numericKeyToChar(keyCode, shift);
+        char c = numEditCfg instanceof StringConfig
+                ? popupKeyToChar(keyCode, shift)
+                : numericKeyToChar(keyCode, shift);
         if (c != 0) {
             numEditStr = numEditStr.substring(0, numEditCursor) + c + numEditStr.substring(numEditCursor);
             numEditCursor++;
@@ -1703,11 +1983,14 @@ public class TweaksConfigScreen extends Screen {
 //#endif
 
     private void doClose() {
+        org.asutarisucu.tweak.ClearBlockRender.ClearBlockRender.releasePreview();
         org.asutarisucu.lib.config.ConfigManager.INSTANCE.save();
 //#if MC < 260100
         this.client.setScreen(parent);
-//#else
+//#elseif MC < 260200
 //$$ this.minecraft.setScreen(parent);
+//#else
+//$$ this.minecraft.gui.setScreen(parent);
 //#endif
     }
 }

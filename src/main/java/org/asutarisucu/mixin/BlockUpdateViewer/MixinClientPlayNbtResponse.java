@@ -51,7 +51,12 @@ public class MixinClientPlayNbtResponse {
 //$$         if (mc.level == null) return;
 //$$         BlockPos pos = packet.getPos();
 //$$         if (!(mc.level.getBlockState(pos).getBlock() instanceof ShulkerBoxBlock)) return;
+//#if MC < 260200
 //$$         if (packet.getType() != BlockEntityType.SHULKER_BOX) {
+//#else
+//$$         // MC 26.2 moved the BlockEntityType constants into BlockEntityTypes.
+//$$         if (packet.getType() != net.minecraft.world.level.block.entity.BlockEntityTypes.SHULKER_BOX) {
+//#endif
 //$$             BlockUpdateCalculator.CORRUPT_ENTITY_POSITIONS.add(pos.immutable());
 //$$         } else {
 //$$             BlockUpdateCalculator.CORRUPT_ENTITY_POSITIONS.remove(pos.immutable());

@@ -1,5 +1,186 @@
 package org.asutarisucu.lib.render;
 
+//#if MC >= 260200
+//$$ import com.mojang.blaze3d.vertex.PoseStack;
+//$$ import com.mojang.blaze3d.vertex.VertexConsumer;
+//$$ import net.minecraft.client.renderer.SubmitNodeCollector;
+//$$ import net.minecraft.client.renderer.rendertype.RenderTypes;
+//$$ import net.minecraft.core.BlockPos;
+//$$ import org.joml.Matrix4f;
+//$$
+//$$ import java.util.Set;
+//$$
+//$$ /**
+//$$  * World-space block rendering for MC 26.2+.
+//$$  *
+//$$  * 26.2 removed Tesselator and RenderType.draw(MeshData); geometry now goes to a
+//$$  * SubmitNodeCollector, which batches it with the rest of the frame. The collector
+//$$  * and pose stack come from the Fabric level render event, so callers hand them
+//$$  * over once per frame with {@link #beginFrame} and the render methods keep the
+//$$  * signatures the other versions use.
+//$$  *
+//$$  * Vertices are camera-relative doubles cast to float, as on the older versions,
+//$$  * so precision holds up far from the origin. viewRot is unused here — the pose
+//$$  * stack already carries the view transform.
+//$$  */
+//$$ public class WorldRenderer {
+//$$
+//$$     private static SubmitNodeCollector collector;
+//$$     private static PoseStack poseStack;
+//$$
+//$$     /** Hands over this frame's submit collector. Call before any render method. */
+//$$     public static void beginFrame(SubmitNodeCollector nodeCollector, PoseStack stack) {
+//$$         collector = nodeCollector;
+//$$         poseStack = stack;
+//$$     }
+//$$
+//$$     public static void renderBlockFills(Set<BlockPos> positions, Color color,
+//$$                                         boolean depthTest, Matrix4f viewRot,
+//$$                                         double camX, double camY, double camZ) {
+//$$         if (positions.isEmpty() || collector == null) return;
+//$$         submitFills(positions, color, camX, camY, camZ);
+//$$     }
+//$$
+//$$     public static void renderBlockOutlines(Set<BlockPos> positions, Color color,
+//$$                                            double expand, Matrix4f viewRot,
+//$$                                            double camX, double camY, double camZ) {
+//$$         if (positions.isEmpty() || collector == null) return;
+//$$         submitOutlines(positions, color, (float) expand, camX, camY, camZ);
+//$$     }
+//$$
+//$$     /** Draws a faint fill plus the outline of the group's outer boundary. */
+//$$     public static void renderBlockGroup(Set<BlockPos> positions, Color baseColor,
+//$$                                         Matrix4f viewRot,
+//$$                                         double camX, double camY, double camZ) {
+//$$         if (positions.isEmpty() || collector == null) return;
+//$$         submitFills(positions, baseColor.withAlpha(0.04f), camX, camY, camZ);
+//$$         submitBoundaryLines(positions, baseColor.withAlpha(0.60f), 0.0025f, camX, camY, camZ);
+//$$     }
+//$$
+//$$     /**
+//$$      * Draws arbitrary world-space line segments.
+//$$      *
+//$$      * @param segs      flat world coordinates, 6 doubles per segment (x0,y0,z0,x1,y1,z1)
+//$$      * @param segCount  number of segments to read from the front of {@code segs}
+//$$      */
+//$$     public static void renderLineSegments(double[] segs, int segCount, Color c, Matrix4f viewRot,
+//$$                                           double camX, double camY, double camZ) {
+//$$         if (segCount <= 0 || collector == null) return;
+//$$         collector.submitCustomGeometry(poseStack, RenderTypes.lines(), (pose, buf) -> {
+//$$             for (int i = 0; i < segCount; i++) {
+//$$                 int o = i * 6;
+//$$                 line(pose, buf, c,
+//$$                         (float)(segs[o]   - camX), (float)(segs[o+1] - camY), (float)(segs[o+2] - camZ),
+//$$                         (float)(segs[o+3] - camX), (float)(segs[o+4] - camY), (float)(segs[o+5] - camZ));
+//$$             }
+//$$         });
+//$$     }
+//$$
+//$$     // ---------------------------------------------------------------------
+//$$
+//$$     private static void submitFills(Set<BlockPos> positions, Color c,
+//$$                                     double camX, double camY, double camZ) {
+//$$         collector.submitCustomGeometry(poseStack, RenderTypes.debugFilledBox(), (pose, buf) -> {
+//$$             for (BlockPos pos : positions) {
+//$$                 float x0 = (float)(pos.getX() - camX);
+//$$                 float y0 = (float)(pos.getY() - camY);
+//$$                 float z0 = (float)(pos.getZ() - camZ);
+//$$                 box(pose, buf, c, x0, y0, z0, x0 + 1f, y0 + 1f, z0 + 1f);
+//$$             }
+//$$         });
+//$$     }
+//$$
+//$$     private static void submitOutlines(Set<BlockPos> positions, Color c, float expand,
+//$$                                        double camX, double camY, double camZ) {
+//$$         collector.submitCustomGeometry(poseStack, RenderTypes.lines(), (pose, buf) -> {
+//$$             for (BlockPos pos : positions) {
+//$$                 float x0 = (float)(pos.getX() - camX) - expand;
+//$$                 float y0 = (float)(pos.getY() - camY) - expand;
+//$$                 float z0 = (float)(pos.getZ() - camZ) - expand;
+//$$                 boxLines(pose, buf, c, x0, y0, z0,
+//$$                         x0 + 1f + 2*expand, y0 + 1f + 2*expand, z0 + 1f + 2*expand);
+//$$             }
+//$$         });
+//$$     }
+//$$
+//$$     /** Only edges on the outer boundary of the group; shared interior edges are skipped. */
+//$$     private static void submitBoundaryLines(Set<BlockPos> positions, Color c, float expand,
+//$$                                             double camX, double camY, double camZ) {
+//$$         collector.submitCustomGeometry(poseStack, RenderTypes.lines(), (pose, buf) -> {
+//$$             for (BlockPos pos : positions) {
+//$$                 double bx = pos.getX() - camX, by = pos.getY() - camY, bz = pos.getZ() - camZ;
+//$$                 float x0 = (float)(bx - expand), y0 = (float)(by - expand), z0 = (float)(bz - expand);
+//$$                 float x1 = (float)(bx + 1 + expand), y1 = (float)(by + 1 + expand), z1 = (float)(bz + 1 + expand);
+//$$                 boolean up = positions.contains(pos.above()),    down  = positions.contains(pos.below());
+//$$                 boolean north = positions.contains(pos.north()), south = positions.contains(pos.south());
+//$$                 boolean west = positions.contains(pos.west()),   east  = positions.contains(pos.east());
+//$$                 if (!up) {
+//$$                     if (!north) line(pose, buf, c, x0, y1, z0, x1, y1, z0);
+//$$                     if (!south) line(pose, buf, c, x0, y1, z1, x1, y1, z1);
+//$$                     if (!west)  line(pose, buf, c, x0, y1, z0, x0, y1, z1);
+//$$                     if (!east)  line(pose, buf, c, x1, y1, z0, x1, y1, z1);
+//$$                 }
+//$$                 if (!down) {
+//$$                     if (!north) line(pose, buf, c, x0, y0, z0, x1, y0, z0);
+//$$                     if (!south) line(pose, buf, c, x0, y0, z1, x1, y0, z1);
+//$$                     if (!west)  line(pose, buf, c, x0, y0, z0, x0, y0, z1);
+//$$                     if (!east)  line(pose, buf, c, x1, y0, z0, x1, y0, z1);
+//$$                 }
+//$$                 if (!north) {
+//$$                     if (!west)  line(pose, buf, c, x0, y0, z0, x0, y1, z0);
+//$$                     if (!east)  line(pose, buf, c, x1, y0, z0, x1, y1, z0);
+//$$                 }
+//$$                 if (!south) {
+//$$                     if (!west)  line(pose, buf, c, x0, y0, z1, x0, y1, z1);
+//$$                     if (!east)  line(pose, buf, c, x1, y0, z1, x1, y1, z1);
+//$$                 }
+//$$             }
+//$$         });
+//$$     }
+//$$
+//$$     private static void line(PoseStack.Pose pose, VertexConsumer buf, Color c,
+//$$                              float x0, float y0, float z0, float x1, float y1, float z1) {
+//$$         float dx = x1 - x0, dy = y1 - y0, dz = z1 - z0;
+//$$         float len = (float) Math.sqrt(dx*dx + dy*dy + dz*dz);
+//$$         if (len == 0f) return;
+//$$         dx /= len; dy /= len; dz /= len;
+//$$         buf.addVertex(pose, x0, y0, z0).setNormal(pose, dx, dy, dz)
+//$$                 .setColor(c.r(), c.g(), c.b(), c.a()).setLineWidth(1.5f);
+//$$         buf.addVertex(pose, x1, y1, z1).setNormal(pose, dx, dy, dz)
+//$$                 .setColor(c.r(), c.g(), c.b(), c.a()).setLineWidth(1.5f);
+//$$     }
+//$$
+//$$     private static void boxLines(PoseStack.Pose pose, VertexConsumer b, Color c,
+//$$                                  float x0, float y0, float z0, float x1, float y1, float z1) {
+//$$         line(pose, b, c, x0,y0,z0, x1,y0,z0); line(pose, b, c, x1,y0,z0, x1,y0,z1);
+//$$         line(pose, b, c, x1,y0,z1, x0,y0,z1); line(pose, b, c, x0,y0,z1, x0,y0,z0);
+//$$         line(pose, b, c, x0,y1,z0, x1,y1,z0); line(pose, b, c, x1,y1,z0, x1,y1,z1);
+//$$         line(pose, b, c, x1,y1,z1, x0,y1,z1); line(pose, b, c, x0,y1,z1, x0,y1,z0);
+//$$         line(pose, b, c, x0,y0,z0, x0,y1,z0); line(pose, b, c, x1,y0,z0, x1,y1,z0);
+//$$         line(pose, b, c, x1,y0,z1, x1,y1,z1); line(pose, b, c, x0,y0,z1, x0,y1,z1);
+//$$     }
+//$$
+//$$     private static void box(PoseStack.Pose pose, VertexConsumer b, Color c,
+//$$                             float x0, float y0, float z0, float x1, float y1, float z1) {
+//$$         quad(pose, b, c, x0,y0,z0, x1,y0,z0, x1,y0,z1, x0,y0,z1);
+//$$         quad(pose, b, c, x0,y1,z1, x1,y1,z1, x1,y1,z0, x0,y1,z0);
+//$$         quad(pose, b, c, x1,y0,z0, x0,y0,z0, x0,y1,z0, x1,y1,z0);
+//$$         quad(pose, b, c, x0,y0,z1, x1,y0,z1, x1,y1,z1, x0,y1,z1);
+//$$         quad(pose, b, c, x0,y0,z1, x0,y0,z0, x0,y1,z0, x0,y1,z1);
+//$$         quad(pose, b, c, x1,y0,z0, x1,y0,z1, x1,y1,z1, x1,y1,z0);
+//$$     }
+//$$
+//$$     private static void quad(PoseStack.Pose pose, VertexConsumer b, Color c,
+//$$                              float ax, float ay, float az, float bx, float by, float bz,
+//$$                              float cx, float cy, float cz, float dx, float dy, float dz) {
+//$$         b.addVertex(pose, ax, ay, az).setColor(c.r(), c.g(), c.b(), c.a());
+//$$         b.addVertex(pose, bx, by, bz).setColor(c.r(), c.g(), c.b(), c.a());
+//$$         b.addVertex(pose, cx, cy, cz).setColor(c.r(), c.g(), c.b(), c.a());
+//$$         b.addVertex(pose, dx, dy, dz).setColor(c.r(), c.g(), c.b(), c.a());
+//$$     }
+//$$ }
+//#else
+
 //#if MC < 12101
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.render.BufferBuilder;
@@ -440,6 +621,63 @@ public class WorldRenderer {
 //#endif
 
     // -------------------------------------------------------------------------
+    // Free line segments
+    // -------------------------------------------------------------------------
+
+    /**
+     * Draws arbitrary world-space line segments.
+     *
+     * @param segs      flat world coordinates, 6 doubles per segment (x0,y0,z0,x1,y1,z1)
+     * @param segCount  number of segments to read from the front of {@code segs}
+     */
+    public static void renderLineSegments(double[] segs, int segCount, Color c, Matrix4f viewRot,
+                                          double camX, double camY, double camZ) {
+        if (segCount <= 0) return;
+        setupBlend();
+        float r = c.r(), g = c.g(), b = c.b(), a = c.a();
+//#if MC < 12101
+        Tessellator tess = Tessellator.getInstance();
+        BufferBuilder buf = tess.getBuffer();
+        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+        buf.begin(VertexFormat.DrawMode.DEBUG_LINES, VertexFormats.POSITION_COLOR);
+        for (int i = 0; i < segCount; i++) {
+            int o = i * 6;
+            buf.vertex(viewRot, (float)(segs[o]   - camX), (float)(segs[o+1] - camY), (float)(segs[o+2] - camZ)).color(r,g,b,a).next();
+            buf.vertex(viewRot, (float)(segs[o+3] - camX), (float)(segs[o+4] - camY), (float)(segs[o+5] - camZ)).color(r,g,b,a).next();
+        }
+        tess.draw();
+//#elseif MC < 12111
+//$$ RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+//$$ var buf = Tessellator.getInstance().begin(VertexFormat.DrawMode.DEBUG_LINES, VertexFormats.POSITION_COLOR);
+//$$ for (int i = 0; i < segCount; i++) {
+//$$     int o = i * 6;
+//$$     buf.vertex(viewRot, (float)(segs[o]   - camX), (float)(segs[o+1] - camY), (float)(segs[o+2] - camZ)).color(r,g,b,a);
+//$$     buf.vertex(viewRot, (float)(segs[o+3] - camX), (float)(segs[o+4] - camY), (float)(segs[o+5] - camZ)).color(r,g,b,a);
+//$$ }
+//$$ BufferRenderer.drawWithGlobalProgram(buf.end());
+//#elseif MC < 260100
+//$$ var buf = Tessellator.getInstance().begin(VertexFormat.DrawMode.LINES, VertexFormats.POSITION_COLOR_NORMAL_LINE_WIDTH);
+//$$ for (int i = 0; i < segCount; i++) {
+//$$     int o = i * 6;
+//$$     buf.vertex((float)(segs[o]   - camX), (float)(segs[o+1] - camY), (float)(segs[o+2] - camZ)).color(r,g,b,a).normal(0,1,0).lineWidth(1.5f);
+//$$     buf.vertex((float)(segs[o+3] - camX), (float)(segs[o+4] - camY), (float)(segs[o+5] - camZ)).color(r,g,b,a).normal(0,1,0).lineWidth(1.5f);
+//$$ }
+//$$ var mesh = buf.endNullable();
+//$$ if (mesh != null) { RenderLayers.LINES_TRANSLUCENT.draw(mesh); mesh.close(); }
+//#else
+//$$ var buf = Tesselator.getInstance().begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR_LINE_WIDTH);
+//$$ for (int i = 0; i < segCount; i++) {
+//$$     int o = i * 6;
+//$$     buf.addVertex((float)(segs[o]   - camX), (float)(segs[o+1] - camY), (float)(segs[o+2] - camZ)).setColor(r,g,b,a).setLineWidth(1.5f);
+//$$     buf.addVertex((float)(segs[o+3] - camX), (float)(segs[o+4] - camY), (float)(segs[o+5] - camZ)).setColor(r,g,b,a).setLineWidth(1.5f);
+//$$ }
+//$$ var mesh = buf.build();
+//$$ if (mesh != null) { RenderTypes.lines().draw(mesh); mesh.close(); }
+//#endif
+        teardownBlend();
+    }
+
+    // -------------------------------------------------------------------------
     // RenderSystem state helpers (no-op for MC >= 12111 where pipelines handle state)
     // -------------------------------------------------------------------------
 
@@ -470,3 +708,4 @@ public class WorldRenderer {
 //#endif
     }
 }
+//#endif

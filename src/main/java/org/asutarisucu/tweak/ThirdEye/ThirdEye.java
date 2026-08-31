@@ -129,11 +129,6 @@ public class ThirdEye {
         if (!ThirdEyeCamera.initialized) {
             ThirdEyeCamera.initFromPlayer();
         }
-
-        // Camera movement (only when THIRD_EYE_MOVEMENT is on)
-        if (Feature.THIRD_EYE_MOVEMENT.isEnabled()) {
-            ThirdEyeCamera.tick(mc.getWindow().getHandle());
-        }
     }
 //#else
 //$$ /**
@@ -189,8 +184,14 @@ public class ThirdEye {
 //$$     }
 //$$
 //$$     // Create or resize the ThirdEye target to match the main render target
+//#if MC < 260200
 //$$     int w = mc.getMainRenderTarget().width;
 //$$     int h = mc.getMainRenderTarget().height;
+//#else
+//$$     // MC 26.2 moved the main render target onto GameRenderer.
+//$$     int w = mc.gameRenderer.mainRenderTarget().width;
+//$$     int h = mc.gameRenderer.mainRenderTarget().height;
+//#endif
 //$$     if (thirdEyeFbo == null || thirdEyeFbo.width != w || thirdEyeFbo.height != h) {
 //$$         if (thirdEyeFbo != null) thirdEyeFbo.destroyBuffers();
 //$$         thirdEyeFbo = new ThirdEyeFbo(w, h, true);
@@ -198,10 +199,6 @@ public class ThirdEye {
 //$$
 //$$     if (!ThirdEyeCamera.initialized) {
 //$$         ThirdEyeCamera.initFromPlayer();
-//$$     }
-//$$
-//$$     if (Feature.THIRD_EYE_MOVEMENT.isEnabled()) {
-//$$         ThirdEyeCamera.tick(mc.getWindow().handle());
 //$$     }
 //$$ }
 //#endif

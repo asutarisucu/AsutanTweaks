@@ -149,7 +149,12 @@ public class BlockUpdateViewer {
 //$$
 //$$     BlockPos hitPos = blockHit.getBlockPos();
 //$$     var heldItem = mc.player.getMainHandItem();
+//#if MC < 260200
 //$$     var cam = context.gameRenderer().getMainCamera().position();
+//#else
+//$$     var cam = context.gameRenderer().mainCamera().position();
+//$$     WorldRenderer.beginFrame(context.submitNodeCollector(), context.poseStack());
+//#endif
 //$$     Matrix4f viewRot = new Matrix4f();
 //$$
 //$$     boolean holdingBlockItem = heldItem.getItem() instanceof BlockItem;

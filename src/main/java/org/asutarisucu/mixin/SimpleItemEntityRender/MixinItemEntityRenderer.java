@@ -3,7 +3,9 @@ package org.asutarisucu.mixin.SimpleItemEntityRender;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.OverlayTexture;
+//#if MC < 260200
 import net.minecraft.client.render.VertexConsumerProvider;
+//#endif
 import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.render.entity.ItemEntityRenderer;

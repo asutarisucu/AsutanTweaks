@@ -194,7 +194,12 @@ public class HighlightBlock {
 //$$     if (positions.isEmpty()) return;
 //$$
 //$$     Color color = Configs.Generic.HIGHLIGHT_BLOCK_COLOR.getColor();
+//#if MC < 260200
 //$$     var cam = context.gameRenderer().getMainCamera().position();
+//#else
+//$$     var cam = context.gameRenderer().mainCamera().position();
+//$$     WorldRenderer.beginFrame(context.submitNodeCollector(), context.poseStack());
+//#endif
 //$$     Matrix4f viewRot = new Matrix4f();
 //$$     WorldRenderer.renderBlockOutlines(positions, color, 0.0025, viewRot, cam.x, cam.y, cam.z);
 //$$ }

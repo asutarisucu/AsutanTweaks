@@ -45,7 +45,12 @@ public class ThirdEyeFbo extends SimpleFramebuffer {
 //$$  */
 //$$ public class ThirdEyeFbo extends TextureTarget {
 //$$     public ThirdEyeFbo(int width, int height, boolean useDepth) {
+//#if MC < 260200
 //$$         super("ThirdEye", width, height, useDepth);
+//#else
+//$$         // MC 26.2 requires the colour format to be stated explicitly.
+//$$         super("ThirdEye", width, height, useDepth, com.mojang.blaze3d.GpuFormat.RGBA8_UNORM);
+//#endif
 //$$     }
 //$$
 //$$     public int getColorTexId() {

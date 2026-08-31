@@ -12,6 +12,8 @@ import org.asutarisucu.tweak.SearchItems.HighlightContainer;
 import org.asutarisucu.tweak.SimpleItemEntityRender.SimpleEntityRender;
 import org.asutarisucu.tweak.ThirdEye.ThirdEye;
 import org.asutarisucu.tweak.VisualiseLazyEntity.VisualiseLazyEntity;
+import org.asutarisucu.tweak.WorldEditGUI.SelectionGridRenderer;
+import org.asutarisucu.tweak.WorldEditGUI.WorldEditCui;
 
 //#if MC >= 12111
 //$$ import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
@@ -39,6 +41,7 @@ public class Reference {
         SimpleEntityRender.register();
         ThirdEye.register();
         VisualiseLazyEntity.register();
+        WorldEditCui.register();
         registerWorldRendering();
         registerHud();
     }
@@ -48,12 +51,14 @@ public class Reference {
 //$$ LevelRenderEvents.BEFORE_GIZMOS.register(context -> {
 //$$     if (Feature.SEARCH_BLOCK_HIGHLIGHT.isEnabled())    HighlightBlock.render(context);
 //$$     if (Feature.SEARCH_CONTAINER_HIGHLIGHT.isEnabled()) HighlightContainer.render(context);
+//$$     if (Feature.WORLDEDIT_GUI.isEnabled())              SelectionGridRenderer.render(context);
 //$$     BlockUpdateViewer.renderOverlay(context);
 //$$ });
 //#else
         WorldRenderEvents.AFTER_ENTITIES.register(context -> {
             if (Feature.SEARCH_BLOCK_HIGHLIGHT.isEnabled())    HighlightBlock.render(context);
             if (Feature.SEARCH_CONTAINER_HIGHLIGHT.isEnabled()) HighlightContainer.render(context);
+            if (Feature.WORLDEDIT_GUI.isEnabled())              SelectionGridRenderer.render(context);
 //#if MC >= 12111
 //$$ BlockUpdateViewer.renderOverlay(context);
 //#else

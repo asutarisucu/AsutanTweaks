@@ -43,7 +43,11 @@ public class DisableVoidDive {
                 int RocketSlot= Inventorys.findItemSlot(client,Items.FIREWORK_ROCKET);
                 //花火を持っていないかエリトラをつけていないなら弾く
                 if(RocketSlot!=-1&&player.getEquippedStack(EquipmentSlot.CHEST).getItem()==Items.ELYTRA){
+//#if MC < 260200
                     Screen screen=client.currentScreen;
+//#else
+                    //$$ Screen screen=client.gui.screen();
+//#endif
                     //エリトラが開いていないとき
                     if(!player.isFallFlying()){
                         //ジャンプキーをすでに押している場合
@@ -53,7 +57,11 @@ public class DisableVoidDive {
                                     screen instanceof CreativeInventoryScreen){
                                 if(count<=0){
                                     client.execute(()->{
+//#if MC < 260200
                                         client.setScreen(null);
+//#else
+                                        //$$ client.gui.setScreen(null);
+//#endif
                                     });
                                     count=5;
                                 }else count--;
@@ -61,7 +69,11 @@ public class DisableVoidDive {
                             }else {
                                 if(count<=0){
                                     client.execute(()->{
+//#if MC < 260200
                                         client.setScreen(new InventoryScreen(player));
+//#else
+                                        //$$ client.gui.setScreen(new InventoryScreen(player));
+//#endif
                                     });
                                     count=5;
                                 }else count--;
@@ -75,7 +87,11 @@ public class DisableVoidDive {
                         if(screen instanceof InventoryScreen||
                                 screen instanceof CreativeInventoryScreen){
                             client.execute(()->{
+//#if MC < 260200
                                 client.setScreen(null);
+//#else
+                                //$$ client.gui.setScreen(null);
+//#endif
                             });
                         }
 //#if MC >= 260100
@@ -119,7 +135,11 @@ public class DisableVoidDive {
             networkHandler.getConnection().disconnect(Text.of(String.format("Disconnect from %d,%d,%d",pos[0],pos[1],pos[2])));
         }
         client.execute(() -> {
+//#if MC < 260200
             client.setScreen(new TitleScreen());
+//#else
+            //$$ client.gui.setScreen(new TitleScreen());
+//#endif
         });
     }
 

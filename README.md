@@ -67,3 +67,44 @@ This means you can always transport the optimal amount of items.
 >To use it in multiplayer, enable `serverDataSyncer` in [tweakermore](https://github.com/Fallen-Breath/tweakermore/tree/master)
 >and `debugNbtQueryNoPermission` in [Carpet](https://github.com/gnembon/fabric-carpet).<br>
 >`LazyEntitySyncInterval` controls how often the server position is sampled.
+### PickBlockUltimate
+>Removes the reach limit from middle-click pick block — anything you can see in a loaded chunk can be picked.<br>
+>`PickBlockReach` sets the maximum distance (default 256 blocks).<br>
+>Hold the `Pick Block State` hotkey (default `Left Alt`) while picking to also copy the block's **state properties** —
+>a composter's fill level, a repeater's delay, the half a slab sits in — so placing the item reproduces that state.
+>Vanilla has no equivalent for this; creative mode is required, as the item has to be created.<br>
+>That is a different thing from vanilla's ctrl+pick, which copies block entity NBT. The two are kept separate:
+>a plain ctrl+pick on a block within normal reach is handed back to vanilla so its NBT copy still works,
+>which is why the state hotkey defaults to Alt rather than Ctrl.<br>
+>Entities under the crosshair are still handled by vanilla, so entity pick block is unchanged.
+### WorldEditGUI
+>Draws the current [WorldEdit](https://enginehub.org/worldedit) cuboid selection as a lattice on its six faces.<br>
+>The selection is read over WorldEdit's own CUI plugin channel, so it works both in singleplayer and on a
+>server that has WorldEdit installed. CUI support is announced with `//we cui` when you join or enable the feature.<br>
+>Each selection point is outlined in its own colour (`WE Pos1 Color`, `WE Pos2 Color`) as soon as it is set,
+>without waiting for the other one.<br>
+>`WEGridColor`, `WEEdgeColor` and `WEGridSpacing` control the appearance; `WEGridMaxLines` caps the line count,
+>doubling the spacing automatically for very large selections.<br>
+>Only cuboid selections are drawn — WorldEdit's other shapes clear the display rather than showing a wrong box.
+### ClearBlockRender
+>Records the WorldEdit selection as a video with a **transparent background** — only the selected blocks are drawn,
+>nothing around them. The world keeps running while recording, so a working redstone machine is captured in motion.<br>
+>Two hotkeys: `Clear Block Render Screen` opens the settings screen — they are there rather than in the option list —
+>and `Clear Block Render Rec` starts and stops the capture without opening anything, so a circuit can be recorded
+>the moment it is set up. Output goes to `clear_block_render/` in your game directory.<br>
+>`Width`/`Height` set the capture resolution independently of the game window, `FPS` the frame rate.<br>
+>`Projection` picks `ISOMETRIC` (orthographic) or `PERSPECTIVE` (with `FOV`); `Yaw`, `Pitch` and `Zoom`
+>frame the shot, and `Orbit` rotates the camera around the selection at that many degrees per second.<br>
+>**Requires [ffmpeg](https://ffmpeg.org/)** — set `FFmpeg Path` if it is not on your `PATH`. Only VP9-in-WebM and
+>ProRes 4444-in-MOV keep an alpha channel, so those are the two output formats (`Format`).<br>
+>The settings screen shows a **live preview** of the shot next to the settings, so framing can be judged while
+>adjusting it. The preview is navigated with the mouse: drag to orbit, right-drag or
+>shift-drag to pan, wheel to zoom, middle-click to reset the pan and zoom. Everything it changes is written back
+>to `Yaw`, `Pitch`, `Zoom`, `Pan X` and `Pan Y`, so a shot set up by hand can still be fine-tuned by number.<br>
+>`Playback Speed` sets how fast the clip plays: 1.0 real time, 0.5 slow motion, 2.0 double speed. Frames are still
+>captured at `FPS`, so a very slow setting looks choppy unless `FPS` is raised to match.<br>
+>Blocks a piston is carrying are drawn too — they are not part of the world's block states, so they would
+>otherwise vanish from a recording for the whole push.<br>
+>`Save Image` on the settings screen writes a single frame as a transparent PNG, without ffmpeg — the quickest way
+>to check the framing.<br>
+>Fluids inside the selection are not drawn — only block models and (optionally, via `Block Entities`) block entities.

@@ -19,8 +19,9 @@ preprocess {
 	def mc1206 = createNode('1.20.6', 1_20_06, '')
 	def mc1211 = createNode('1.21.1',  1_21_01, '')
 	def mc12111= createNode('1.21.11', 1_21_11, '')
-	// MC 26.1 uses year-based versioning; integer 260100 keeps ordering above all 1.x.x values
+	// MC 26.x uses year-based versioning; integers 2601xx keep ordering above all 1.x.x values
 	def mc261  = createNode('26.1',    260100,  '')
+	def mc262  = createNode('26.2',    260200,  '')
 
 	mc119 .link(mc1201,  null)
 	mc1201.link(mc1204,  null)
@@ -28,6 +29,7 @@ preprocess {
 	mc1206.link(mc1211,  null)
 	mc1211.link(mc12111, null)
 	mc12111.link(mc261,  null)
+	mc261 .link(mc262,   null)
 }
 
 tasks.register('buildAndGather') {

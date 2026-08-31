@@ -69,7 +69,11 @@ public class Screen {
                          : 0xFFA04040;
             ProgressMeter.INSTANCE.show("AutoFill", pct, fillSlot + " / " + slot + " slots", barColor);
             //コンテナ画面を閉じる
+//#if MC < 260200
             client.setScreen(null);
+//#else
+            //$$ client.gui.setScreen(null);
+//#endif
         }
     }
 

@@ -282,7 +282,12 @@ public class VisualiseLazyEntity {
     private static void sampleMultiplayer(Entity e) {
         int id = e.getId();
         try {
+//#if MC < 260200
             ServerDataSyncer.getInstance().syncEntity(e).thenRun(() -> {
+//#else
+            // TweakerMore for 26.2 renamed the one-argument sync methods.
+            //$$ ServerDataSyncer.getInstance().syncEntityToWorld(e).thenRun(() -> {
+//#endif
                 double[] p = pos(e);
                 pendingServerPos.put(id, new double[]{p[0], p[1], p[2], -1.0});
             });

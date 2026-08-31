@@ -59,6 +59,62 @@ public class Configs {
                 new DoubleConfig("progress_meter_y", 0.02, 0.0, 1.0);
         public static final IntegerConfig LAZY_ENTITY_SYNC_INTERVAL =
                 new IntegerConfig("lazy_entity_sync_interval", 20, 5, 200);
+
+        // ── Pick Block Ultimate ──────────────────────────────────
+        public static final IntegerConfig PICK_BLOCK_REACH =
+                new IntegerConfig("pick_block_reach", 256, 8, 512);
+
+        // ── WorldEdit GUI ────────────────────────────────────────
+        public static final ColorConfig WORLDEDIT_GRID_COLOR =
+                new ColorConfig("worldedit_grid_color", "#5500FFFF");
+        public static final ColorConfig WORLDEDIT_EDGE_COLOR =
+                new ColorConfig("worldedit_edge_color", "#FFFFCC00");
+        public static final ColorConfig WORLDEDIT_POS1_COLOR =
+                new ColorConfig("worldedit_pos1_color", "#FF33DD55");
+        public static final ColorConfig WORLDEDIT_POS2_COLOR =
+                new ColorConfig("worldedit_pos2_color", "#FFDD3355");
+        public static final IntegerConfig WORLDEDIT_GRID_SPACING =
+                new IntegerConfig("worldedit_grid_spacing", 1, 1, 16);
+        public static final IntegerConfig WORLDEDIT_GRID_MAX_LINES =
+                new IntegerConfig("worldedit_grid_max_lines", 3000, 200, 30000);
+
+        // ── Clear Block Render ───────────────────────────────────
+        public static final IntegerConfig CBR_WIDTH =
+                new IntegerConfig("cbr_width", 1920, 64, 7680);
+        public static final IntegerConfig CBR_HEIGHT =
+                new IntegerConfig("cbr_height", 1080, 64, 4320);
+        public static final IntegerConfig CBR_FPS =
+                new IntegerConfig("cbr_fps", 30, 1, 120);
+        /**
+         * Playback rate of the finished clip. 1.0 is real time, 0.5 half speed,
+         * 2.0 double. Frames are still captured at CBR_FPS; this only changes the
+         * rate they are played back at.
+         */
+        public static final DoubleConfig CBR_SPEED =
+                new DoubleConfig("cbr_speed", 1.0, 0.05, 10.0);
+        public static final OptionListConfig<ProjectionMode> CBR_PROJECTION =
+                new OptionListConfig<>("cbr_projection", ProjectionMode.ISOMETRIC, ProjectionMode.class);
+        public static final DoubleConfig CBR_FOV =
+                new DoubleConfig("cbr_fov", 70.0, 10.0, 110.0);
+        public static final DoubleConfig CBR_ZOOM =
+                new DoubleConfig("cbr_zoom", 1.0, 0.1, 10.0);
+        public static final DoubleConfig CBR_YAW =
+                new DoubleConfig("cbr_yaw", 45.0, -180.0, 180.0);
+        public static final DoubleConfig CBR_PITCH =
+                new DoubleConfig("cbr_pitch", 30.0, -89.0, 89.0);
+        /** Camera shift across its own view plane, in blocks. Driven by dragging the preview. */
+        public static final DoubleConfig CBR_PAN_X =
+                new DoubleConfig("cbr_pan_x", 0.0, -512.0, 512.0);
+        public static final DoubleConfig CBR_PAN_Y =
+                new DoubleConfig("cbr_pan_y", 0.0, -512.0, 512.0);
+        public static final DoubleConfig CBR_ORBIT_SPEED =
+                new DoubleConfig("cbr_orbit_speed", 0.0, -180.0, 180.0);
+        public static final BooleanConfig CBR_BLOCK_ENTITIES =
+                new BooleanConfig("cbr_block_entities", true);
+        public static final OptionListConfig<VideoFormat> CBR_FORMAT =
+                new OptionListConfig<>("cbr_format", VideoFormat.WEBM_VP9, VideoFormat.class);
+        public static final StringConfig CBR_FFMPEG_PATH =
+                new StringConfig("cbr_ffmpeg_path", "ffmpeg");
     }
 
     public static void registerAll() {
@@ -86,5 +142,27 @@ public class Configs {
         ConfigManager.INSTANCE.register("options", Generic.PROGRESS_METER_X.getName(),    Generic.PROGRESS_METER_X);
         ConfigManager.INSTANCE.register("options", Generic.PROGRESS_METER_Y.getName(),    Generic.PROGRESS_METER_Y);
         ConfigManager.INSTANCE.register("options", Generic.LAZY_ENTITY_SYNC_INTERVAL.getName(), Generic.LAZY_ENTITY_SYNC_INTERVAL);
+        ConfigManager.INSTANCE.register("options", Generic.PICK_BLOCK_REACH.getName(),        Generic.PICK_BLOCK_REACH);
+        ConfigManager.INSTANCE.register("options", Generic.WORLDEDIT_GRID_COLOR.getName(),    Generic.WORLDEDIT_GRID_COLOR);
+        ConfigManager.INSTANCE.register("options", Generic.WORLDEDIT_EDGE_COLOR.getName(),    Generic.WORLDEDIT_EDGE_COLOR);
+        ConfigManager.INSTANCE.register("options", Generic.WORLDEDIT_POS1_COLOR.getName(),    Generic.WORLDEDIT_POS1_COLOR);
+        ConfigManager.INSTANCE.register("options", Generic.WORLDEDIT_POS2_COLOR.getName(),    Generic.WORLDEDIT_POS2_COLOR);
+        ConfigManager.INSTANCE.register("options", Generic.WORLDEDIT_GRID_SPACING.getName(),  Generic.WORLDEDIT_GRID_SPACING);
+        ConfigManager.INSTANCE.register("options", Generic.WORLDEDIT_GRID_MAX_LINES.getName(), Generic.WORLDEDIT_GRID_MAX_LINES);
+        ConfigManager.INSTANCE.register("options", Generic.CBR_WIDTH.getName(),         Generic.CBR_WIDTH);
+        ConfigManager.INSTANCE.register("options", Generic.CBR_HEIGHT.getName(),        Generic.CBR_HEIGHT);
+        ConfigManager.INSTANCE.register("options", Generic.CBR_FPS.getName(),           Generic.CBR_FPS);
+        ConfigManager.INSTANCE.register("options", Generic.CBR_SPEED.getName(),         Generic.CBR_SPEED);
+        ConfigManager.INSTANCE.register("options", Generic.CBR_PROJECTION.getName(),    Generic.CBR_PROJECTION);
+        ConfigManager.INSTANCE.register("options", Generic.CBR_FOV.getName(),           Generic.CBR_FOV);
+        ConfigManager.INSTANCE.register("options", Generic.CBR_ZOOM.getName(),          Generic.CBR_ZOOM);
+        ConfigManager.INSTANCE.register("options", Generic.CBR_YAW.getName(),           Generic.CBR_YAW);
+        ConfigManager.INSTANCE.register("options", Generic.CBR_PITCH.getName(),         Generic.CBR_PITCH);
+        ConfigManager.INSTANCE.register("options", Generic.CBR_PAN_X.getName(),         Generic.CBR_PAN_X);
+        ConfigManager.INSTANCE.register("options", Generic.CBR_PAN_Y.getName(),         Generic.CBR_PAN_Y);
+        ConfigManager.INSTANCE.register("options", Generic.CBR_ORBIT_SPEED.getName(),   Generic.CBR_ORBIT_SPEED);
+        ConfigManager.INSTANCE.register("options", Generic.CBR_BLOCK_ENTITIES.getName(), Generic.CBR_BLOCK_ENTITIES);
+        ConfigManager.INSTANCE.register("options", Generic.CBR_FORMAT.getName(),        Generic.CBR_FORMAT);
+        ConfigManager.INSTANCE.register("options", Generic.CBR_FFMPEG_PATH.getName(),   Generic.CBR_FFMPEG_PATH);
     }
 }

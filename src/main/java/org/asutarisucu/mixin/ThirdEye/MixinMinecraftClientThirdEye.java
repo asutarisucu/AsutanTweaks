@@ -43,7 +43,7 @@ public abstract class MixinMinecraftClientThirdEye {
 //$$         }
 //$$     }
 //$$ }
-//#else
+//#elseif MC < 260200
 //$$ import com.mojang.blaze3d.pipeline.RenderTarget;
 //$$ import net.minecraft.client.Minecraft;
 //$$
@@ -58,6 +58,26 @@ public abstract class MixinMinecraftClientThirdEye {
 //$$
 //$$     @Inject(method = "getMainRenderTarget", at = @At("HEAD"), cancellable = true)
 //$$     private void thirdeye$interceptGetMainRenderTarget(CallbackInfoReturnable<RenderTarget> cir) {
+//$$         if (ThirdEye.isRenderingThirdEye && ThirdEye.thirdEyeFbo != null) {
+//$$             cir.setReturnValue(ThirdEye.thirdEyeFbo);
+//$$         }
+//$$     }
+//$$ }
+//#else
+//$$ import com.mojang.blaze3d.pipeline.RenderTarget;
+//$$ import net.minecraft.client.renderer.GameRenderer;
+//$$
+//$$ /**
+//$$  * MC 26.2: the main render target moved from Minecraft to GameRenderer, and
+//$$  * OutputTarget.MAIN_TARGET resolves through gameRenderer.mainRenderTarget().
+//$$  * Intercepting it here redirects the recursive level render the same way the
+//$$  * 26.1 interception of Minecraft.getMainRenderTarget() did.
+//$$  */
+//$$ @Mixin(GameRenderer.class)
+//$$ public abstract class MixinMinecraftClientThirdEye {
+//$$
+//$$     @Inject(method = "mainRenderTarget", at = @At("HEAD"), cancellable = true)
+//$$     private void thirdeye$interceptMainRenderTarget(CallbackInfoReturnable<RenderTarget> cir) {
 //$$         if (ThirdEye.isRenderingThirdEye && ThirdEye.thirdEyeFbo != null) {
 //$$             cir.setReturnValue(ThirdEye.thirdEyeFbo);
 //$$         }

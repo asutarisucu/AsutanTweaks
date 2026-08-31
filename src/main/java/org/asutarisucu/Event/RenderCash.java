@@ -75,7 +75,12 @@ public class RenderCash {
                             || Math.abs(pos.getY() - center.getY()) > radius
                             || Math.abs(pos.getZ() - center.getZ()) > radius) continue;
                     if (!(entry.getValue() instanceof Inventory inventory)) continue;
+//#if MC < 260200
                     ServerDataSyncer.getInstance().syncBlockEntity(entry.getValue()).thenRun(() -> {
+//#else
+                    // TweakerMore for 26.2 renamed the one-argument sync methods.
+                    //$$ ServerDataSyncer.getInstance().syncBlockEntityToWorld(entry.getValue()).thenRun(() -> {
+//#endif
                         for (int i = 0; i < inventory.size(); i++) {
                             ItemStack stack = inventory.getStack(i);
                             if (stack.isEmpty()) continue;

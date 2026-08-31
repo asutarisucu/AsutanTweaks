@@ -16,6 +16,11 @@ public class ThirdEyeCamera {
     private static final double WALK_SPEED = 0.22;
     private static final double FAST_MULT  = 5.0;
 
+    /** glfwGetTime() at the last movement update; 0 means "no previous frame". */
+    private static double lastMoveTime = 0.0;
+    /** Ignore frame gaps longer than this (seconds) so a stall cannot teleport the camera. */
+    private static final double MAX_FRAME_SECONDS = 0.25;
+
     /**
      * Returns tweakeroo's currently-selected fly speed preset value.
      * FLY_SPEED_PRESET is 0-indexed (0..3) → FLY_SPEED_PRESET_1..4.
@@ -50,14 +55,27 @@ public class ThirdEyeCamera {
 //$$ pitch = mc.player.getXRot();
 //#endif
         initialized = true;
+        lastMoveTime = 0.0;
     }
 
-    // Called every tick when THIRD_EYE_MOVEMENT is enabled.
+    // Called once per rendered frame while ThirdEye movement is active.
+    //
+    // Deliberately frame-based rather than tick-based: the speed values are
+    // per-tick, so they are scaled by the elapsed frame time. Stepping the
+    // position 20 times a second instead made the ThirdEye view stutter, since
+    // the rotation (driven by Mouse.updateMouse) already updates every frame.
+    //
     // Uses GLFW key state so it works regardless of screen focus.
     // Key mapping mirrors creative-mode flying: Space=up, Shift=down, Ctrl=sprint.
-    public static void tick(long window) {
+    public static void updateMovement(long window) {
+        double now = GLFW.glfwGetTime();
+        double elapsed = lastMoveTime == 0.0 ? 0.0 : now - lastMoveTime;
+        lastMoveTime = now;
+        if (elapsed <= 0.0) return;
+        double ticks = Math.min(elapsed, MAX_FRAME_SECONDS) * 20.0;
+
         boolean fast  = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_LEFT_CONTROL) == GLFW.GLFW_PRESS;
-        double  speed = Math.max(tweakerooFlySpeed(), WALK_SPEED) * (fast ? FAST_MULT : 1.0);
+        double  speed = Math.max(tweakerooFlySpeed(), WALK_SPEED) * (fast ? FAST_MULT : 1.0) * ticks;
 
         float yr = (float) Math.toRadians(yaw);
         float pr = (float) Math.toRadians(pitch);

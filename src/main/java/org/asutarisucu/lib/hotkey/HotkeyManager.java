@@ -31,9 +31,14 @@ public class HotkeyManager {
         MinecraftClient mc = MinecraftClient.getInstance();
         if (mc.currentScreen != null) return;
         long window = mc.getWindow().getHandle();
-//#else
+//#elseif MC < 260200
 //$$ Minecraft mc = Minecraft.getInstance();
 //$$ if (mc.screen != null) return;
+//$$ long window = mc.getWindow().handle();
+//#else
+//$$ // MC 26.2 moved the current screen from Minecraft onto Minecraft.gui.
+//$$ Minecraft mc = Minecraft.getInstance();
+//$$ if (mc.gui.screen() != null) return;
 //$$ long window = mc.getWindow().handle();
 //#endif
         for (ComboKey key : hotkeys) {

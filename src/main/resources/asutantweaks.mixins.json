@@ -41,10 +41,26 @@
 //$$     "BlockUpdateViewer.MixinClientWorldSim",
 //#endif
     "EnderChestMaterialList.MixinHandledScreen",
+    "PickBlock.MixinMinecraftClientPickBlock",
+    "WorldEditGUI.MixinClientPlayNetworkHandlerCui",
+//#if MC < 12111
+    "ClearBlockRender.MixinGameRendererCbr",
+//#elseif MC < 260100
+//$$     "ClearBlockRender.MixinGameRendererCbr",
+//$$     "ClearBlockRender.MixinDrawContextPreview",
+//#elseif MC < 260200
+//$$     "ClearBlockRender.MixinGameRendererCbr",
+//#else
+//$$     "ClearBlockRender.MixinGameRendererCbr",
+//$$     "ClearBlockRender.MixinGameRendererTargetCbr",
+//#endif
 //#if MC < 260100
     "SearchItems.MixinWorldRenderer",
 //#endif
     "SimpleItemEntityRender.MixinEntityRender",
+//#if MC >= 12111
+//$$     "SimpleItemEntityRender.MixinEntityHitboxDebugRenderer",
+//#endif
     "SimpleItemEntityRender.MixinEntityRenderDispatcher",
     "SimpleItemEntityRender.MixinItemEntityRenderer",
     "SimpleItemEntityRender.MixinMinecraftClient",

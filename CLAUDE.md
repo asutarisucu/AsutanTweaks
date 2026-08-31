@@ -22,9 +22,11 @@ AsutanTweaks is a client-side-only Fabric mod for Minecraft, built with multi-ve
 ./gradlew :1.21.1:runServer
 ```
 
-Supported versions are defined in `settings.json` and currently include: `1.19.4`, `1.20.1`, `1.20.4`, `1.20.6`, `1.21.1`, `26.1`.
+Supported versions are defined in `settings.json` and currently include: `1.19.4`, `1.20.1`, `1.20.4`, `1.20.6`, `1.21.1`, `1.21.11`, `26.1`, `26.2`.
 
-`26.1` is the new year-based Minecraft version format (no leading `1.`). It requires **Java 25** and uses Mojang's official mappings (Yarn/Intermediary discontinued from this version on).
+`26.1` and `26.2` use the year-based Minecraft version format (no leading `1.`). They require **Java 25** and use Mojang's official mappings (Yarn/Intermediary discontinued from `26.1` on).
+
+`26.2` reworked the render and screen APIs again on top of `26.1`: the current screen moved from `Minecraft` to `Minecraft.gui`, the main render target from `Minecraft` to `GameRenderer.mainRenderTarget()`, level extraction from `LevelRenderer.extractLevel` to `Minecraft.levelExtractor.extract`, and `Tesselator` / `MultiBufferSource` / `RenderType.draw(MeshData)` were removed in favour of `SubmitNodeCollector`. Code shared with `26.1` therefore needs `//#if MC >= 260200` branches in those places.
 
 ## Architecture
 
@@ -80,4 +82,4 @@ All mixins are declared in `src/main/resources/asutantweaks.mixins.json`. Server
 
 Per-version dependency versions (minecraft, yarn mappings, fabric API, malilib, tweakeroo, litematica, etc.) are declared in `versions/<mc-version>/gradle.properties`. Common properties (mod ID, version, loader version) are in the root `gradle.properties`.
 
-`26.1` has no `yarn_mappings` property — `loom.officialMojangMappings()` is used instead (see `common.gradle`). The preprocessor integer for `26.1` is `260100`, keeping it numerically above all `1.x.x` values (e.g., `1.21.1` = `12101`).
+`26.1` and `26.2` have no `yarn_mappings` property — `loom.officialMojangMappings()` is used instead (see `common.gradle`). The preprocessor integers are `260100` and `260200`, keeping them numerically above all `1.x.x` values (e.g., `1.21.1` = `12101`).

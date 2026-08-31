@@ -1,5 +1,13 @@
 package org.asutarisucu.Utiles.Render;
 
+//#if MC >= 260200
+//$$ /**
+//$$  * Empty on MC 26.2+: MultiBufferSource was removed, so the entity count label
+//$$  * is submitted as a name tag node directly in MixinEntityRender instead.
+//$$  */
+//$$ public class Renderer {
+//$$ }
+//#else
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.render.Camera;
@@ -21,7 +29,11 @@ public class Renderer {
 
     public static void renderCount(float entityHeight, MatrixStack matrices, VertexConsumerProvider vertexConsumers, TextRenderer textRenderer, String text) {
         MinecraftClient client = MinecraftClient.getInstance();
+//#if MC < 260200
         Camera camera = client.gameRenderer.getCamera();
+//#else
+        //$$ Camera camera = client.gameRenderer.mainCamera();
+//#endif
         Quaternionf quaternionf = new Quaternionf(
                 -camera.getRotation().x,
                 -camera.getRotation().y,
@@ -44,3 +56,4 @@ public class Renderer {
         matrices.pop();
     }
 }
+//#endif
