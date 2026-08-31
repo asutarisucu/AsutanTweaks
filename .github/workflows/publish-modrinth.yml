@@ -1,0 +1,133 @@
+# Uploads the jars attached to a GitHub release to Modrinth, one Modrinth
+# version per Minecraft version.
+#
+# The jars are taken from the release rather than rebuilt, so what reaches
+# Modrinth is the same file people download from GitHub.
+#
+# Needs a MODRINTH_TOKEN repository secret: a personal access token with the
+# "Create versions" scope, from https://modrinth.com/settings/pats
+
+name: publish-modrinth
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to upload (e.g. v1.4.0)'
+        required: true
+
+permissions:
+  contents: read
+
+env:
+  MODRINTH_PROJECT_ID: NE0sQsvt
+
+jobs:
+  publish:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v4
+
+      - name: resolve release
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          TAG="${{ github.event.release.tag_name || inputs.tag }}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          # Tags are vX.Y.Z; Modrinth version numbers on this project are X.Y.Z.
+          echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+          if [ "$(gh release view "$TAG" --json isPrerelease --jq .isPrerelease)" = "true" ]; then
+            echo "type=beta" >> "$GITHUB_OUTPUT"
+          else
+            echo "type=release" >> "$GITHUB_OUTPUT"
+          fi
+          gh release view "$TAG" --json body --jq '.body // ""' > changelog.md
+          mkdir -p jars
+          gh release download "$TAG" --pattern '*.jar' --dir jars
+
+      - name: upload to modrinth
+        env:
+          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+          TAG: ${{ steps.release.outputs.tag }}
+          VERSION: ${{ steps.release.outputs.version }}
+          VERSION_TYPE: ${{ steps.release.outputs.type }}
+        run: |
+          set -euo pipefail
+          if [ -z "${MODRINTH_TOKEN:-}" ]; then
+            echo "::error::MODRINTH_TOKEN secret is not set"
+            exit 1
+          fi
+          UA="asutarisucu/AsutanTweaks/$VERSION (github-actions)"
+
+          # Filenames already on Modrinth, so a re-run does not upload twice.
+          curl -sS --fail-with-body \
+            -H "User-Agent: $UA" \
+            "https://api.modrinth.com/v2/project/$MODRINTH_PROJECT_ID/version" \
+            | jq -r '.[].files[].filename' | sort -u > published.txt
+
+          failed=0
+          for dir in $(jq -r '.versions[]' settings.json); do
+            props="versions/$dir/gradle.properties"
+            mc=$(sed -n 's/^minecraft_version=//p' "$props" | tr -d '\r')
+            # game_versions holds the Modrinth game version tags separated by a
+            # literal backslash-n, because a properties value is one line. The
+            # search pattern is quoted so bash reads it as those two characters.
+            raw=$(sed -n 's/^game_versions=//p' "$props" | tr -d '\r')
+            readarray -t game < <(printf '%s\n' "${raw//'\n'/$'\n'}")
+
+            jar="jars/asutantweaks-v$VERSION-mc$mc.jar"
+            if [ ! -f "$jar" ]; then
+              echo "::notice::$TAG has no jar for MC $mc, skipping"
+              continue
+            fi
+            if grep -qxF "$(basename "$jar")" published.txt; then
+              echo "::notice::$(basename "$jar") is already on Modrinth, skipping"
+              continue
+            fi
+
+            game_json=$(printf '%s\n' "${game[@]}" \
+              | jq -R -s 'split("\n") | map(select(length > 0))')
+
+            # Written to a file and sent with "<" rather than inline: curl -F
+            # splits an inline value on ";" and "," to find its modifiers, and
+            # the changelog can contain either.
+            jq -n \
+              --arg name "AsutanTweaks $VERSION" \
+              --arg version_number "$VERSION" \
+              --rawfile changelog changelog.md \
+              --arg version_type "$VERSION_TYPE" \
+              --arg project_id "$MODRINTH_PROJECT_ID" \
+              --argjson game_versions "$game_json" \
+              '{
+                name: $name,
+                version_number: $version_number,
+                changelog: $changelog,
+                version_type: $version_type,
+                project_id: $project_id,
+                game_versions: $game_versions,
+                dependencies: [],
+                loaders: ["fabric"],
+                featured: false,
+                file_parts: ["file"],
+                primary_file: "file"
+              }' > data.json
+
+            echo "Uploading $(basename "$jar") for ${game[*]}"
+            if ! curl -sS --fail-with-body -X POST \
+              -H "Authorization: $MODRINTH_TOKEN" \
+              -H "User-Agent: $UA" \
+              -F "data=<data.json" \
+              -F "file=@$jar" \
+              https://api.modrinth.com/v2/version; then
+              echo "::error::upload failed for MC $mc"
+              failed=1
+            fi
+            echo
+          done
+          exit $failed
