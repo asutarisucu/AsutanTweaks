@@ -933,6 +933,8 @@ public class TweaksConfigScreen extends Screen {
             list.add(new OptionEntry("Pan Y",            Configs.Generic.CBR_PAN_Y));
             list.add(new OptionEntry("Orbit (deg/s)",    Configs.Generic.CBR_ORBIT_SPEED));
             list.add(new OptionEntry("Block Entities",   Configs.Generic.CBR_BLOCK_ENTITIES));
+            list.add(new OptionEntry("Entities",         Configs.Generic.CBR_ENTITIES));
+            list.add(new OptionEntry("Players",          Configs.Generic.CBR_PLAYERS));
             list.add(new OptionEntry("Format",           Configs.Generic.CBR_FORMAT));
             list.add(new OptionEntry("FFmpeg Path",      Configs.Generic.CBR_FFMPEG_PATH));
             return list;

@@ -259,6 +259,7 @@ public final class WorldEditCui {
     }
 
     private static void tick() {
+        WorldEditSelection.endPendingAnnouncement();
         MinecraftClient mc = MinecraftClient.getInstance();
         if (mc.world != lastWorld) {
             lastWorld = mc.world;
@@ -313,6 +314,7 @@ public final class WorldEditCui {
 //$$ }
 //$$
 //$$ private static void tick() {
+//$$     WorldEditSelection.endPendingAnnouncement();
 //$$     MinecraftClient mc = MinecraftClient.getInstance();
 //$$     if (mc.world != lastWorld) {
 //$$         lastWorld = mc.world;
@@ -363,6 +365,7 @@ public final class WorldEditCui {
 //$$ }
 //$$
 //$$ private static void tick() {
+//$$     WorldEditSelection.endPendingAnnouncement();
 //$$     Minecraft mc = Minecraft.getInstance();
 //$$     if (mc.level != lastWorld) {
 //$$         lastWorld = mc.level;

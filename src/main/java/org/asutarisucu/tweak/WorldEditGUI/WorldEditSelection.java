@@ -16,6 +16,7 @@ public final class WorldEditSelection {
     private static volatile boolean cuboid = true;
     private static volatile boolean hasP1, hasP2;
     private static int p1x, p1y, p1z, p2x, p2y, p2z;
+    private static volatile boolean awaitingPoints;
 
     private WorldEditSelection() {}
 
@@ -23,8 +24,15 @@ public final class WorldEditSelection {
      * WorldEdit re-announces the shape whenever it describes the selection, so the
      * points are only dropped when the shape actually changed — clearing on every
      * announcement would leave a half-filled selection.
+     *
+     * {@code //sel} with no argument clears the region selector and then describes
+     * it, which sends this announcement and no points at all. That is the only
+     * signal the client gets, so the announcement is remembered and
+     * {@link #endPendingAnnouncement()} drops the points a tick later if none
+     * arrived.
      */
     public static synchronized void setShape(String shape) {
+        awaitingPoints = true;
         boolean nowCuboid = shape != null && shape.startsWith("cuboid");
         if (nowCuboid == cuboid) return;
         cuboid = nowCuboid;
@@ -33,14 +41,28 @@ public final class WorldEditSelection {
     }
 
     public static synchronized void setPoint(int id, int x, int y, int z) {
+        awaitingPoints = false;
         if (id == 0) { p1x = x; p1y = y; p1z = z; hasP1 = true; }
         else if (id == 1) { p2x = x; p2y = y; p2z = z; hasP2 = true; }
+    }
+
+    /**
+     * Ends a shape announcement that brought no points with it: the selection was
+     * cleared. Called once a tick, by which time the points of a real
+     * re-announcement — sent as their own packets right behind the shape — are in.
+     */
+    public static synchronized void endPendingAnnouncement() {
+        if (!awaitingPoints) return;
+        awaitingPoints = false;
+        hasP1 = false;
+        hasP2 = false;
     }
 
     public static synchronized void clear() {
         hasP1 = false;
         hasP2 = false;
         cuboid = true;
+        awaitingPoints = false;
     }
 
     public static boolean isComplete() {

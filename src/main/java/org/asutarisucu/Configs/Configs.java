@@ -111,6 +111,11 @@ public class Configs {
                 new DoubleConfig("cbr_orbit_speed", 0.0, -180.0, 180.0);
         public static final BooleanConfig CBR_BLOCK_ENTITIES =
                 new BooleanConfig("cbr_block_entities", true);
+        public static final BooleanConfig CBR_ENTITIES =
+                new BooleanConfig("cbr_entities", true);
+        /** Off by default: the player recording is usually standing in the shot. */
+        public static final BooleanConfig CBR_PLAYERS =
+                new BooleanConfig("cbr_players", false);
         public static final OptionListConfig<VideoFormat> CBR_FORMAT =
                 new OptionListConfig<>("cbr_format", VideoFormat.WEBM_VP9, VideoFormat.class);
         public static final StringConfig CBR_FFMPEG_PATH =
@@ -162,6 +167,8 @@ public class Configs {
         ConfigManager.INSTANCE.register("options", Generic.CBR_PAN_Y.getName(),         Generic.CBR_PAN_Y);
         ConfigManager.INSTANCE.register("options", Generic.CBR_ORBIT_SPEED.getName(),   Generic.CBR_ORBIT_SPEED);
         ConfigManager.INSTANCE.register("options", Generic.CBR_BLOCK_ENTITIES.getName(), Generic.CBR_BLOCK_ENTITIES);
+        ConfigManager.INSTANCE.register("options", Generic.CBR_ENTITIES.getName(),      Generic.CBR_ENTITIES);
+        ConfigManager.INSTANCE.register("options", Generic.CBR_PLAYERS.getName(),       Generic.CBR_PLAYERS);
         ConfigManager.INSTANCE.register("options", Generic.CBR_FORMAT.getName(),        Generic.CBR_FORMAT);
         ConfigManager.INSTANCE.register("options", Generic.CBR_FFMPEG_PATH.getName(),   Generic.CBR_FFMPEG_PATH);
     }
