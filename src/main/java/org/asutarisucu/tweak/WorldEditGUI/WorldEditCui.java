@@ -61,29 +61,22 @@ public final class WorldEditCui {
 
     /** Ticks to wait after joining a world before announcing CUI support. */
     private static final int HANDSHAKE_DELAY_TICKS = 40;
-    /** Ticks between retries while no CUI message has come back yet. */
-    private static final int HANDSHAKE_RETRY_TICKS = 100;
     /**
-     * The command that turns CUI on. WorldEdit registers the group under several
-     * names; both spellings are tried because which aliases exist has varied
-     * between platforms.
+     * Roots of the command that turns CUI on, as {@code <root> cui}. WorldEdit
+     * registers the group under several names and which aliases exist has varied
+     * between platforms, so the server's command tree decides which one is used.
      */
-    private static final String[] HANDSHAKE_COMMANDS = { "we cui", "worldedit cui" };
+    private static final String[] HANDSHAKE_COMMAND_ROOTS = { "we", "worldedit" };
 
     private static Object lastWorld;
     private static boolean lastEnabled;
     private static int handshakeCountdown = -1;
-    private static int handshakeAttempts;
-    /** Set once any CUI message has been parsed; stops the handshake retries. */
-    private static boolean receivedAny;
 
     private WorldEditCui() {}
 
     /** Resets the handshake schedule on world change. */
     private static void onWorldChanged(boolean inWorld) {
         WorldEditSelection.clear();
-        receivedAny = false;
-        handshakeAttempts = 0;
         handshakeCountdown = inWorld ? HANDSHAKE_DELAY_TICKS : -1;
     }
 
@@ -93,21 +86,54 @@ public final class WorldEditCui {
      * @return the command to send this tick, or null when there is nothing to send
      */
     private static String pollHandshake(boolean inWorld, boolean enabled) {
-        if (enabled && !lastEnabled && inWorld) {
-            handshakeAttempts = 0;
-            handshakeCountdown = 1;
-        }
+        if (enabled && !lastEnabled && inWorld) handshakeCountdown = 1;
         lastEnabled = enabled;
         if (!enabled || !inWorld || handshakeCountdown <= 0) return null;
+
+        // The countdown is held rather than spent while there is nothing to send.
+        // The server resends the command tree when what the player may run changes,
+        // so a WorldEdit that only becomes usable later still gets announced.
+        String command = announceCommand();
+        if (command == null) return null;
         if (--handshakeCountdown > 0) return null;
 
-        String command = HANDSHAKE_COMMANDS[handshakeAttempts % HANDSHAKE_COMMANDS.length];
-        handshakeAttempts++;
-        // Keep retrying, alternating the spelling, until something arrives.
-        handshakeCountdown = receivedAny || handshakeAttempts >= 4 ? -1 : HANDSHAKE_RETRY_TICKS;
+        handshakeCountdown = -1;
         AsutanTweaks.LOGGER.info("[WorldEditGUI] announcing CUI support with /{}", command);
         return command;
     }
+
+    /**
+     * The command to announce with, or null when nothing should be sent.
+     *
+     * The command tree the server sends holds only what this player may run, so a
+     * missing root means WorldEdit is absent or out of reach; sending regardless is
+     * what filled the log with failed commands on join. Survival is left out as well.
+     */
+//#if MC < 260100
+    private static String announceCommand() {
+        MinecraftClient mc = MinecraftClient.getInstance();
+        if (mc.player == null || mc.player.networkHandler == null) return null;
+        if (mc.interactionManager == null
+                || mc.interactionManager.getCurrentGameMode() == net.minecraft.world.GameMode.SURVIVAL) return null;
+        var root = mc.player.networkHandler.getCommandDispatcher().getRoot();
+        for (String name : HANDSHAKE_COMMAND_ROOTS) {
+            if (root.getChild(name) != null) return name + " cui";
+        }
+        return null;
+    }
+//#else
+//$$ private static String announceCommand() {
+//$$     Minecraft mc = Minecraft.getInstance();
+//$$     if (mc.player == null || mc.player.connection == null) return null;
+//$$     if (mc.gameMode == null
+//$$             || mc.gameMode.getPlayerMode() == net.minecraft.world.level.GameType.SURVIVAL) return null;
+//$$     var root = mc.player.connection.getCommands().getRoot();
+//$$     for (String name : HANDSHAKE_COMMAND_ROOTS) {
+//$$         if (root.getChild(name) != null) return name + " cui";
+//$$     }
+//$$     return null;
+//$$ }
+//#endif
 
     /**
      * Whether anything currently needs the selection. Clear Block Render frames its
@@ -126,7 +152,6 @@ public final class WorldEditCui {
     public static void onPayload(byte[] data) {
         if (data == null || data.length == 0) return;
         String message = new String(data, StandardCharsets.UTF_8);
-        receivedAny = true;
         if (!loggedFirstMessage) {
             loggedFirstMessage = true;
             AsutanTweaks.LOGGER.info("[WorldEditGUI] receiving CUI messages, first was: \"{}\" ({} bytes)",
