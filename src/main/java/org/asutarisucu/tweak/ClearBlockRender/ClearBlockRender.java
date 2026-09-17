@@ -51,6 +51,15 @@ public final class ClearBlockRender {
 
     private ClearBlockRender() {}
 
+    /** How a still capture ended. */
+    public enum StillResult { SAVED, COPIED, NOT_READY, BUSY, FAILED }
+
+    /** Hears how {@code saveStill} ended, which on MC 1.21.11+ is after the GPU readback. */
+    public interface StillListener {
+        /** @param file the written file's name for {@link StillResult#SAVED}, otherwise null */
+        void done(StillResult result, String file);
+    }
+
 //#if MC < 12111
     private static boolean recording;
     private static ThirdEyeFbo fbo;
@@ -71,10 +80,13 @@ public final class ClearBlockRender {
         else start();
     }
 
-    /** Renders one frame and writes it out as a transparent PNG. */
-    public static void saveStill() {
+    /** Renders one frame and writes it out as a transparent PNG, to a file or the clipboard. */
+    public static void saveStill(boolean toClipboard, StillListener listener) {
         MinecraftClient mc = MinecraftClient.getInstance();
-        if (!checkReady(mc)) return;
+        if (!checkReady(mc)) {
+            listener.done(StillResult.NOT_READY, null);
+            return;
+        }
         int[] sel = WorldEditSelection.getBounds();
         int w = Configs.Generic.CBR_WIDTH.getIntegerValue();
         int h = Configs.Generic.CBR_HEIGHT.getIntegerValue();
@@ -83,12 +95,20 @@ public final class ClearBlockRender {
         ByteBuffer buffer = MemoryUtil.memAlloc(w * h * 4);
         try {
             renderInto(mc, mc.world, target, sel, w, h, 0.0, 0.0f, buffer);
-            java.nio.file.Path out = PngWriter.write(
-                    FabricLoader.getInstance().getGameDir().resolve("clear_block_render"), buffer, w, h);
-            HudLogger.INSTANCE.log(MessageUtils.colorGreen("Saved " + out.getFileName()));
+            if (toClipboard) {
+                ImageClipboard.copy(PngWriter.toImage(buffer, w, h), mc.getWindow().getHandle());
+                HudLogger.INSTANCE.log(MessageUtils.colorGreen("Copied the image to the clipboard"));
+                listener.done(StillResult.COPIED, null);
+            } else {
+                java.nio.file.Path out = PngWriter.write(
+                        FabricLoader.getInstance().getGameDir().resolve("clear_block_render"), buffer, w, h);
+                HudLogger.INSTANCE.log(MessageUtils.colorGreen("Saved " + out.getFileName()));
+                listener.done(StillResult.SAVED, out.getFileName().toString());
+            }
         } catch (Throwable t) {
             AsutanTweaks.LOGGER.error("[ClearBlockRender] still capture failed", t);
             HudLogger.INSTANCE.log(MessageUtils.colorRed("Image export failed — see the log"));
+            listener.done(StillResult.FAILED, null);
         } finally {
             MemoryUtil.memFree(buffer);
             target.delete();
@@ -302,10 +322,13 @@ public final class ClearBlockRender {
     //$$     else start();
     //$$ }
     //$$
-    //$$ /** Renders one frame and writes it out as a transparent PNG. */
-    //$$ public static void saveStill() {
+    //$$ /** Renders one frame and writes it out as a transparent PNG, to a file or the clipboard. */
+    //$$ public static void saveStill(boolean toClipboard, StillListener listener) {
     //$$     MinecraftClient mc = MinecraftClient.getInstance();
-    //$$     if (!checkReady(mc)) return;
+    //$$     if (!checkReady(mc)) {
+    //$$         listener.done(StillResult.NOT_READY, null);
+    //$$         return;
+    //$$     }
     //$$     int[] sel = WorldEditSelection.getBounds();
     //$$     int w = Configs.Generic.CBR_WIDTH.getIntegerValue();
     //$$     int h = Configs.Generic.CBR_HEIGHT.getIntegerValue();
@@ -315,23 +338,33 @@ public final class ClearBlockRender {
     //$$         // rather than in a finally block that would fire first.
     //$$         boolean started = renderInto(mc, (ClientWorld) mc.world, target, sel, w, h, 0.0, 0.0f, data -> {
     //$$             try {
-    //$$                 Path out = PngWriter.write(
-    //$$                         FabricLoader.getInstance().getGameDir().resolve("clear_block_render"), data, w, h);
-    //$$                 HudLogger.INSTANCE.log(MessageUtils.colorGreen("Saved " + out.getFileName()));
+    //$$                 if (toClipboard) {
+    //$$                     ImageClipboard.copy(PngWriter.toImage(data, w, h), mc.getWindow().getHandle());
+    //$$                     HudLogger.INSTANCE.log(MessageUtils.colorGreen("Copied the image to the clipboard"));
+    //$$                     listener.done(StillResult.COPIED, null);
+    //$$                 } else {
+    //$$                     Path out = PngWriter.write(
+    //$$                             FabricLoader.getInstance().getGameDir().resolve("clear_block_render"), data, w, h);
+    //$$                     HudLogger.INSTANCE.log(MessageUtils.colorGreen("Saved " + out.getFileName()));
+    //$$                     listener.done(StillResult.SAVED, out.getFileName().toString());
+    //$$                 }
     //$$             } catch (Throwable t) {
     //$$                 AsutanTweaks.LOGGER.error("[ClearBlockRender] writing the image failed", t);
     //$$                 HudLogger.INSTANCE.log(MessageUtils.colorRed("Image export failed — see the log"));
+    //$$                 listener.done(StillResult.FAILED, null);
     //$$             } finally {
     //$$                 target.delete();
     //$$             }
     //$$         });
     //$$         if (!started) {
     //$$             HudLogger.INSTANCE.log(MessageUtils.colorRed("Busy reading the last frame — try again"));
+    //$$             listener.done(StillResult.BUSY, null);
     //$$             target.delete();
     //$$         }
     //$$     } catch (Throwable t) {
     //$$         AsutanTweaks.LOGGER.error("[ClearBlockRender] still capture failed", t);
     //$$         HudLogger.INSTANCE.log(MessageUtils.colorRed("Image export failed — see the log"));
+    //$$         listener.done(StillResult.FAILED, null);
     //$$         target.delete();
     //$$     }
     //$$ }
@@ -539,10 +572,13 @@ public final class ClearBlockRender {
     //$$     else start();
     //$$ }
     //$$
-    //$$ /** Renders one frame and writes it out as a transparent PNG. */
-    //$$ public static void saveStill() {
+    //$$ /** Renders one frame and writes it out as a transparent PNG, to a file or the clipboard. */
+    //$$ public static void saveStill(boolean toClipboard, StillListener listener) {
     //$$     Minecraft mc = Minecraft.getInstance();
-    //$$     if (!checkReady(mc)) return;
+    //$$     if (!checkReady(mc)) {
+    //$$         listener.done(StillResult.NOT_READY, null);
+    //$$         return;
+    //$$     }
     //$$     int[] sel = WorldEditSelection.getBounds();
     //$$     int w = Configs.Generic.CBR_WIDTH.getIntegerValue();
     //$$     int h = Configs.Generic.CBR_HEIGHT.getIntegerValue();
@@ -555,12 +591,20 @@ public final class ClearBlockRender {
     //$$         // rather than in a finally block that would fire first.
     //$$         boolean started = renderInto(mc, (ClientLevel) mc.level, target, sel, w, h, 0.0, 0.0f, data -> {
     //$$             try {
-    //$$                 Path out = PngWriter.write(
-    //$$                         FabricLoader.getInstance().getGameDir().resolve("clear_block_render"), data, w, h);
-    //$$                 HudLogger.INSTANCE.log(MessageUtils.colorGreen("Saved " + out.getFileName()));
+    //$$                 if (toClipboard) {
+    //$$                     ImageClipboard.copy(PngWriter.toImage(data, w, h), mc.getWindow().handle());
+    //$$                     HudLogger.INSTANCE.log(MessageUtils.colorGreen("Copied the image to the clipboard"));
+    //$$                     listener.done(StillResult.COPIED, null);
+    //$$                 } else {
+    //$$                     Path out = PngWriter.write(
+    //$$                             FabricLoader.getInstance().getGameDir().resolve("clear_block_render"), data, w, h);
+    //$$                     HudLogger.INSTANCE.log(MessageUtils.colorGreen("Saved " + out.getFileName()));
+    //$$                     listener.done(StillResult.SAVED, out.getFileName().toString());
+    //$$                 }
     //$$             } catch (Throwable t) {
     //$$                 AsutanTweaks.LOGGER.error("[ClearBlockRender] writing the image failed", t);
     //$$                 HudLogger.INSTANCE.log(MessageUtils.colorRed("Image export failed — see the log"));
+    //$$                 listener.done(StillResult.FAILED, null);
     //$$             } finally {
     //$$                 target.destroyBuffers();
     //$$             }
@@ -568,11 +612,13 @@ public final class ClearBlockRender {
     //$$         if (!started) {
     //$$             // A recording's readback is in flight and owns the shared buffer.
     //$$             HudLogger.INSTANCE.log(MessageUtils.colorRed("Busy reading the last frame — try again"));
+    //$$             listener.done(StillResult.BUSY, null);
     //$$             target.destroyBuffers();
     //$$         }
     //$$     } catch (Throwable t) {
     //$$         AsutanTweaks.LOGGER.error("[ClearBlockRender] still capture failed", t);
     //$$         HudLogger.INSTANCE.log(MessageUtils.colorRed("Image export failed — see the log"));
+    //$$         listener.done(StillResult.FAILED, null);
     //$$         target.destroyBuffers();
     //$$     }
     //$$ }

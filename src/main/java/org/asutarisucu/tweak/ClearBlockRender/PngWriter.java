@@ -25,7 +25,13 @@ public final class PngWriter {
     public static Path write(Path outputDir, ByteBuffer rgba, int width, int height) throws IOException {
         Files.createDirectories(outputDir);
         Path out = outputDir.resolve(LocalDateTime.now().format(STAMP) + ".png");
+        ImageIO.write(toImage(rgba, width, height), "png", out.toFile());
+        AsutanTweaks.LOGGER.info("[ClearBlockRender] wrote {}", out);
+        return out;
+    }
 
+    /** @param rgba  pixels as they come off the GPU: RGBA bytes, bottom row first */
+    public static BufferedImage toImage(ByteBuffer rgba, int width, int height) {
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         for (int y = 0; y < height; y++) {
             // flip: the GPU hands back the bottom row first
@@ -39,9 +45,6 @@ public final class PngWriter {
                 image.setRGB(x, y, (a << 24) | (r << 16) | (g << 8) | b);
             }
         }
-
-        ImageIO.write(image, "png", out.toFile());
-        AsutanTweaks.LOGGER.info("[ClearBlockRender] wrote {}", out);
-        return out;
+        return image;
     }
 }

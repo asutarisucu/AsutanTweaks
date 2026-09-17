@@ -134,6 +134,7 @@ public class TweaksConfigScreen extends Screen {
     private boolean finishQueued;
 
     private String toast;
+    private boolean toastError;
     private long toastAt;
 
     private record Row(Entry entry, String header, int y, int h) {}
@@ -963,14 +964,32 @@ public class TweaksConfigScreen extends Screen {
 
         if (beginPanel(g, 60, (x + x1) / 2f, btnY + 10)) {
             String status = cbrStatusLine();
-            int saveW = 96, doneW = 84;
-            Widgets.button(g, x1 - doneW, btnY, doneW, 20, Lang.get("ui.done"), mx, my, true);
-            Widgets.button(g, x1 - doneW - 6 - saveW, btnY, saveW, 20, Lang.get("ui.cbr.save_image"), mx, my, false);
+            int[] b = cbrButtons();
+            Widgets.button(g, b[2], btnY, b[4], 20, Lang.get("ui.done"), mx, my, true);
+            Widgets.button(g, b[1], btnY, b[3], 20, Lang.get("ui.cbr.save_image"), mx, my, false);
+            if (b[0] >= 0) Widgets.button(g, b[0], btnY, b[3], 20, Lang.get("ui.cbr.copy_image"), mx, my, false);
             if (selected != null) {
-                g.text(g.ellipsize(status, x1 - doneW - saveW - 16 - x), x, btnY + 6, Widgets.TEXT_FAINT, false, false);
+                int left = b[0] >= 0 ? b[0] : b[1];
+                g.text(g.ellipsize(status, left - 10 - x), x, btnY + 6, Widgets.TEXT_FAINT, false, false);
             }
             endPanel(g);
         }
+    }
+
+    /**
+     * The buttons under the preview: {copy x (-1 when copying is unsupported),
+     * save x, done x, copy and save width, done width}. They shrink evenly when
+     * the column is too narrow for their usual widths.
+     */
+    private int[] cbrButtons() {
+        int x = listX + listW + GAP + 6, x1 = width - M, gap = 6;
+        boolean copy = org.asutarisucu.tweak.ClearBlockRender.ImageClipboard.supported();
+        int n = copy ? 3 : 2;
+        int even = (x1 - x - gap * (n - 1)) / n;
+        int doneW = Math.min(84, even), sideW = Math.min(96, even);
+        int doneX = x1 - doneW, saveX = doneX - gap - sideW;
+        int copyX = copy ? saveX - gap - sideW : -1;
+        return new int[] { copyX, saveX, doneX, sideW, doneW };
     }
 
     /**
@@ -1097,8 +1116,9 @@ public class TweaksConfigScreen extends Screen {
         stopRec();
     }
 
-    private void showToast(String s) {
+    private void showToast(String s, boolean error) {
         toast = s;
+        toastError = error;
         toastAt = System.nanoTime();
     }
 
@@ -1110,12 +1130,16 @@ public class TweaksConfigScreen extends Screen {
             return;
         }
         float a = Math.min(Anim.easeOutCubic(t / 200f), 1 - Anim.clamp01((t - 2600) / 400f));
-        int w = g.width(toast) + 24, x = (width - w) / 2, y = height - M - 26;
+        // The Clear Block Render screen has buttons along the bottom, so its
+        // toasts sit at the foot of the preview instead.
+        int[] area = cbrMode && previewRect != null ? previewRect : new int[] { M, 0, width - M, height - M };
+        String s = g.ellipsize(toast, area[2] - area[0] - 36);
+        int w = g.width(s) + 24, x = (area[0] + area[2] - w) / 2, y = area[3] - 26;
         g.push();
         g.raise();
         g.alpha = a;
         Widgets.panel(g, x, y, w, 20, 10, false);
-        g.text(toast, x + 12, y + 6, 0xFFFFC2C2, false, false);
+        g.text(s, x + 12, y + 6, toastError ? 0xFFFFC2C2 : 0xFFBDF5CB, false, false);
         g.alpha = 1;
         g.pop();
     }
@@ -1455,17 +1479,36 @@ public class TweaksConfigScreen extends Screen {
     }
 
     private boolean clickCbrButtons(int mx, int my) {
-        int x1 = width - M, btnY = height - M - 20;
-        int saveW = 96, doneW = 84;
-        if (Widgets.inside(mx, my, x1 - doneW, btnY, doneW, 20)) {
+        int btnY = height - M - 20;
+        int[] b = cbrButtons();
+        if (Widgets.inside(mx, my, b[2], btnY, b[4], 20)) {
             startClose();
             return true;
         }
-        if (Widgets.inside(mx, my, x1 - doneW - 6 - saveW, btnY, saveW, 20)) {
-            org.asutarisucu.tweak.ClearBlockRender.ClearBlockRender.saveStill();
+        if (Widgets.inside(mx, my, b[1], btnY, b[3], 20)) {
+            saveStill(false);
+            return true;
+        }
+        if (b[0] >= 0 && Widgets.inside(mx, my, b[0], btnY, b[3], 20)) {
+            saveStill(true);
             return true;
         }
         return mx >= listX + listW + GAP;
+    }
+
+    private void saveStill(boolean toClipboard) {
+        org.asutarisucu.tweak.ClearBlockRender.ClearBlockRender.saveStill(toClipboard, (result, file) -> {
+            switch (result) {
+                case SAVED -> showToast(Lang.format("ui.cbr.saved", file), false);
+                case COPIED -> showToast(Lang.get("ui.cbr.copied"), false);
+                case NOT_READY -> {
+                    String why = previewNote();
+                    showToast(why != null ? why : Lang.get(toClipboard ? "ui.cbr.copy_failed" : "ui.cbr.save_failed"), true);
+                }
+                case BUSY -> showToast(Lang.get("ui.cbr.busy"), true);
+                case FAILED -> showToast(Lang.get(toClipboard ? "ui.cbr.copy_failed" : "ui.cbr.save_failed"), true);
+            }
+        });
     }
 
     private boolean clickAppearance(int mx, int my) {
@@ -1528,7 +1571,7 @@ public class TweaksConfigScreen extends Screen {
         BackgroundImage.choose(Lang.get("ui.background.dialog"), TweaksConfigScreen::runOnClient, path -> {
             if (path == null) return;
             if (BackgroundImage.read(path) == null) {
-                showToast(Lang.get("ui.background.failed"));
+                showToast(Lang.get("ui.background.failed"), true);
                 return;
             }
             Configs.Ui.BACKGROUND_IMAGE.setValue(path);

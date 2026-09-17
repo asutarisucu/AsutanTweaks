@@ -107,6 +107,7 @@ This means you can always transport the optimal amount of items.
 >otherwise vanish from a recording for the whole push.<br>
 >`Save Image` on the settings screen writes a single frame as a transparent PNG, without ffmpeg — the quickest way
 >to check the framing.<br>
+>`Copy Image` puts the same image on the clipboard with its transparency (Windows only).<br>
 >Fluids inside the selection are not drawn — only block models and (optionally, via `Block Entities`) block entities.
 ### ComparatorSignalView
 >Shows the output signal strength of every comparator in range on its top face, as if engraved there. Comparators you are not looking at are shown too.<br>
