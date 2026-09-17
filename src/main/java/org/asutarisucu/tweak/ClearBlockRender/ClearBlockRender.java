@@ -129,6 +129,9 @@ public final class ClearBlockRender {
             previewFbo.setClearColor(0.0f, 0.0f, 0.0f, 0.0f);
             previewW = width;
             previewH = height;
+            // Creating and deleting a framebuffer leave framebuffer 0 bound, and
+            // the screen asking for the preview is still drawing.
+            MinecraftClient.getInstance().getFramebuffer().beginWrite(true);
         }
     }
 
@@ -139,7 +142,11 @@ public final class ClearBlockRender {
 
     public static void releasePreview() {
         previewWanted = false;
-        if (previewFbo != null) { previewFbo.delete(); previewFbo = null; }
+        if (previewFbo != null) {
+            previewFbo.delete();
+            previewFbo = null;
+            MinecraftClient.getInstance().getFramebuffer().beginWrite(true);
+        }
     }
 
     private static void renderPreview(MinecraftClient mc, float tickDelta) {

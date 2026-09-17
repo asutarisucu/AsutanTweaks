@@ -129,6 +129,32 @@ public class Configs {
                 new StringConfig("cbr_ffmpeg_path", "ffmpeg");
     }
 
+    /** Settings of the config screen itself. Not listed in the screen's Options tab. */
+    public static class Ui {
+        public static final OptionListConfig<UiLanguage> LANGUAGE =
+                new OptionListConfig<>("language", UiLanguage.AUTO, UiLanguage.class);
+        /** Absolute path of the background image; empty shows the world. */
+        public static final StringConfig BACKGROUND_IMAGE =
+                new StringConfig("background_image", "");
+        public static final IntegerConfig GLASS_TRANSPARENCY =
+                new IntegerConfig("glass_transparency", 60, 0, 100);
+        public static final IntegerConfig BACKGROUND_BLUR =
+                new IntegerConfig("background_blur", 45, 0, 100);
+        public static final IntegerConfig REFRACTION =
+                new IntegerConfig("refraction", 70, 0, 100);
+        public static final IntegerConfig BACKGROUND_DIM =
+                new IntegerConfig("background_dim", 30, 0, 100);
+        /** Panel order per tab, as entry keys. Keys missing here keep their default place. */
+        public static final StringListConfig ORDER_FEATURES =
+                new StringListConfig("order_features", List.of());
+        public static final StringListConfig ORDER_OPTIONS =
+                new StringListConfig("order_options", List.of());
+        public static final StringListConfig ORDER_HOTKEYS =
+                new StringListConfig("order_hotkeys", List.of());
+        public static final StringListConfig ORDER_CBR =
+                new StringListConfig("order_cbr", List.of());
+    }
+
     public static void registerAll() {
         ConfigManager.INSTANCE.register("options", Generic.RESTOCK_COUNT.getName(),            Generic.RESTOCK_COUNT);
         ConfigManager.INSTANCE.register("options", Generic.VOID_HEIGHT_OW.getName(),           Generic.VOID_HEIGHT_OW);
@@ -180,5 +206,11 @@ public class Configs {
         ConfigManager.INSTANCE.register("options", Generic.CBR_PLAYERS.getName(),       Generic.CBR_PLAYERS);
         ConfigManager.INSTANCE.register("options", Generic.CBR_FORMAT.getName(),        Generic.CBR_FORMAT);
         ConfigManager.INSTANCE.register("options", Generic.CBR_FFMPEG_PATH.getName(),   Generic.CBR_FFMPEG_PATH);
+
+        for (IConfig<?> c : List.<IConfig<?>>of(Ui.LANGUAGE, Ui.BACKGROUND_IMAGE, Ui.GLASS_TRANSPARENCY,
+                Ui.BACKGROUND_BLUR, Ui.REFRACTION, Ui.BACKGROUND_DIM,
+                Ui.ORDER_FEATURES, Ui.ORDER_OPTIONS, Ui.ORDER_HOTKEYS, Ui.ORDER_CBR)) {
+            ConfigManager.INSTANCE.register("ui", c.getName(), c);
+        }
     }
 }

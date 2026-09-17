@@ -55,6 +55,15 @@
 //$$     "ClearBlockRender.MixinGameRendererCbr",
 //$$     "ClearBlockRender.MixinGameRendererTargetCbr",
 //#endif
+//#if MC < 12005
+    "ConfigScreen.MixinTitleScreenPanorama",
+//#endif
+//#if MC >= 12111
+//$$     "ConfigScreen.MixinGuiRendererGlass",
+//#endif
+//#if MC >= 260100
+//$$     "ConfigScreen.MixinGuiGraphicsGlass",
+//#endif
 //#if MC < 260100
     "SearchItems.MixinWorldRenderer",
 //#endif

@@ -33,6 +33,7 @@ public class AsutanTweaks implements ClientModInitializer {
 
         // Register render events and other game events
         Reference.LoadEvent();
+        org.asutarisucu.GUI.glass.GlassRenderer.init();
 
         // Save on game exit
         net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents.CLIENT_STOPPING
