@@ -8,6 +8,9 @@ import net.minecraft.nbt.NbtCompound;
 //#else
 //$$ import net.minecraft.storage.ReadView;
 //#endif
+//#if MC >= 12005 && MC < 12111
+//$$ import net.minecraft.registry.RegistryWrapper;
+//#endif
 import net.minecraft.util.math.BlockPos;
 import org.asutarisucu.tweak.BlockUpdateViewer.BlockUpdateCalculator;
 import org.spongepowered.asm.mixin.Mixin;
@@ -33,7 +36,11 @@ public class MixinBlockEntityNbtCheck {
 //$$ }
 //#else
     @Inject(method = "readNbt", at = @At("HEAD"))
+//#if MC >= 12005
+//$$ private void asutantweaks_checkNbtId(NbtCompound nbt, RegistryWrapper.WrapperLookup registries, CallbackInfo ci) {
+//#else
     private void asutantweaks_checkNbtId(NbtCompound nbt, CallbackInfo ci) {
+//#endif
         if (!((Object) this instanceof ShulkerBoxBlockEntity)) return;
         BlockPos pos = ((BlockEntity) (Object) this).getPos().toImmutable();
         if (!nbt.contains("id")) return;
