@@ -78,6 +78,13 @@ public class Configs {
         public static final IntegerConfig WORLDEDIT_GRID_MAX_LINES =
                 new IntegerConfig("worldedit_grid_max_lines", 3000, 200, 30000);
 
+        // ── Comparator Signal View ───────────────────────────────
+        public static final IntegerConfig COMPARATOR_SIGNAL_RANGE =
+                new IntegerConfig("comparator_signal_range", 32, 1, 64);
+        /** Ticks between two server queries for the same comparator (multiplayer only). */
+        public static final IntegerConfig COMPARATOR_SIGNAL_SYNC_INTERVAL =
+                new IntegerConfig("comparator_signal_sync_interval", 10, 1, 200);
+
         // ── Clear Block Render ───────────────────────────────────
         public static final IntegerConfig CBR_WIDTH =
                 new IntegerConfig("cbr_width", 1920, 64, 7680);
@@ -154,6 +161,8 @@ public class Configs {
         ConfigManager.INSTANCE.register("options", Generic.WORLDEDIT_POS2_COLOR.getName(),    Generic.WORLDEDIT_POS2_COLOR);
         ConfigManager.INSTANCE.register("options", Generic.WORLDEDIT_GRID_SPACING.getName(),  Generic.WORLDEDIT_GRID_SPACING);
         ConfigManager.INSTANCE.register("options", Generic.WORLDEDIT_GRID_MAX_LINES.getName(), Generic.WORLDEDIT_GRID_MAX_LINES);
+        ConfigManager.INSTANCE.register("options", Generic.COMPARATOR_SIGNAL_RANGE.getName(), Generic.COMPARATOR_SIGNAL_RANGE);
+        ConfigManager.INSTANCE.register("options", Generic.COMPARATOR_SIGNAL_SYNC_INTERVAL.getName(), Generic.COMPARATOR_SIGNAL_SYNC_INTERVAL);
         ConfigManager.INSTANCE.register("options", Generic.CBR_WIDTH.getName(),         Generic.CBR_WIDTH);
         ConfigManager.INSTANCE.register("options", Generic.CBR_HEIGHT.getName(),        Generic.CBR_HEIGHT);
         ConfigManager.INSTANCE.register("options", Generic.CBR_FPS.getName(),           Generic.CBR_FPS);

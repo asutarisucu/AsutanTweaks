@@ -967,6 +967,8 @@ public class TweaksConfigScreen extends Screen {
         list.add(new OptionEntry("WE Pos2 Color",            Configs.Generic.WORLDEDIT_POS2_COLOR));
         list.add(new OptionEntry("WE Grid Spacing",          Configs.Generic.WORLDEDIT_GRID_SPACING));
         list.add(new OptionEntry("WE Grid Max Lines",        Configs.Generic.WORLDEDIT_GRID_MAX_LINES));
+        list.add(new OptionEntry("Comparator Signal Range",  Configs.Generic.COMPARATOR_SIGNAL_RANGE));
+        list.add(new OptionEntry("Comparator Sync Interval", Configs.Generic.COMPARATOR_SIGNAL_SYNC_INTERVAL));
         // Clear Block Render options are edited in its own screen, opened by its
         // hotkey, rather than from this list.
         return list;

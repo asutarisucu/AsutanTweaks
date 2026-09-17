@@ -26,6 +26,7 @@
   ],
   "client": [
     "AutoFillInventory.MixinHandledScreen",
+    "ComparatorSignalView.MixinComparatorBlockInvoker",
     "ThirdEye.MixinMinecraftClientThirdEye",
     "ThirdEye.MixinGameRendererThirdEye",
     "ThirdEye.MixinCameraThirdEye",

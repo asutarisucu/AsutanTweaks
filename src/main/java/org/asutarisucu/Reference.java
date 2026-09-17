@@ -7,6 +7,7 @@ import org.asutarisucu.Event.LastUseCancel;
 import org.asutarisucu.Event.RenderCash;
 import org.asutarisucu.tweak.BlockUpdateViewer.BlockUpdateViewer;
 import org.asutarisucu.tweak.BlockUpdateViewer.UpdateSuppressionView;
+import org.asutarisucu.tweak.ComparatorSignalView.ComparatorSignalView;
 import org.asutarisucu.tweak.SearchItems.HighlightBlock;
 import org.asutarisucu.tweak.SearchItems.HighlightContainer;
 import org.asutarisucu.tweak.SimpleItemEntityRender.SimpleEntityRender;
@@ -42,6 +43,7 @@ public class Reference {
         ThirdEye.register();
         VisualiseLazyEntity.register();
         WorldEditCui.register();
+        ComparatorSignalView.register();
         registerWorldRendering();
         registerHud();
     }
@@ -52,6 +54,7 @@ public class Reference {
 //$$     if (Feature.SEARCH_BLOCK_HIGHLIGHT.isEnabled())    HighlightBlock.render(context);
 //$$     if (Feature.SEARCH_CONTAINER_HIGHLIGHT.isEnabled()) HighlightContainer.render(context);
 //$$     if (Feature.WORLDEDIT_GUI.isEnabled())              SelectionGridRenderer.render(context);
+//$$     if (Feature.COMPARATOR_SIGNAL_VIEW.isEnabled())     ComparatorSignalView.render(context);
 //$$     BlockUpdateViewer.renderOverlay(context);
 //$$ });
 //#else
@@ -59,6 +62,7 @@ public class Reference {
             if (Feature.SEARCH_BLOCK_HIGHLIGHT.isEnabled())    HighlightBlock.render(context);
             if (Feature.SEARCH_CONTAINER_HIGHLIGHT.isEnabled()) HighlightContainer.render(context);
             if (Feature.WORLDEDIT_GUI.isEnabled())              SelectionGridRenderer.render(context);
+            if (Feature.COMPARATOR_SIGNAL_VIEW.isEnabled())     ComparatorSignalView.render(context);
 //#if MC >= 12111
 //$$ BlockUpdateViewer.renderOverlay(context);
 //#else

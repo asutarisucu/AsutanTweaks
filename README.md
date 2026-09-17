@@ -108,3 +108,13 @@ This means you can always transport the optimal amount of items.
 >`Save Image` on the settings screen writes a single frame as a transparent PNG, without ffmpeg — the quickest way
 >to check the framing.<br>
 >Fluids inside the selection are not drawn — only block models and (optionally, via `Block Entities`) block entities.
+### ComparatorSignalView
+>Shows the output signal strength of every comparator in range on its top face, as if engraved there. Comparators you are not looking at are shown too.<br>
+>The number reads upright when you stand on the input side and face the output.<br>
+>In singleplayer the real value is read from the integrated server.
+>In multiplayer the value is fetched from the server when `serverDataSyncer` in [tweakermore](https://github.com/Fallen-Breath/tweakermore/tree/master) is enabled
+>and you either have operator permission or the server has `debugNbtQueryNoPermission` from [Carpet TIS Addition](https://github.com/TISUnion/Carpet-TIS-Addition) enabled.<br>
+>When the value cannot be fetched, it is estimated from what the client knows and drawn in blue. Values from the server are drawn in black.
+>Container contents and the output of other comparators are not sent to the client, so the estimate cannot use them.
+>If a comparator is lit but the estimate comes out as 0, `?` is shown instead.<br>
+>`Comparator Signal Range` sets how far comparators are shown, and `Comparator Sync Interval` sets how many ticks pass between two queries for the same comparator.

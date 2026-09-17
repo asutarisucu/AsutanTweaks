@@ -103,3 +103,13 @@ AsutanTweaksはクライアントサイドで動作するFabricMODです。<br>
 >対応しないと押している間ずっと録画から消えてしまいます。<br>
 >設定画面の`Save Image`で1フレームを透過PNGとして書き出せます。ffmpegは不要なので、画角の確認はこれが早いです。<br>
 >選択範囲内の液体は描画されません。描画対象はブロックモデルと、`Block Entities`有効時のブロックエンティティのみです。
+### ComparatorSignalView
+>範囲内のコンパレータの出力信号の強さを、コンパレータの上面に刻印のように表示します。視点を合わせていないコンパレータにも表示します。<br>
+>数字は、入力側に立って出力側を向いたときに正しい向きになります。<br>
+>シングルプレイでは統合サーバーから実際の値を読み取ります。
+>マルチプレイでは、[tweakermore](https://github.com/Fallen-Breath/tweakermore/tree/master)の`serverDataSyncer`が有効で、
+>OP権限があるか、サーバーで[Carpet TIS Addition](https://github.com/TISUnion/Carpet-TIS-Addition)の`debugNbtQueryNoPermission`が有効な場合に、サーバーから値を取得します。<br>
+>取得できない場合は、クライアントにある情報から値を推測して青色で表示します。サーバーから取得した値は黒色です。
+>チェストの中身やほかのコンパレータの出力はクライアントに送られてこないため、推測には使えません。
+>そのため、コンパレータが点灯しているのに推測値が0になった場合は`?`と表示します。<br>
+>`Comparator Signal Range`で表示する範囲を、`Comparator Sync Interval`で同じコンパレータに問い合わせる間隔(tick)を設定できます。

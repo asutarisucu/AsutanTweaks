@@ -46,7 +46,9 @@ public enum Feature {
     WORLDEDIT_GUI("worldedit_gui", false, "",
             "WorldEdit GUI", "Draw the WorldEdit selection as a grid (needs WorldEdit)"),
     CLEAR_BLOCK_RENDER("clear_block_render", false, "",
-            "Clear Block Render", "Render the WorldEdit selection to a transparent video");
+            "Clear Block Render", "Render the WorldEdit selection to a transparent video"),
+    COMPARATOR_SIGNAL_VIEW("comparator_signal_view", false, "",
+            "Comparator Signal View", "Show each comparator's output signal on its top face");
 
     public final FeatureConfig config;
     public final String displayName;
