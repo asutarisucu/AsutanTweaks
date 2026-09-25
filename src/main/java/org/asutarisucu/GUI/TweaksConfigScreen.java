@@ -968,8 +968,9 @@ public class TweaksConfigScreen extends Screen {
             Widgets.button(g, b[2], btnY, b[4], 20, Lang.get("ui.done"), mx, my, true);
             Widgets.button(g, b[1], btnY, b[3], 20, Lang.get("ui.cbr.save_image"), mx, my, false);
             if (b[0] >= 0) Widgets.button(g, b[0], btnY, b[3], 20, Lang.get("ui.cbr.copy_image"), mx, my, false);
+            Widgets.button(g, b[5], btnY, b[3], 20, Lang.get("ui.cbr.turntable"), mx, my, false);
             if (selected != null) {
-                int left = b[0] >= 0 ? b[0] : b[1];
+                int left = b[5];
                 g.text(g.ellipsize(status, left - 10 - x), x, btnY + 6, Widgets.TEXT_FAINT, false, false);
             }
             endPanel(g);
@@ -978,18 +979,19 @@ public class TweaksConfigScreen extends Screen {
 
     /**
      * The buttons under the preview: {copy x (-1 when copying is unsupported),
-     * save x, done x, copy and save width, done width}. They shrink evenly when
-     * the column is too narrow for their usual widths.
+     * save x, done x, side button width, done width, turntable x}. They shrink
+     * evenly when the column is too narrow for their usual widths.
      */
     private int[] cbrButtons() {
         int x = listX + listW + GAP + 6, x1 = width - M, gap = 6;
         boolean copy = org.asutarisucu.tweak.ClearBlockRender.ImageClipboard.supported();
-        int n = copy ? 3 : 2;
+        int n = copy ? 4 : 3;
         int even = (x1 - x - gap * (n - 1)) / n;
         int doneW = Math.min(84, even), sideW = Math.min(96, even);
         int doneX = x1 - doneW, saveX = doneX - gap - sideW;
         int copyX = copy ? saveX - gap - sideW : -1;
-        return new int[] { copyX, saveX, doneX, sideW, doneW };
+        int turnX = (copy ? copyX : saveX) - gap - sideW;
+        return new int[] { copyX, saveX, doneX, sideW, doneW, turnX };
     }
 
     /**
@@ -1087,6 +1089,8 @@ public class TweaksConfigScreen extends Screen {
 
     /** One line saying whether a capture can start right now. */
     private String cbrStatusLine() {
+        int[] turn = org.asutarisucu.tweak.ClearBlockRender.ClearBlockRender.turntableProgress();
+        if (turn != null) return Lang.format("ui.cbr.turntable_progress", turn[0], turn[1]);
         if (org.asutarisucu.tweak.ClearBlockRender.ClearBlockRender.isRecording()) return Lang.get("ui.cbr.recording");
         if (!Feature.CLEAR_BLOCK_RENDER.isEnabled()) return Lang.get("ui.cbr.disabled");
         int[] b = org.asutarisucu.tweak.WorldEditGUI.WorldEditSelection.getBounds();
@@ -1493,7 +1497,25 @@ public class TweaksConfigScreen extends Screen {
             saveStill(true);
             return true;
         }
+        if (Widgets.inside(mx, my, b[5], btnY, b[3], 20)) {
+            startTurntable();
+            return true;
+        }
         return mx >= listX + listW + GAP;
+    }
+
+    private void startTurntable() {
+        org.asutarisucu.tweak.ClearBlockRender.ClearBlockRender.startTurntable((result, file) -> {
+            switch (result) {
+                case SAVED -> showToast(Lang.format("ui.cbr.saved", file), false);
+                case NOT_READY -> {
+                    String why = previewNote();
+                    showToast(why != null ? why : Lang.get("ui.cbr.turntable_failed"), true);
+                }
+                case BUSY -> showToast(Lang.get("ui.cbr.recording"), true);
+                default -> showToast(Lang.get("ui.cbr.turntable_failed"), true);
+            }
+        });
     }
 
     private void saveStill(boolean toClipboard) {

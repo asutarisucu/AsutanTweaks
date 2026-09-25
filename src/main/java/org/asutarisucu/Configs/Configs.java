@@ -116,6 +116,9 @@ public class Configs {
                 new DoubleConfig("cbr_pan_y", 0.0, -512.0, 512.0);
         public static final DoubleConfig CBR_ORBIT_SPEED =
                 new DoubleConfig("cbr_orbit_speed", 0.0, -180.0, 180.0);
+        /** Frames in one full turn of a turntable capture. At CBR_FPS this sets the clip length. */
+        public static final IntegerConfig CBR_TURNTABLE_FRAMES =
+                new IntegerConfig("cbr_turntable_frames", 120, 8, 3600);
         public static final BooleanConfig CBR_BLOCK_ENTITIES =
                 new BooleanConfig("cbr_block_entities", true);
         public static final BooleanConfig CBR_ENTITIES =
@@ -201,6 +204,7 @@ public class Configs {
         ConfigManager.INSTANCE.register("options", Generic.CBR_PAN_X.getName(),         Generic.CBR_PAN_X);
         ConfigManager.INSTANCE.register("options", Generic.CBR_PAN_Y.getName(),         Generic.CBR_PAN_Y);
         ConfigManager.INSTANCE.register("options", Generic.CBR_ORBIT_SPEED.getName(),   Generic.CBR_ORBIT_SPEED);
+        ConfigManager.INSTANCE.register("options", Generic.CBR_TURNTABLE_FRAMES.getName(), Generic.CBR_TURNTABLE_FRAMES);
         ConfigManager.INSTANCE.register("options", Generic.CBR_BLOCK_ENTITIES.getName(), Generic.CBR_BLOCK_ENTITIES);
         ConfigManager.INSTANCE.register("options", Generic.CBR_ENTITIES.getName(),      Generic.CBR_ENTITIES);
         ConfigManager.INSTANCE.register("options", Generic.CBR_PLAYERS.getName(),       Generic.CBR_PLAYERS);

@@ -160,6 +160,7 @@ public final class ConfigEntries {
         list.add(option(Configs.Generic.CBR_PAN_X));
         list.add(option(Configs.Generic.CBR_PAN_Y));
         list.add(option(Configs.Generic.CBR_ORBIT_SPEED));
+        list.add(option(Configs.Generic.CBR_TURNTABLE_FRAMES));
         list.add(option(Configs.Generic.CBR_BLOCK_ENTITIES));
         list.add(option(Configs.Generic.CBR_ENTITIES));
         list.add(option(Configs.Generic.CBR_PLAYERS));

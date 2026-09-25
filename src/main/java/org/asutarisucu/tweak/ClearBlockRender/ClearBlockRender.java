@@ -71,13 +71,46 @@ public final class ClearBlockRender {
     private static long startNanos;
     private static long framesWritten;
     private static double orbitYaw;
+    /** Frames in one turn of a turntable capture; 0 for a real-time recording. */
+    private static int turntableFrames;
+    private static int turntableDone;
+    private static StillListener turntableListener;
 
     public static boolean isRecording() { return recording; }
 
     /** Hotkey entry point. */
     public static void toggle() {
         if (recording) stop("stopped");
-        else start();
+        else start(false);
+    }
+
+    /**
+     * Records exactly one turn around the selection, then stops by itself.
+     *
+     * Unlike a real-time recording, every game frame produces one video frame and
+     * nothing is skipped or repeated, so the yaw steps by the same angle each
+     * frame and the clip loops without a seam however slowly the game renders.
+     *
+     * @param listener hears {@link StillResult#SAVED} with the file name once the
+     *                 turn is written, or why it did not start or finish
+     */
+    public static void startTurntable(StillListener listener) {
+        if (recording) {
+            listener.done(StillResult.BUSY, null);
+            return;
+        }
+        if (!checkReady(MinecraftClient.getInstance())) {
+            listener.done(StillResult.NOT_READY, null);
+            return;
+        }
+        start(true);
+        if (recording) turntableListener = listener;
+        else listener.done(StillResult.FAILED, null);
+    }
+
+    /** Frames written so far and in total, or null when no turntable capture is running. */
+    public static int[] turntableProgress() {
+        return recording && turntableFrames > 0 ? new int[] { turntableDone, turntableFrames } : null;
     }
 
     /** Renders one frame and writes it out as a transparent PNG, to a file or the clipboard. */
@@ -202,7 +235,7 @@ public final class ClearBlockRender {
         FrameGrabber.read(target.getColorTexId(), w, h, out);
     }
 
-    private static void start() {
+    private static void start(boolean turntable) {
         MinecraftClient mc = MinecraftClient.getInstance();
         if (!checkReady(mc)) return;
         int[] sel = WorldEditSelection.getBounds();
@@ -216,7 +249,8 @@ public final class ClearBlockRender {
                     FabricLoader.getInstance().getGameDir().resolve("clear_block_render"),
                     Configs.Generic.CBR_FFMPEG_PATH.getValue(),
                     Configs.Generic.CBR_FORMAT.getValue(),
-                    frameW, frameH, fps, Configs.Generic.CBR_SPEED.getDoubleValue());
+                    frameW, frameH, fps,
+                    turntable ? 1.0 : Configs.Generic.CBR_SPEED.getDoubleValue());
         } catch (Exception e) {
             AsutanTweaks.LOGGER.warn("[ClearBlockRender] failed to start ffmpeg", e);
             HudLogger.INSTANCE.log(MessageUtils.colorRed("ffmpeg could not be started — check CBR FFmpeg Path"));
@@ -233,15 +267,21 @@ public final class ClearBlockRender {
         startNanos = System.nanoTime();
         framesWritten = 0;
         orbitYaw = 0.0;
+        turntableFrames = turntable ? Configs.Generic.CBR_TURNTABLE_FRAMES.getIntegerValue() : 0;
+        turntableDone = 0;
         recording = true;
         HudLogger.INSTANCE.log(MessageUtils.colorGreen("Recording " + frameW + "x" + frameH + " @" + fps + "fps"));
     }
 
     private static void stop(String why) {
         recording = false;
+        StillListener listener = turntableListener;
+        turntableListener = null;
+        String saved = null;
         if (encoder != null) {
             encoder.close();
-            HudLogger.INSTANCE.log(MessageUtils.colorGreen("Saved " + encoder.outputFile().getFileName()));
+            saved = encoder.outputFile().getFileName().toString();
+            HudLogger.INSTANCE.log(MessageUtils.colorGreen("Saved " + saved));
             encoder = null;
         } else if (why != null) {
             HudLogger.INSTANCE.log(why);
@@ -250,6 +290,7 @@ public final class ClearBlockRender {
         if (pixels != null) { MemoryUtil.memFree(pixels); pixels = null; }
         bounds = null;
         recordingWorld = null;
+        if (listener != null) listener.done(saved != null ? StillResult.SAVED : StillResult.FAILED, saved);
     }
 
     /** Called once per rendered frame from the game renderer mixin. */
@@ -264,6 +305,17 @@ public final class ClearBlockRender {
         if (encoder == null || encoder.isBroken()) {
             HudLogger.INSTANCE.log(MessageUtils.colorRed("ffmpeg exited — recording stopped"));
             stop(null);
+            return;
+        }
+
+        if (turntableFrames > 0) {
+            if (!encoder.hasCapacity()) return;
+            orbitYaw = 360.0 * turntableDone / turntableFrames;
+            captureFrame(mc, (ClientWorld) recordingWorld, tickDelta);
+            if (!recording) return;
+            pixels.position(0).limit(frameW * frameH * 4);
+            encoder.writeFrame(pixels, 1);
+            if (++turntableDone >= turntableFrames) stop(null);
             return;
         }
 
@@ -314,12 +366,45 @@ public final class ClearBlockRender {
     //$$ private static long startNanos;
     //$$ private static long framesWritten;
     //$$ private static double orbitYaw;
+    //$$ /** Frames in one turn of a turntable capture; 0 for a real-time recording. */
+    //$$ private static int turntableFrames;
+    //$$ private static int turntableDone;
+    //$$ private static StillListener turntableListener;
     //$$
     //$$ public static boolean isRecording() { return recording; }
     //$$
     //$$ public static void toggle() {
     //$$     if (recording) stop("stopped");
-    //$$     else start();
+    //$$     else start(false);
+    //$$ }
+    //$$
+    //$$ /**
+    //$$  * Records exactly one turn around the selection, then stops by itself.
+    //$$  *
+    //$$  * Unlike a real-time recording, every game frame produces one video frame and
+    //$$  * nothing is skipped or repeated, so the yaw steps by the same angle each
+    //$$  * frame and the clip loops without a seam however slowly the game renders.
+    //$$  *
+    //$$  * @param listener hears {@link StillResult#SAVED} with the file name once the
+    //$$  *                 turn is written, or why it did not start or finish
+    //$$  */
+    //$$ public static void startTurntable(StillListener listener) {
+    //$$     if (recording) {
+    //$$         listener.done(StillResult.BUSY, null);
+    //$$         return;
+    //$$     }
+    //$$     if (!checkReady(MinecraftClient.getInstance())) {
+    //$$         listener.done(StillResult.NOT_READY, null);
+    //$$         return;
+    //$$     }
+    //$$     start(true);
+    //$$     if (recording) turntableListener = listener;
+    //$$     else listener.done(StillResult.FAILED, null);
+    //$$ }
+    //$$
+    //$$ /** Frames written so far and in total, or null when no turntable capture is running. */
+    //$$ public static int[] turntableProgress() {
+    //$$     return recording && turntableFrames > 0 ? new int[] { turntableDone, turntableFrames } : null;
     //$$ }
     //$$
     //$$ /** Renders one frame and writes it out as a transparent PNG, to a file or the clipboard. */
@@ -382,7 +467,7 @@ public final class ClearBlockRender {
     //$$     return true;
     //$$ }
     //$$
-    //$$ private static void start() {
+    //$$ private static void start(boolean turntable) {
     //$$     MinecraftClient mc = MinecraftClient.getInstance();
     //$$     if (!checkReady(mc)) return;
     //$$
@@ -395,7 +480,8 @@ public final class ClearBlockRender {
     //$$                 FabricLoader.getInstance().getGameDir().resolve("clear_block_render"),
     //$$                 Configs.Generic.CBR_FFMPEG_PATH.getValue(),
     //$$                 Configs.Generic.CBR_FORMAT.getValue(),
-    //$$                 frameW, frameH, fps, Configs.Generic.CBR_SPEED.getDoubleValue());
+    //$$                 frameW, frameH, fps,
+    //$$                 turntable ? 1.0 : Configs.Generic.CBR_SPEED.getDoubleValue());
     //$$     } catch (Exception e) {
     //$$         AsutanTweaks.LOGGER.warn("[ClearBlockRender] failed to start ffmpeg", e);
     //$$         HudLogger.INSTANCE.log(MessageUtils.colorRed("ffmpeg could not be started — check FFmpeg Path"));
@@ -409,15 +495,21 @@ public final class ClearBlockRender {
     //$$     startNanos = System.nanoTime();
     //$$     framesWritten = 0;
     //$$     orbitYaw = 0.0;
+    //$$     turntableFrames = turntable ? Configs.Generic.CBR_TURNTABLE_FRAMES.getIntegerValue() : 0;
+    //$$     turntableDone = 0;
     //$$     recording = true;
     //$$     HudLogger.INSTANCE.log(MessageUtils.colorGreen("Recording " + frameW + "x" + frameH + " @" + fps + "fps"));
     //$$ }
     //$$
     //$$ private static void stop(String why) {
     //$$     recording = false;
+    //$$     StillListener listener = turntableListener;
+    //$$     turntableListener = null;
+    //$$     String saved = null;
     //$$     if (encoder != null) {
     //$$         encoder.close();
-    //$$         HudLogger.INSTANCE.log(MessageUtils.colorGreen("Saved " + encoder.outputFile().getFileName()));
+    //$$         saved = encoder.outputFile().getFileName().toString();
+    //$$         HudLogger.INSTANCE.log(MessageUtils.colorGreen("Saved " + saved));
     //$$         encoder = null;
     //$$     } else if (why != null) {
     //$$         HudLogger.INSTANCE.log(why);
@@ -425,6 +517,7 @@ public final class ClearBlockRender {
     //$$     if (fbo != null) { fbo.delete(); fbo = null; }
     //$$     bounds = null;
     //$$     recordingWorld = null;
+    //$$     if (listener != null) listener.done(saved != null ? StillResult.SAVED : StillResult.FAILED, saved);
     //$$ }
     //$$
     //$$ private static ThirdEyeFbo previewFbo;
@@ -497,6 +590,11 @@ public final class ClearBlockRender {
     //$$         return;
     //$$     }
     //$$
+    //$$     if (turntableFrames > 0) {
+    //$$         captureTurntableFrame(mc, tickDelta);
+    //$$         return;
+    //$$     }
+    //$$
     //$$     double elapsed = (System.nanoTime() - startNanos) / 1_000_000_000.0;
     //$$     long due = (long) (elapsed * fps);
     //$$     if (due <= framesWritten) return;
@@ -523,6 +621,36 @@ public final class ClearBlockRender {
     //$$         return;
     //$$     }
     //$$     framesWritten = due;
+    //$$ }
+    //$$
+    //$$ /**
+    //$$  * Renders the next frame of a turntable capture.
+    //$$  *
+    //$$  * The readback lands on a later frame, so after the last frame is queued the
+    //$$  * capture waits for it before closing ffmpeg. Closing first would drop the
+    //$$  * frame that closes the loop.
+    //$$  */
+    //$$ private static void captureTurntableFrame(MinecraftClient mc, float tickDelta) {
+    //$$     if (turntableDone >= turntableFrames) {
+    //$$         if (!FrameGrabber.isBusy()) stop(null);
+    //$$         return;
+    //$$     }
+    //$$     if (!encoder.hasCapacity() || FrameGrabber.isBusy()) return;
+    //$$     orbitYaw = 360.0 * turntableDone / turntableFrames;
+    //$$
+    //$$     FfmpegEncoder target = encoder;
+    //$$     try {
+    //$$         renderInto(mc, (ClientWorld) recordingWorld, fbo, bounds, frameW, frameH, orbitYaw, tickDelta, data -> {
+    //$$             data.position(0).limit(frameW * frameH * 4);
+    //$$             target.writeFrame(data, 1);
+    //$$         });
+    //$$     } catch (Throwable t) {
+    //$$         AsutanTweaks.LOGGER.error("[ClearBlockRender] region render failed", t);
+    //$$         HudLogger.INSTANCE.log(MessageUtils.colorRed("Render failed — recording stopped"));
+    //$$         stop(null);
+    //$$         return;
+    //$$     }
+    //$$     turntableDone++;
     //$$ }
     //$$
     //$$ /**
@@ -559,6 +687,10 @@ public final class ClearBlockRender {
     //$$ private static long startNanos;
     //$$ private static long framesWritten;
     //$$ private static double orbitYaw;
+    //$$ /** Frames in one turn of a turntable capture; 0 for a real-time recording. */
+    //$$ private static int turntableFrames;
+    //$$ private static int turntableDone;
+    //$$ private static StillListener turntableListener;
     //$$ /** Non-null only while a capture pass is drawing, so the render target mixin can redirect. */
     //$$ private static ThirdEyeFbo captureTarget;
     //$$
@@ -569,7 +701,36 @@ public final class ClearBlockRender {
     //$$
     //$$ public static void toggle() {
     //$$     if (recording) stop("stopped");
-    //$$     else start();
+    //$$     else start(false);
+    //$$ }
+    //$$
+    //$$ /**
+    //$$  * Records exactly one turn around the selection, then stops by itself.
+    //$$  *
+    //$$  * Unlike a real-time recording, every game frame produces one video frame and
+    //$$  * nothing is skipped or repeated, so the yaw steps by the same angle each
+    //$$  * frame and the clip loops without a seam however slowly the game renders.
+    //$$  *
+    //$$  * @param listener hears {@link StillResult#SAVED} with the file name once the
+    //$$  *                 turn is written, or why it did not start or finish
+    //$$  */
+    //$$ public static void startTurntable(StillListener listener) {
+    //$$     if (recording) {
+    //$$         listener.done(StillResult.BUSY, null);
+    //$$         return;
+    //$$     }
+    //$$     if (!checkReady(Minecraft.getInstance())) {
+    //$$         listener.done(StillResult.NOT_READY, null);
+    //$$         return;
+    //$$     }
+    //$$     start(true);
+    //$$     if (recording) turntableListener = listener;
+    //$$     else listener.done(StillResult.FAILED, null);
+    //$$ }
+    //$$
+    //$$ /** Frames written so far and in total, or null when no turntable capture is running. */
+    //$$ public static int[] turntableProgress() {
+    //$$     return recording && turntableFrames > 0 ? new int[] { turntableDone, turntableFrames } : null;
     //$$ }
     //$$
     //$$ /** Renders one frame and writes it out as a transparent PNG, to a file or the clipboard. */
@@ -636,7 +797,7 @@ public final class ClearBlockRender {
     //$$     return true;
     //$$ }
     //$$
-    //$$ private static void start() {
+    //$$ private static void start(boolean turntable) {
     //$$     Minecraft mc = Minecraft.getInstance();
     //$$     if (!checkReady(mc)) return;
     //$$
@@ -649,7 +810,8 @@ public final class ClearBlockRender {
     //$$                 FabricLoader.getInstance().getGameDir().resolve("clear_block_render"),
     //$$                 Configs.Generic.CBR_FFMPEG_PATH.getValue(),
     //$$                 Configs.Generic.CBR_FORMAT.getValue(),
-    //$$                 frameW, frameH, fps, Configs.Generic.CBR_SPEED.getDoubleValue());
+    //$$                 frameW, frameH, fps,
+    //$$                 turntable ? 1.0 : Configs.Generic.CBR_SPEED.getDoubleValue());
     //$$     } catch (Exception e) {
     //$$         AsutanTweaks.LOGGER.warn("[ClearBlockRender] failed to start ffmpeg", e);
     //$$         HudLogger.INSTANCE.log(MessageUtils.colorRed("ffmpeg could not be started — check FFmpeg Path"));
@@ -664,6 +826,8 @@ public final class ClearBlockRender {
     //$$     startNanos = System.nanoTime();
     //$$     framesWritten = 0;
     //$$     orbitYaw = 0.0;
+    //$$     turntableFrames = turntable ? Configs.Generic.CBR_TURNTABLE_FRAMES.getIntegerValue() : 0;
+    //$$     turntableDone = 0;
     //$$     recording = true;
     //$$     RegionRenderer.requestGeometryLog();
     //$$     HudLogger.INSTANCE.log(MessageUtils.colorGreen("Recording " + frameW + "x" + frameH + " @" + fps + "fps"));
@@ -671,9 +835,13 @@ public final class ClearBlockRender {
     //$$
     //$$ private static void stop(String why) {
     //$$     recording = false;
+    //$$     StillListener listener = turntableListener;
+    //$$     turntableListener = null;
+    //$$     String saved = null;
     //$$     if (encoder != null) {
     //$$         encoder.close();
-    //$$         HudLogger.INSTANCE.log(MessageUtils.colorGreen("Saved " + encoder.outputFile().getFileName()));
+    //$$         saved = encoder.outputFile().getFileName().toString();
+    //$$         HudLogger.INSTANCE.log(MessageUtils.colorGreen("Saved " + saved));
     //$$         encoder = null;
     //$$     } else if (why != null) {
     //$$         HudLogger.INSTANCE.log(why);
@@ -682,6 +850,7 @@ public final class ClearBlockRender {
 
     //$$     bounds = null;
     //$$     recordingWorld = null;
+    //$$     if (listener != null) listener.done(saved != null ? StillResult.SAVED : StillResult.FAILED, saved);
     //$$ }
     //$$
     //$$ private static ThirdEyeFbo previewFbo;
@@ -755,6 +924,11 @@ public final class ClearBlockRender {
     //$$         return;
     //$$     }
     //$$
+    //$$     if (turntableFrames > 0) {
+    //$$         captureTurntableFrame(mc, tickDelta);
+    //$$         return;
+    //$$     }
+    //$$
     //$$     double elapsed = (System.nanoTime() - startNanos) / 1_000_000_000.0;
     //$$     long due = (long) (elapsed * fps);
     //$$     if (due <= framesWritten) return;
@@ -783,6 +957,36 @@ public final class ClearBlockRender {
     //$$         return;
     //$$     }
     //$$     framesWritten = due;
+    //$$ }
+    //$$
+    //$$ /**
+    //$$  * Renders the next frame of a turntable capture.
+    //$$  *
+    //$$  * The readback lands on a later frame, so after the last frame is queued the
+    //$$  * capture waits for it before closing ffmpeg. Closing first would drop the
+    //$$  * frame that closes the loop.
+    //$$  */
+    //$$ private static void captureTurntableFrame(Minecraft mc, float tickDelta) {
+    //$$     if (turntableDone >= turntableFrames) {
+    //$$         if (!FrameGrabber.isBusy()) stop(null);
+    //$$         return;
+    //$$     }
+    //$$     if (!encoder.hasCapacity() || FrameGrabber.isBusy()) return;
+    //$$     orbitYaw = 360.0 * turntableDone / turntableFrames;
+    //$$
+    //$$     FfmpegEncoder target = encoder;
+    //$$     try {
+    //$$         renderInto(mc, (ClientLevel) recordingWorld, fbo, bounds, frameW, frameH, orbitYaw, tickDelta, data -> {
+    //$$             data.position(0).limit(frameW * frameH * 4);
+    //$$             target.writeFrame(data, 1);
+    //$$         });
+    //$$     } catch (Throwable t) {
+    //$$         AsutanTweaks.LOGGER.error("[ClearBlockRender] region render failed", t);
+    //$$         HudLogger.INSTANCE.log(MessageUtils.colorRed("Render failed — recording stopped"));
+    //$$         stop(null);
+    //$$         return;
+    //$$     }
+    //$$     turntableDone++;
     //$$ }
     //$$
     //$$ /**
