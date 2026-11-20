@@ -7,6 +7,9 @@ import org.asutarisucu.Configs.Callbacks;
 import org.asutarisucu.Configs.Configs;
 import org.asutarisucu.Configs.Feature;
 import org.asutarisucu.Configs.Hotkeys;
+import org.asutarisucu.GUI.HudLogger;
+import org.asutarisucu.GUI.glass.Lang;
+import org.asutarisucu.tweak.AutoUpdate.AutoUpdater;
 import org.asutarisucu.lib.config.ConfigManager;
 import org.asutarisucu.lib.hotkey.HotkeyManager;
 import org.slf4j.Logger;
@@ -34,6 +37,14 @@ public class AsutanTweaks implements ClientModInitializer {
         // Register render events and other game events
         Reference.LoadEvent();
         org.asutarisucu.GUI.glass.GlassRenderer.init();
+
+        // Tell about a newer version once the player is in a world, where the HUD log shows.
+        AutoUpdater.start();
+        net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            if (client.player != null && AutoUpdater.takeNotification()) {
+                HudLogger.INSTANCE.log(Lang.format("update.available", AutoUpdater.latestVersion()));
+            }
+        });
 
         // Save on game exit
         net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents.CLIENT_STOPPING

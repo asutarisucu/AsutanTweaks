@@ -42,6 +42,10 @@
 //$$     "BlockUpdateViewer.MixinClientWorldSim",
 //#endif
     "EnderChestMaterialList.MixinHandledScreen",
+    "DesktopDrop.MixinHandledScreenDesktopDrop",
+//#if MC >= 12111
+//$$     "DesktopDrop.MixinGuiRendererDesktopDrop",
+//#endif
     "PickBlock.MixinMinecraftClientPickBlock",
     "WorldEditGUI.MixinClientPlayNetworkHandlerCui",
 //#if MC < 12111

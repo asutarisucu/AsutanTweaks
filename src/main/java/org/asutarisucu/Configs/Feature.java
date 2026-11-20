@@ -48,7 +48,9 @@ public enum Feature {
     CLEAR_BLOCK_RENDER("clear_block_render", false, "",
             "Clear Block Render", "Render the WorldEdit selection to a transparent video"),
     COMPARATOR_SIGNAL_VIEW("comparator_signal_view", false, "",
-            "Comparator Signal View", "Show each comparator's output signal on its top face");
+            "Comparator Signal View", "Show each comparator's output signal on its top face"),
+    DESKTOP_DROP("desktop_drop", false, "",
+            "Desktop Drop", "Held items follow the cursor out of the window and drop onto the desktop");
 
     public final FeatureConfig config;
     public final String displayName;

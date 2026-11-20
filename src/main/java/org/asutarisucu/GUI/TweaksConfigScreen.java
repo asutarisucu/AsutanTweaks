@@ -1,5 +1,6 @@
 package org.asutarisucu.GUI;
 
+import org.asutarisucu.tweak.AutoUpdate.AutoUpdater;
 import org.asutarisucu.Configs.Configs;
 import org.asutarisucu.Configs.Feature;
 import org.asutarisucu.Configs.Hotkeys;
@@ -671,7 +672,13 @@ public class TweaksConfigScreen extends Screen {
         int x = c[0], y = c[1], w = c[2], h = c[3];
         boolean hov = Widgets.inside(mx, my, x, y, w, h);
         IConfig<?> cfg = e.config;
-        if (e.action != Action.NONE) {
+        if (e.action == Action.UPDATE) {
+            AutoUpdater.State st = AutoUpdater.state();
+            String label = st == AutoUpdater.State.AVAILABLE
+                    ? Lang.format("ui.update.available", AutoUpdater.latestVersion())
+                    : Lang.get("ui.update." + st.name().toLowerCase(java.util.Locale.ROOT));
+            Widgets.button(g, x, y, w, h, label, mx, my, st == AutoUpdater.State.AVAILABLE);
+        } else if (e.action != Action.NONE) {
             Widgets.button(g, x, y, w, h, Lang.get("ui.set_position"), mx, my, false);
         } else if (cfg instanceof BooleanConfig bc) {
             float knob = approachMap(knobs, e.id(), bc.getBooleanValue() ? 1 : 0, 16);
@@ -1449,7 +1456,9 @@ public class TweaksConfigScreen extends Screen {
         int[] c = controlRect(e, x, y, w, h);
         if (!Widgets.inside(mx, my, c[0] - 2, c[1] - 2, c[2] + 4, c[3] + 4)) return false;
         IConfig<?> cfg = e.config;
-        if (e.action != Action.NONE) {
+        if (e.action == Action.UPDATE) {
+            AutoUpdater.download();
+        } else if (e.action != Action.NONE) {
             placing = e.action;
         } else if (cfg instanceof BooleanConfig bc) {
             bc.setValue(!bc.getBooleanValue());

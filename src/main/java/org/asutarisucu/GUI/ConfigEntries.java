@@ -22,7 +22,7 @@ public final class ConfigEntries {
     public enum Kind { FEATURE, OPTION, HOTKEY }
 
     /** Buttons that are not backed by a config value. */
-    public enum Action { NONE, HUD_LOG_POSITION, METER_POSITION }
+    public enum Action { NONE, HUD_LOG_POSITION, METER_POSITION, UPDATE }
 
     public static final class Entry {
         public final Kind kind;
@@ -110,6 +110,7 @@ public final class ConfigEntries {
 
     public static List<Entry> options() {
         List<Entry> list = new ArrayList<>();
+        list.add(action("update", Action.UPDATE, "Update"));
         list.add(option(Configs.Generic.RESTOCK_COUNT));
         list.add(option(Configs.Generic.VOID_HEIGHT_OW));
         list.add(option(Configs.Generic.VOID_HEIGHT_NE));
