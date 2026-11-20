@@ -28,8 +28,6 @@ final class DesktopOverlay implements Runnable {
 
     /** Last time the game drew the item held on the cursor. */
     static volatile long lastHeldNanos;
-    /** The game window's client area in screen pixels. */
-    static volatile int winX, winY, winW, winH;
     /** The game window's HWND. */
     static volatile long gameHwnd;
     /** Picture of the item held in the game; null until one is taken. */
@@ -42,7 +40,7 @@ final class DesktopOverlay implements Runnable {
         }
     }
 
-    private static final long HELD_TIMEOUT = 250_000_000L;
+    static final long HELD_TIMEOUT = 250_000_000L;
     private static final float GRAVITY = 3000f;
     private static final float MAX_THROW = 6000f;
     /** How far back the cursor's path is looked at for the throw speed. */
@@ -90,7 +88,6 @@ final class DesktopOverlay implements Runnable {
     /** Cleared when the game's item is dropped, set again once the cursor is back in the game window. */
     private boolean gameItemArmed = true;
     private boolean prevDown = true;
-
     private final long[] histT = new long[16];
     private final int[] histX = new int[16], histY = new int[16];
     private int histN;
@@ -100,6 +97,8 @@ final class DesktopOverlay implements Runnable {
         User32 u = User32.INSTANCE;
         WinUser.MSG msg = new WinUser.MSG();
         WinDef.POINT cursor = new WinDef.POINT();
+        WinDef.RECT windowRect = new WinDef.RECT();
+        WinDef.HWND gameWindow = null;
         long last = System.nanoTime();
         while (true) {
             while (u.PeekMessage(msg, null, 0, 0, PM_REMOVE)) {
@@ -109,6 +108,17 @@ final class DesktopOverlay implements Runnable {
             long now = System.nanoTime();
             float dt = Math.min((now - last) / 1e9f, 0.05f);
             last = now;
+
+            // Turning the feature off clears the desktop.
+            if (!DesktopDrop.active()) {
+                clear();
+                try {
+                    Thread.sleep(200);
+                } catch (InterruptedException e) {
+                    return;
+                }
+                continue;
+            }
 
             boolean down = (u.GetAsyncKeyState(0x01) & 0x8000) != 0
                     || (u.GetAsyncKeyState(0x02) & 0x8000) != 0
@@ -122,12 +132,21 @@ final class DesktopOverlay implements Runnable {
             WinDef.HWND fg = u.GetForegroundWindow();
             boolean foreground = fg != null && Pointer.nativeValue(fg.getPointer()) == gameHwnd;
             Sprite held = sprite;
-            boolean holding = held != null && now - lastHeldNanos < HELD_TIMEOUT && foreground;
+            boolean heldInGame = now - lastHeldNanos < HELD_TIMEOUT;
+            boolean holding = held != null && heldInGame && foreground;
             u.GetCursorPos(cursor);
-            boolean inside = cursor.x >= winX && cursor.x < winX + winW
-                    && cursor.y >= winY && cursor.y < winY + winH;
+            // The whole window, frame and title bar included, so grabbing the
+            // title bar with an item held does not drop it.
+            if (gameWindow == null || Pointer.nativeValue(gameWindow.getPointer()) != gameHwnd) {
+                gameWindow = new WinDef.HWND(new Pointer(gameHwnd));
+            }
+            boolean inside = u.GetWindowRect(gameWindow, windowRect)
+                    && cursor.x >= windowRect.left && cursor.x < windowRect.right
+                    && cursor.y >= windowRect.top && cursor.y < windowRect.bottom;
 
-            if (inside || !holding) gameItemArmed = true;
+            // Not on losing focus: the click that drops the item does that, and
+            // the game still holds the item.
+            if (inside || !heldInGame) gameItemArmed = true;
 
             // The game's item goes back into the game when the cursor returns.
             // The click that drops it also makes another window active; the drop
@@ -169,8 +188,10 @@ final class DesktopOverlay implements Runnable {
                 moving = true;
             }
 
+            // A click shorter than the wait between two looks is missed, so the wait
+            // is short whenever a click does something: on a block, or to drop the item.
             try {
-                Thread.sleep(moving ? 8 : 30);
+                Thread.sleep(moving || holding || !blocks.isEmpty() ? 8 : 30);
             } catch (InterruptedException e) {
                 return;
             }
@@ -194,6 +215,13 @@ final class DesktopOverlay implements Runnable {
         b.vy = Math.max(-MAX_THROW, Math.min(MAX_THROW, vy));
         b.resting = false;
         blocks.add(b);
+    }
+
+    private void clear() {
+        if (carried != null) destroy(carried);
+        carried = null;
+        for (Block b : blocks) destroy(b);
+        blocks.clear();
     }
 
     private void pickUp(WinDef.POINT cursor) {
@@ -222,8 +250,12 @@ final class DesktopOverlay implements Runnable {
         histN++;
     }
 
+    /** Reused for each block each frame. */
+    private final WinDef.POINT.ByValue monitorPoint = new WinDef.POINT.ByValue();
+    private final WinUser.MONITORINFO monitorInfo = new WinUser.MONITORINFO();
+
     /** Gravity, then the edges of the monitor's work area as walls and floor. */
-    private static void step(Block b, float dt) {
+    private void step(Block b, float dt) {
         int size = b.sprite.size();
         b.vy += GRAVITY * dt;
         b.x += b.vx * dt;
@@ -248,11 +280,12 @@ final class DesktopOverlay implements Runnable {
         }
     }
 
-    private static WinDef.RECT workArea(int x, int y) {
-        WinUser.HMONITOR mon = User32.INSTANCE.MonitorFromPoint(new WinDef.POINT.ByValue(x, y), MONITOR_DEFAULTTONEAREST);
-        WinUser.MONITORINFO info = new WinUser.MONITORINFO();
-        User32.INSTANCE.GetMonitorInfo(mon, info);
-        return info.rcWork;
+    private WinDef.RECT workArea(int x, int y) {
+        monitorPoint.x = x;
+        monitorPoint.y = y;
+        WinUser.HMONITOR mon = User32.INSTANCE.MonitorFromPoint(monitorPoint, MONITOR_DEFAULTTONEAREST);
+        User32.INSTANCE.GetMonitorInfo(mon, monitorInfo);
+        return monitorInfo.rcWork;
     }
 
     private static void place(Block b) {

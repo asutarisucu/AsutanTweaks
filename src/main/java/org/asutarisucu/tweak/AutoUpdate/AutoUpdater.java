@@ -79,6 +79,20 @@ public final class AutoUpdater {
                 .map(c -> c.getMetadata().getVersion()).orElseThrow();
     }
 
+    /**
+     * A local build of 1.5.2 is versioned 1.5.2-SNAPSHOT, which sorts before the
+     * 1.5.2 release. It is compared as 1.5.2 so the release is not offered as newer.
+     */
+    private static Version releaseOf(Version v) throws Exception {
+        if (!(v instanceof SemanticVersion sv) || sv.getPrereleaseKey().isEmpty()) return v;
+        StringBuilder core = new StringBuilder();
+        for (int i = 0; i < sv.getVersionComponentCount(); i++) {
+            if (i > 0) core.append('.');
+            core.append(sv.getVersionComponent(i));
+        }
+        return SemanticVersion.parse(core.toString());
+    }
+
     private static void check() {
         try {
             ModContainer self = FabricLoader.getInstance().getModContainer("asutantweaks").orElseThrow();
@@ -103,7 +117,7 @@ public final class AutoUpdater {
             HttpResponse<String> res = http.send(req, HttpResponse.BodyHandlers.ofString());
             if (res.statusCode() != 200) throw new IllegalStateException("HTTP " + res.statusCode());
 
-            Version current = currentVersion();
+            Version current = releaseOf(currentVersion());
             Version best = null;
             for (JsonElement e : JsonParser.parseString(res.body()).getAsJsonArray()) {
                 JsonObject v = e.getAsJsonObject();

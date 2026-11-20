@@ -37,6 +37,10 @@ public final class DesktopDrop {
     /** An atlas region found in the last frame, read back at the start of the next one. */
     private static int pendingTex, pendingX, pendingY, pendingSize;
 
+    /** Reused every frame; only the render thread touches them. */
+    private static final int[] wx = new int[1], wy = new int[1], fw = new int[1], fh = new int[1];
+    private static final WinDef.POINT cursor = new WinDef.POINT();
+
     public static boolean active() {
         return Feature.DESKTOP_DROP.isEnabled() && Platform.isWindows();
     }
@@ -50,19 +54,14 @@ public final class DesktopDrop {
         if (!active()) return;
         DesktopOverlay.ensureStarted();
 
-        int[] wx = new int[1], wy = new int[1], fw = new int[1], fh = new int[1];
         GLFW.glfwGetWindowPos(glfwWindow, wx, wy);
         GLFW.glfwGetFramebufferSize(glfwWindow, fw, fh);
-        DesktopOverlay.winX = wx[0];
-        DesktopOverlay.winY = wy[0];
-        DesktopOverlay.winW = fw[0];
-        DesktopOverlay.winH = fh[0];
         DesktopOverlay.gameHwnd = GLFWNativeWin32.glfwGetWin32Window(glfwWindow);
         DesktopOverlay.lastHeldNanos = System.nanoTime();
 
-        WinDef.POINT p = new WinDef.POINT();
-        User32.INSTANCE.GetCursorPos(p);
-        outside = p.x < wx[0] || p.x >= wx[0] + fw[0] || p.y < wy[0] || p.y >= wy[0] + fh[0];
+        User32.INSTANCE.GetCursorPos(cursor);
+        outside = cursor.x < wx[0] || cursor.x >= wx[0] + fw[0]
+                || cursor.y < wy[0] || cursor.y >= wy[0] + fh[0];
         if (!outside) {
             // A picture of the last item must not show up for the next one.
             DesktopOverlay.sprite = null;
@@ -96,6 +95,8 @@ public final class DesktopDrop {
      * @param v0 top edge in UV (the larger v)
      */
     public static void onAtlasItem(int x, int y, int glTexture, int textureSize, float u0, float v0, int slotSize) {
+        // floatX is left over once the screen stops drawing a held item.
+        if (System.nanoTime() - DesktopOverlay.lastHeldNanos >= DesktopOverlay.HELD_TIMEOUT) return;
         if (x != floatX || y != floatY || glTexture == 0 || !wantsCapture()) return;
         // The atlas is filled later in this frame, so it is read at the next one.
         pendingTex = glTexture;
