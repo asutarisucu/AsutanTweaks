@@ -73,7 +73,9 @@ public class TweaksConfigScreen extends Screen {
             .orElse("");
 
     private static final String[] TAB_KEYS = { "ui.tab.all", "ui.tab.features", "ui.tab.options", "ui.tab.hotkeys" };
+    private static final String[] CBR_TAB_KEYS = { "ui.cbr.tab.common", "ui.cbr.tab.rec" };
     private static int lastTab = 0;
+    private static int lastCbrTab = 0;
     /** null follows the space available; set once the player clicks the header. */
     private static Boolean appearanceCollapsed = null;
     private boolean appearCollapsedNow;
@@ -81,10 +83,10 @@ public class TweaksConfigScreen extends Screen {
     private final Screen parent;
     private final boolean cbrMode;
 
-    private int tab = lastTab;
+    private int tab;
     private float lensX = -1, lensW;
 
-    private List<Entry> features, options, hotkeys, cbr;
+    private List<Entry> features, options, hotkeys, cbrCommon, cbrRec;
 
     private final TextField search = TextField.plain();
     private Entry editEntry;
@@ -161,6 +163,7 @@ public class TweaksConfigScreen extends Screen {
 //#endif
         this.parent = parent;
         this.cbrMode = cbrMode;
+        this.tab = cbrMode ? lastCbrTab : lastTab;
         reloadEntries();
     }
 
@@ -168,7 +171,12 @@ public class TweaksConfigScreen extends Screen {
         features = ConfigEntries.features();
         options = ConfigEntries.options();
         hotkeys = ConfigEntries.hotkeys();
-        cbr = ConfigEntries.cbrOptions();
+        cbrCommon = ConfigEntries.cbrCommonOptions();
+        cbrRec = ConfigEntries.cbrRecOptions();
+    }
+
+    private String[] tabKeys() {
+        return cbrMode ? CBR_TAB_KEYS : TAB_KEYS;
     }
 
     // ── version glue: rendering ──────────────────────────────────
@@ -325,8 +333,8 @@ public class TweaksConfigScreen extends Screen {
         } else {
             drawDetails(g);
             drawAppearance(g, imx, imy);
-            drawSearch(g);
         }
+        drawSearch(g);
         drawList(g, imx, imy);
 
         if (popup) drawPopups(g, mx, my, now);
@@ -339,8 +347,8 @@ public class TweaksConfigScreen extends Screen {
             int leftW = Math.max(170, Math.round((width - M * 2) * 0.46f));
             listX = M;
             listW = leftW;
-            listY = bodyY;
-            listH = bodyBottom - bodyY;
+            listY = bodyY + 20 + 6;
+            listH = bodyBottom - listY;
             return;
         }
         int leftW = Math.max(150, Math.min(280, Math.round(width * 0.32f)));
@@ -421,8 +429,9 @@ public class TweaksConfigScreen extends Screen {
     private void drawTopBar(Gfx g, int mx, int my) {
         if (!beginPanel(g, 0, width / 2f, M + TOP_H / 2f)) return;
         String title = cbrMode ? Lang.get("ui.cbr.title") : "AsutanTweaks";
-        int[] tabs = cbrMode ? null : tabRects();
-        int titleRoom = (tabs != null ? tabs[0] : width - M - TOP_H) - 8 - (M + 2);
+        int[] tabs = tabRects();
+        String[] keys = tabKeys();
+        int titleRoom = tabs[0] - 8 - (M + 2);
         int titleW = g.width(title, true);
         // Drop the version first, then the title, when the tabs need the room.
         if (titleW <= titleRoom) {
@@ -432,25 +441,23 @@ public class TweaksConfigScreen extends Screen {
             }
         }
 
-        if (!cbrMode) {
-            int tx = tabs[0], tw = tabs[tabs.length - 1] - tx;
-            Widgets.panel(g, tx - 3, M, tw + 6, TOP_H, TOP_H / 2, closing());
-            int selX = tabs[tab] , selW = tabs[tab + 1] - tabs[tab];
-            if (lensX < 0) {
-                lensX = selX;
-                lensW = selW;
-            }
-            lensX = Anim.approach(lensX, selX, dt, 16);
-            lensW = Anim.approach(lensW, selW, dt, 16);
-            int lx = Math.round(lensX), lw = Math.round(lensW);
-            g.roundedSheen(lx, M + 3, lw, TOP_H - 6, (TOP_H - 6) / 2, 0x38FFFFFF);
-            g.outline(lx, M + 3, lw, TOP_H - 6, (TOP_H - 6) / 2, 1, 0x50FFFFFF);
-            for (int i = 0; i < TAB_KEYS.length; i++) {
-                String s = Lang.get(TAB_KEYS[i]);
-                boolean hov = Widgets.inside(mx, my, tabs[i], M, tabs[i + 1] - tabs[i], TOP_H);
-                int c = i == tab ? Widgets.TEXT : (hov ? 0xE0FFFFFF : Widgets.TEXT_DIM);
-                g.text(s, (tabs[i] + tabs[i + 1] - g.width(s)) / 2, M + 7, c, i == tab, false);
-            }
+        int tx = tabs[0], tw = tabs[tabs.length - 1] - tx;
+        Widgets.panel(g, tx - 3, M, tw + 6, TOP_H, TOP_H / 2, closing());
+        int selX = tabs[tab] , selW = tabs[tab + 1] - tabs[tab];
+        if (lensX < 0) {
+            lensX = selX;
+            lensW = selW;
+        }
+        lensX = Anim.approach(lensX, selX, dt, 16);
+        lensW = Anim.approach(lensW, selW, dt, 16);
+        int lx = Math.round(lensX), lw = Math.round(lensW);
+        g.roundedSheen(lx, M + 3, lw, TOP_H - 6, (TOP_H - 6) / 2, 0x38FFFFFF);
+        g.outline(lx, M + 3, lw, TOP_H - 6, (TOP_H - 6) / 2, 1, 0x50FFFFFF);
+        for (int i = 0; i < keys.length; i++) {
+            String s = Lang.get(keys[i]);
+            boolean hov = Widgets.inside(mx, my, tabs[i], M, tabs[i + 1] - tabs[i], TOP_H);
+            int c = i == tab ? Widgets.TEXT : (hov ? 0xE0FFFFFF : Widgets.TEXT_DIM);
+            g.text(s, (tabs[i] + tabs[i + 1] - g.width(s)) / 2, M + 7, c, i == tab, false);
         }
 
         int cx = width - M - TOP_H;
@@ -463,15 +470,17 @@ public class TweaksConfigScreen extends Screen {
 
     /** x of each tab's left edge, plus the right edge of the last one. */
     private int[] tabRects() {
-        int[] w = new int[TAB_KEYS.length];
+        String[] keys = tabKeys();
+        int[] w = new int[keys.length];
         int total = 0;
         for (int i = 0; i < w.length; i++) {
-            w[i] = Math.max(52, Gfx.textWidth(Lang.get(TAB_KEYS[i]), false) + 22);
+            w[i] = Math.max(52, Gfx.textWidth(Lang.get(keys[i]), false) + 22);
             total += w[i];
         }
         int x = (width - total) / 2;
         // Keep clear of the title when there is room to the right.
-        int titleEnd = M + 2 + Gfx.textWidth("AsutanTweaks", true) + 12;
+        String title = cbrMode ? Lang.get("ui.cbr.title") : "AsutanTweaks";
+        int titleEnd = M + 2 + Gfx.textWidth(title, true) + 12;
         if (x < titleEnd && titleEnd + total <= width - M - TOP_H - 8) x = titleEnd;
         int[] out = new int[w.length + 1];
         for (int i = 0; i < w.length; i++) {
@@ -497,7 +506,7 @@ public class TweaksConfigScreen extends Screen {
     // ── panel list ───────────────────────────────────────────────
 
     private List<List<Entry>> sections() {
-        if (cbrMode) return List.of(cbr);
+        if (cbrMode) return List.of(tab == 0 ? cbrCommon : cbrRec);
         return switch (tab) {
             case 1 -> List.of(features);
             case 2 -> List.of(options);
@@ -512,7 +521,7 @@ public class TweaksConfigScreen extends Screen {
 
     private void buildRows() {
         rows.clear();
-        String q = cbrMode ? "" : search.text();
+        String q = search.text();
         int y = 0;
         List<List<Entry>> secs = sections();
         dropIndex = -1;
@@ -563,7 +572,7 @@ public class TweaksConfigScreen extends Screen {
         scrollTarget = Math.max(0, Math.min(scrollTarget, maxScroll));
         scroll = scrollbarDrag ? scrollTarget : Anim.approach(scroll, scrollTarget, dt, 16);
 
-        if (rows.isEmpty() && !cbrMode) {
+        if (rows.isEmpty()) {
             String s = Lang.get("ui.no_results");
             g.text(s, listX + (listW - g.width(s)) / 2, listY + 20, Widgets.TEXT_FAINT, false, false);
         }
@@ -1366,13 +1375,14 @@ public class TweaksConfigScreen extends Screen {
             startClose();
             return true;
         }
-        if (!cbrMode && my >= M && my < M + TOP_H) {
+        if (my >= M && my < M + TOP_H) {
             int[] tabs = tabRects();
-            for (int i = 0; i < TAB_KEYS.length; i++) {
+            for (int i = 0; i < tabKeys().length; i++) {
                 if (mx >= tabs[i] && mx < tabs[i + 1]) {
                     if (tab != i) {
                         tab = i;
-                        lastTab = i;
+                        if (cbrMode) lastCbrTab = i;
+                        else lastTab = i;
                         scrollTarget = 0;
                         scroll = 0;
                         rowY.clear();
@@ -1517,6 +1527,7 @@ public class TweaksConfigScreen extends Screen {
         org.asutarisucu.tweak.ClearBlockRender.ClearBlockRender.startTurntable((result, file) -> {
             switch (result) {
                 case SAVED -> showToast(Lang.format("ui.cbr.saved", file), false);
+                case COPIED -> showToast(Lang.format("ui.cbr.video_copied", file), false);
                 case NOT_READY -> {
                     String why = previewNote();
                     showToast(why != null ? why : Lang.get("ui.cbr.turntable_failed"), true);
@@ -1582,7 +1593,7 @@ public class TweaksConfigScreen extends Screen {
         ry = appearRowY(6);
         if (my >= ry && my < ry + 16) {
             for (StringListConfig c : List.of(Configs.Ui.ORDER_FEATURES, Configs.Ui.ORDER_OPTIONS,
-                    Configs.Ui.ORDER_HOTKEYS, Configs.Ui.ORDER_CBR)) {
+                    Configs.Ui.ORDER_HOTKEYS, Configs.Ui.ORDER_CBR, Configs.Ui.ORDER_CBR_REC)) {
                 c.setValue(List.of());
             }
             reloadEntries();
@@ -1638,7 +1649,7 @@ public class TweaksConfigScreen extends Screen {
         }
         if (pressEntry != null) {
             dragMouseY = my;
-            boolean canReorder = cbrMode || search.isEmpty();
+            boolean canReorder = search.isEmpty();
             if (!dragging && canReorder && Math.abs(my - pressY) + Math.abs(mx - pressX) > 4) {
                 dragging = true;
                 dragSection = sectionOf(pressEntry);
@@ -1649,7 +1660,7 @@ public class TweaksConfigScreen extends Screen {
     }
 
     private List<Entry> sectionOf(Entry e) {
-        if (cbrMode) return cbr;
+        if (cbrMode) return cbrCommon.contains(e) ? cbrCommon : cbrRec;
         return switch (e.kind) {
             case FEATURE -> features;
             case OPTION -> options;
@@ -1696,7 +1707,9 @@ public class TweaksConfigScreen extends Screen {
         if (sec == null || dropIndex < 0) return;
         sec.remove(pressEntry);
         sec.add(Math.min(dropIndex, sec.size()), pressEntry);
-        StringListConfig order = cbrMode ? Configs.Ui.ORDER_CBR : switch (pressEntry.kind) {
+        StringListConfig order = cbrMode
+                ? (sec == cbrCommon ? Configs.Ui.ORDER_CBR : Configs.Ui.ORDER_CBR_REC)
+                : switch (pressEntry.kind) {
             case FEATURE -> Configs.Ui.ORDER_FEATURES;
             case OPTION -> Configs.Ui.ORDER_OPTIONS;
             case HOTKEY -> Configs.Ui.ORDER_HOTKEYS;
@@ -1772,7 +1785,7 @@ public class TweaksConfigScreen extends Screen {
             startClose();
             return true;
         }
-        if (!cbrMode && !dragging && search.key(keyCode)) {
+        if (!dragging && search.key(keyCode)) {
             scrollTarget = 0;
             return true;
         }
@@ -1805,7 +1818,6 @@ public class TweaksConfigScreen extends Screen {
             editField.type(s);
             return true;
         }
-        if (cbrMode) return false;
         // The drop position is counted in the unfiltered list.
         if (dragging) return true;
         search.type(s);

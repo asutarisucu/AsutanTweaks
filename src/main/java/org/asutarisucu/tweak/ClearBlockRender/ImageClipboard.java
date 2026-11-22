@@ -14,6 +14,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 
 /**
  * Puts a captured frame on the system clipboard with its transparency.
@@ -22,12 +24,17 @@ import java.nio.ByteOrder;
  * the Win32 clipboard is called through JNA, which the game ships. The image is
  * offered as "PNG", the format image editors, browsers and Discord read with
  * alpha, and as CF_DIBV5, from which Windows derives the plain bitmap formats.
+ *
+ * A recorded video goes up as a file instead, the way Explorer copies one, so it
+ * pastes into Explorer or Discord as that file.
  */
 public final class ImageClipboard {
 
     private ImageClipboard() {}
 
+    private static final int CF_HDROP = 15;
     private static final int CF_DIBV5 = 17;
+    private static final int DROPEFFECT_COPY = 1;
     private static final int GMEM_MOVEABLE = 0x0002;
 
     public interface User32 extends StdCallLibrary {
@@ -80,6 +87,37 @@ public final class ImageClipboard {
             }
             put(User32.INSTANCE.RegisterClipboardFormatW(new WString("PNG")), png.toByteArray());
             put(CF_DIBV5, dib);
+        } finally {
+            User32.INSTANCE.CloseClipboard();
+        }
+    }
+
+    /**
+     * Puts {@code file} on the clipboard as CF_HDROP, with "Preferred DropEffect"
+     * set to copy so Explorer copies it rather than moving it.
+     *
+     * @param glfwWindow the game window, which becomes the clipboard owner
+     * @throws IOException when not on Windows or the clipboard cannot be written
+     */
+    public static void copyFile(Path file, long glfwWindow) throws IOException {
+        if (!Platform.isWindows()) throw new IOException("Copying files is only supported on Windows");
+        // DROPFILES: offset of the list, drop point, non-client flag, wide flag;
+        // then the paths in UTF-16, each ending in a NUL, and one more NUL.
+        byte[] path = (file.toAbsolutePath() + "\0\0").getBytes(StandardCharsets.UTF_16LE);
+        ByteBuffer drop = ByteBuffer.allocate(20 + path.length).order(ByteOrder.LITTLE_ENDIAN);
+        drop.putInt(20).putInt(0).putInt(0).putInt(0).putInt(1).put(path);
+        byte[] effect = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(DROPEFFECT_COPY).array();
+
+        Pointer owner = new Pointer(GLFWNativeWin32.glfwGetWin32Window(glfwWindow));
+        if (!User32.INSTANCE.OpenClipboard(owner)) {
+            throw new IOException("OpenClipboard failed, error " + Native.getLastError());
+        }
+        try {
+            if (!User32.INSTANCE.EmptyClipboard()) {
+                throw new IOException("EmptyClipboard failed, error " + Native.getLastError());
+            }
+            put(CF_HDROP, drop.array());
+            put(User32.INSTANCE.RegisterClipboardFormatW(new WString("Preferred DropEffect")), effect);
         } finally {
             User32.INSTANCE.CloseClipboard();
         }

@@ -277,11 +277,11 @@ public final class ClearBlockRender {
         recording = false;
         StillListener listener = turntableListener;
         turntableListener = null;
-        String saved = null;
+        java.nio.file.Path saved = null;
         if (encoder != null) {
             encoder.close();
-            saved = encoder.outputFile().getFileName().toString();
-            HudLogger.INSTANCE.log(MessageUtils.colorGreen("Saved " + saved));
+            saved = encoder.outputFile();
+            HudLogger.INSTANCE.log(MessageUtils.colorGreen("Saved " + saved.getFileName()));
             encoder = null;
         } else if (why != null) {
             HudLogger.INSTANCE.log(why);
@@ -290,7 +290,27 @@ public final class ClearBlockRender {
         if (pixels != null) { MemoryUtil.memFree(pixels); pixels = null; }
         bounds = null;
         recordingWorld = null;
-        if (listener != null) listener.done(saved != null ? StillResult.SAVED : StillResult.FAILED, saved);
+        if (listener != null) finishTurntable(listener, saved);
+    }
+
+    /** Copies a finished turntable clip to the clipboard as a file and reports how it ended. */
+    private static void finishTurntable(StillListener listener, java.nio.file.Path saved) {
+        if (saved == null) {
+            listener.done(StillResult.FAILED, null);
+            return;
+        }
+        String name = saved.getFileName().toString();
+        if (!ImageClipboard.supported()) {
+            listener.done(StillResult.SAVED, name);
+            return;
+        }
+        try {
+            ImageClipboard.copyFile(saved, MinecraftClient.getInstance().getWindow().getHandle());
+            listener.done(StillResult.COPIED, name);
+        } catch (Throwable t) {
+            AsutanTweaks.LOGGER.error("[ClearBlockRender] copying the video failed", t);
+            listener.done(StillResult.SAVED, name);
+        }
     }
 
     /** Called once per rendered frame from the game renderer mixin. */
@@ -505,11 +525,11 @@ public final class ClearBlockRender {
     //$$     recording = false;
     //$$     StillListener listener = turntableListener;
     //$$     turntableListener = null;
-    //$$     String saved = null;
+    //$$     java.nio.file.Path saved = null;
     //$$     if (encoder != null) {
     //$$         encoder.close();
-    //$$         saved = encoder.outputFile().getFileName().toString();
-    //$$         HudLogger.INSTANCE.log(MessageUtils.colorGreen("Saved " + saved));
+    //$$         saved = encoder.outputFile();
+    //$$         HudLogger.INSTANCE.log(MessageUtils.colorGreen("Saved " + saved.getFileName()));
     //$$         encoder = null;
     //$$     } else if (why != null) {
     //$$         HudLogger.INSTANCE.log(why);
@@ -517,7 +537,27 @@ public final class ClearBlockRender {
     //$$     if (fbo != null) { fbo.delete(); fbo = null; }
     //$$     bounds = null;
     //$$     recordingWorld = null;
-    //$$     if (listener != null) listener.done(saved != null ? StillResult.SAVED : StillResult.FAILED, saved);
+    //$$     if (listener != null) finishTurntable(listener, saved);
+    //$$ }
+    //$$
+    //$$ /** Copies a finished turntable clip to the clipboard as a file and reports how it ended. */
+    //$$ private static void finishTurntable(StillListener listener, java.nio.file.Path saved) {
+    //$$     if (saved == null) {
+    //$$         listener.done(StillResult.FAILED, null);
+    //$$         return;
+    //$$     }
+    //$$     String name = saved.getFileName().toString();
+    //$$     if (!ImageClipboard.supported()) {
+    //$$         listener.done(StillResult.SAVED, name);
+    //$$         return;
+    //$$     }
+    //$$     try {
+    //$$         ImageClipboard.copyFile(saved, MinecraftClient.getInstance().getWindow().getHandle());
+    //$$         listener.done(StillResult.COPIED, name);
+    //$$     } catch (Throwable t) {
+    //$$         AsutanTweaks.LOGGER.error("[ClearBlockRender] copying the video failed", t);
+    //$$         listener.done(StillResult.SAVED, name);
+    //$$     }
     //$$ }
     //$$
     //$$ private static ThirdEyeFbo previewFbo;
@@ -837,11 +877,11 @@ public final class ClearBlockRender {
     //$$     recording = false;
     //$$     StillListener listener = turntableListener;
     //$$     turntableListener = null;
-    //$$     String saved = null;
+    //$$     java.nio.file.Path saved = null;
     //$$     if (encoder != null) {
     //$$         encoder.close();
-    //$$         saved = encoder.outputFile().getFileName().toString();
-    //$$         HudLogger.INSTANCE.log(MessageUtils.colorGreen("Saved " + saved));
+    //$$         saved = encoder.outputFile();
+    //$$         HudLogger.INSTANCE.log(MessageUtils.colorGreen("Saved " + saved.getFileName()));
     //$$         encoder = null;
     //$$     } else if (why != null) {
     //$$         HudLogger.INSTANCE.log(why);
@@ -850,7 +890,27 @@ public final class ClearBlockRender {
 
     //$$     bounds = null;
     //$$     recordingWorld = null;
-    //$$     if (listener != null) listener.done(saved != null ? StillResult.SAVED : StillResult.FAILED, saved);
+    //$$     if (listener != null) finishTurntable(listener, saved);
+    //$$ }
+    //$$
+    //$$ /** Copies a finished turntable clip to the clipboard as a file and reports how it ended. */
+    //$$ private static void finishTurntable(StillListener listener, java.nio.file.Path saved) {
+    //$$     if (saved == null) {
+    //$$         listener.done(StillResult.FAILED, null);
+    //$$         return;
+    //$$     }
+    //$$     String name = saved.getFileName().toString();
+    //$$     if (!ImageClipboard.supported()) {
+    //$$         listener.done(StillResult.SAVED, name);
+    //$$         return;
+    //$$     }
+    //$$     try {
+    //$$         ImageClipboard.copyFile(saved, Minecraft.getInstance().getWindow().handle());
+    //$$         listener.done(StillResult.COPIED, name);
+    //$$     } catch (Throwable t) {
+    //$$         AsutanTweaks.LOGGER.error("[ClearBlockRender] copying the video failed", t);
+    //$$         listener.done(StillResult.SAVED, name);
+    //$$     }
     //$$ }
     //$$
     //$$ private static ThirdEyeFbo previewFbo;

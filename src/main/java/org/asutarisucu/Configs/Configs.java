@@ -154,8 +154,11 @@ public class Configs {
                 new StringListConfig("order_options", List.of());
         public static final StringListConfig ORDER_HOTKEYS =
                 new StringListConfig("order_hotkeys", List.of());
+        /** Order of the Clear Block Render screen's Common tab. */
         public static final StringListConfig ORDER_CBR =
                 new StringListConfig("order_cbr", List.of());
+        public static final StringListConfig ORDER_CBR_REC =
+                new StringListConfig("order_cbr_rec", List.of());
     }
 
     public static void registerAll() {
@@ -213,7 +216,7 @@ public class Configs {
 
         for (IConfig<?> c : List.<IConfig<?>>of(Ui.LANGUAGE, Ui.BACKGROUND_IMAGE, Ui.GLASS_TRANSPARENCY,
                 Ui.BACKGROUND_BLUR, Ui.REFRACTION, Ui.BACKGROUND_DIM,
-                Ui.ORDER_FEATURES, Ui.ORDER_OPTIONS, Ui.ORDER_HOTKEYS, Ui.ORDER_CBR)) {
+                Ui.ORDER_FEATURES, Ui.ORDER_OPTIONS, Ui.ORDER_HOTKEYS, Ui.ORDER_CBR, Ui.ORDER_CBR_REC)) {
             ConfigManager.INSTANCE.register("ui", c.getName(), c);
         }
     }

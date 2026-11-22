@@ -147,12 +147,11 @@ public final class ConfigEntries {
         return ordered(list, Configs.Ui.ORDER_OPTIONS);
     }
 
-    public static List<Entry> cbrOptions() {
+    /** Clear Block Render settings that shape every capture, stills included. */
+    public static List<Entry> cbrCommonOptions() {
         List<Entry> list = new ArrayList<>();
         list.add(option(Configs.Generic.CBR_WIDTH));
         list.add(option(Configs.Generic.CBR_HEIGHT));
-        list.add(option(Configs.Generic.CBR_FPS));
-        list.add(option(Configs.Generic.CBR_SPEED));
         list.add(option(Configs.Generic.CBR_PROJECTION));
         list.add(option(Configs.Generic.CBR_FOV));
         list.add(option(Configs.Generic.CBR_ZOOM));
@@ -160,6 +159,13 @@ public final class ConfigEntries {
         list.add(option(Configs.Generic.CBR_PITCH));
         list.add(option(Configs.Generic.CBR_PAN_X));
         list.add(option(Configs.Generic.CBR_PAN_Y));
+        return ordered(list, Configs.Ui.ORDER_CBR);
+    }
+
+    public static List<Entry> cbrRecOptions() {
+        List<Entry> list = new ArrayList<>();
+        list.add(option(Configs.Generic.CBR_FPS));
+        list.add(option(Configs.Generic.CBR_SPEED));
         list.add(option(Configs.Generic.CBR_ORBIT_SPEED));
         list.add(option(Configs.Generic.CBR_TURNTABLE_FRAMES));
         list.add(option(Configs.Generic.CBR_BLOCK_ENTITIES));
@@ -167,7 +173,7 @@ public final class ConfigEntries {
         list.add(option(Configs.Generic.CBR_PLAYERS));
         list.add(option(Configs.Generic.CBR_FORMAT));
         list.add(option(Configs.Generic.CBR_FFMPEG_PATH));
-        return ordered(list, Configs.Ui.ORDER_CBR);
+        return ordered(list, Configs.Ui.ORDER_CBR_REC);
     }
 
     public static List<Entry> hotkeys() {
