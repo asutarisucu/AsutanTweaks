@@ -1,6 +1,5 @@
 package org.asutarisucu.Event;
 
-import me.fallenbreath.tweakermore.impl.mod_tweaks.serverDataSyncer.ServerDataSyncer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
@@ -10,6 +9,7 @@ import net.minecraft.registry.Registries;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.WorldChunk;
+import org.asutarisucu.Utiles.tweakerMore.ServerDataSyncerCompat;
 import org.asutarisucu.Configs.Configs;
 import org.asutarisucu.Configs.Feature;
 import org.asutarisucu.tweak.SearchItems.HighlightContainer;
@@ -75,12 +75,7 @@ public class RenderCash {
                             || Math.abs(pos.getY() - center.getY()) > radius
                             || Math.abs(pos.getZ() - center.getZ()) > radius) continue;
                     if (!(entry.getValue() instanceof Inventory inventory)) continue;
-//#if MC < 260200
-                    ServerDataSyncer.getInstance().syncBlockEntity(entry.getValue()).thenRun(() -> {
-//#else
-                    // TweakerMore for 26.2 renamed the one-argument sync methods.
-                    //$$ ServerDataSyncer.getInstance().syncBlockEntityToWorld(entry.getValue()).thenRun(() -> {
-//#endif
+                    ServerDataSyncerCompat.syncBlockEntity(entry.getValue()).thenRun(() -> {
                         for (int i = 0; i < inventory.size(); i++) {
                             ItemStack stack = inventory.getStack(i);
                             if (stack.isEmpty()) continue;

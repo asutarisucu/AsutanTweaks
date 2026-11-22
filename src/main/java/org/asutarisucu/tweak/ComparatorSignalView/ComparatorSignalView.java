@@ -1,5 +1,6 @@
 package org.asutarisucu.tweak.ComparatorSignalView;
 
+import org.asutarisucu.Utiles.tweakerMore.ServerDataSyncerCompat;
 import org.asutarisucu.Configs.Configs;
 import org.asutarisucu.Configs.Feature;
 import org.asutarisucu.mixin.ComparatorSignalView.MixinComparatorBlockInvoker;
@@ -229,12 +230,7 @@ public class ComparatorSignalView {
         lastRequestTick.put(pos, clientTick);
         awaitingReply.add(pos);
         try {
-//#if MC < 260200
-            ServerDataSyncer.getInstance().syncBlockEntity(be).thenRun(() -> {
-//#else
-            // TweakerMore for 26.2 renamed the one-argument sync methods.
-            //$$ ServerDataSyncer.getInstance().syncBlockEntityToWorld(be).thenRun(() -> {
-//#endif
+            ServerDataSyncerCompat.syncBlockEntity(be).thenRun(() -> {
                 serverValues.put(pos, be.getOutputSignal());
                 awaitingReply.remove(pos);
             });
