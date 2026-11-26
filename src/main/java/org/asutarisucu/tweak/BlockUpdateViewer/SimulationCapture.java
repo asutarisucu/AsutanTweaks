@@ -24,15 +24,18 @@ import java.util.*;
 public class SimulationCapture {
 
     public static final ThreadLocal<SimulationCapture> CURRENT = new ThreadLocal<>();
+    // The World hooks run on every getBlockState, including the server thread.
+    // Skip the ThreadLocal lookup while no simulation is running.
+    private static volatile boolean active;
 
     private final Map<BlockPos, BlockState> overlay = new HashMap<>();
     private final Deque<PendingUpdate> pending = new ArrayDeque<>();
     private final Deque<PendingTick> pendingTicks = new ArrayDeque<>();
     private final Set<BlockPos> notified = new LinkedHashSet<>();
 
-    public static SimulationCapture current() { return CURRENT.get(); }
-    public void begin() { CURRENT.set(this); }
-    public void end()   { CURRENT.remove(); }
+    public static SimulationCapture current() { return active ? CURRENT.get() : null; }
+    public void begin() { CURRENT.set(this); active = true; }
+    public void end()   { active = false; CURRENT.remove(); }
 
     public void applyChange(BlockPos pos, BlockState state) {
         overlay.put(imm(pos), state);
