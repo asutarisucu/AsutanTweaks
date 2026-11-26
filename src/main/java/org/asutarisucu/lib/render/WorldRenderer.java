@@ -4,6 +4,7 @@ package org.asutarisucu.lib.render;
 //$$ import com.mojang.blaze3d.vertex.PoseStack;
 //$$ import com.mojang.blaze3d.vertex.VertexConsumer;
 //$$ import net.minecraft.client.renderer.SubmitNodeCollector;
+//$$ import net.minecraft.client.renderer.rendertype.RenderType;
 //$$ import net.minecraft.client.renderer.rendertype.RenderTypes;
 //$$ import net.minecraft.core.BlockPos;
 //$$ import org.joml.Matrix4f;
@@ -45,7 +46,15 @@ package org.asutarisucu.lib.render;
 //$$                                            double expand, Matrix4f viewRot,
 //$$                                            double camX, double camY, double camZ) {
 //$$         if (positions.isEmpty() || collector == null) return;
-//$$         submitOutlines(positions, color, (float) expand, camX, camY, camZ);
+//$$         submitOutlines(positions, color, (float) expand, camX, camY, camZ, RenderTypes.lines());
+//$$     }
+//$$
+//$$     /** Same as renderBlockOutlines, but the lines show through blocks in front of them. */
+//$$     public static void renderBlockOutlinesThroughWalls(Set<BlockPos> positions, Color color,
+//$$                                                        double expand, Matrix4f viewRot,
+//$$                                                        double camX, double camY, double camZ) {
+//$$         if (positions.isEmpty() || collector == null) return;
+//$$         submitOutlines(positions, color, (float) expand, camX, camY, camZ, LinesThroughWalls.get());
 //$$     }
 //$$
 //$$     /** Draws a faint fill plus the outline of the group's outer boundary. */
@@ -91,8 +100,8 @@ package org.asutarisucu.lib.render;
 //$$     }
 //$$
 //$$     private static void submitOutlines(Set<BlockPos> positions, Color c, float expand,
-//$$                                        double camX, double camY, double camZ) {
-//$$         collector.submitCustomGeometry(poseStack, RenderTypes.lines(), (pose, buf) -> {
+//$$                                        double camX, double camY, double camZ, RenderType type) {
+//$$         collector.submitCustomGeometry(poseStack, type, (pose, buf) -> {
 //$$             for (BlockPos pos : positions) {
 //$$                 float x0 = (float)(pos.getX() - camX) - expand;
 //$$                 float y0 = (float)(pos.getY() - camY) - expand;
@@ -254,7 +263,22 @@ public class WorldRenderer {
                                            double camX, double camY, double camZ) {
         if (positions.isEmpty()) return;
         setupBlend();
-        drawOutlines(positions, color, (float) expand, viewRot, camX, camY, camZ);
+        drawOutlines(positions, color, (float) expand, viewRot, camX, camY, camZ, false);
+        teardownBlend();
+    }
+
+    /**
+     * Same as renderBlockOutlines, but the lines show through blocks in front of them.
+     * Not done on 1.21.11, where it draws like renderBlockOutlines.
+     */
+    public static void renderBlockOutlinesThroughWalls(Set<BlockPos> positions, Color color,
+                                                       double expand, Matrix4f viewRot,
+                                                       double camX, double camY, double camZ) {
+        if (positions.isEmpty()) return;
+        setupBlend();
+        disableDepth();
+        drawOutlines(positions, color, (float) expand, viewRot, camX, camY, camZ, true);
+        enableDepth();
         teardownBlend();
     }
 
@@ -336,7 +360,7 @@ public class WorldRenderer {
     }
 
     private static void drawOutlines(Set<BlockPos> positions, Color c, float expand, Matrix4f m,
-                                      double camX, double camY, double camZ) {
+                                      double camX, double camY, double camZ, boolean throughWalls) {
 //#if MC < 12101
         Tessellator tess = Tessellator.getInstance();
         BufferBuilder buf = tess.getBuffer();
@@ -370,7 +394,7 @@ public class WorldRenderer {
 //$$ var mesh = buf.endNullable();
 //$$ if (mesh != null) { RenderLayers.LINES_TRANSLUCENT.draw(mesh); mesh.close(); }
 //#else
-//$$ var buf = Tesselator.getInstance().begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR_LINE_WIDTH);
+//$$ var buf = Tesselator.getInstance().begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR_NORMAL_LINE_WIDTH);
 //$$ for (BlockPos pos : positions) {
 //$$     float x = (float)(pos.getX() - camX) - expand;
 //$$     float y = (float)(pos.getY() - camY) - expand;
@@ -378,9 +402,10 @@ public class WorldRenderer {
 //$$     addBoxLines26(buf, x, y, z, x + 1f + 2*expand, y + 1f + 2*expand, z + 1f + 2*expand, c.r(), c.g(), c.b(), c.a());
 //$$ }
 //$$ var mesh = buf.build();
-//$$ if (mesh != null) { RenderTypes.lines().draw(mesh); mesh.close(); }
+//$$ if (mesh != null) { (throughWalls ? LinesThroughWalls.get() : RenderTypes.lines()).draw(mesh); mesh.close(); }
 //#endif
     }
+
 
     /** Draws only edges that are on the outer boundary (shared interior edges omitted). */
     private static void drawOuterBoundaryLines(Set<BlockPos> positions, Color c, float expand,
@@ -403,7 +428,7 @@ public class WorldRenderer {
 //$$ var mesh = buf.endNullable();
 //$$ if (mesh != null) { RenderLayers.LINES_TRANSLUCENT.draw(mesh); mesh.close(); }
 //#else
-//$$ var buf = Tesselator.getInstance().begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR_LINE_WIDTH);
+//$$ var buf = Tesselator.getInstance().begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR_NORMAL_LINE_WIDTH);
 //$$ addBoundaryEdges26(positions, c, expand, camX, camY, camZ, buf);
 //$$ var mesh = buf.build();
 //$$ if (mesh != null) { RenderTypes.lines().draw(mesh); mesh.close(); }
@@ -586,21 +611,26 @@ public class WorldRenderer {
 //$$     b.addVertex(x0,y0,z1).setColor(r,g,bl,a); b.addVertex(x0,y0,z0).setColor(r,g,bl,a); b.addVertex(x0,y1,z0).setColor(r,g,bl,a); b.addVertex(x0,y1,z1).setColor(r,g,bl,a);
 //$$     b.addVertex(x1,y0,z0).setColor(r,g,bl,a); b.addVertex(x1,y0,z1).setColor(r,g,bl,a); b.addVertex(x1,y1,z1).setColor(r,g,bl,a); b.addVertex(x1,y1,z0).setColor(r,g,bl,a);
 //$$ }
+//$$ /** RenderTypes.lines() wants each vertex's normal set to the line direction. */
+//$$ private static void line26(com.mojang.blaze3d.vertex.BufferBuilder b,
+//$$                            float x0, float y0, float z0, float x1, float y1, float z1,
+//$$                            float r, float g, float bl, float a) {
+//$$     float dx = x1 - x0, dy = y1 - y0, dz = z1 - z0;
+//$$     float len = (float) Math.sqrt(dx*dx + dy*dy + dz*dz);
+//$$     if (len == 0f) return;
+//$$     dx /= len; dy /= len; dz /= len;
+//$$     b.addVertex(x0,y0,z0).setColor(r,g,bl,a).setNormal(dx,dy,dz).setLineWidth(1.5f);
+//$$     b.addVertex(x1,y1,z1).setColor(r,g,bl,a).setNormal(dx,dy,dz).setLineWidth(1.5f);
+//$$ }
 //$$ private static void addBoxLines26(com.mojang.blaze3d.vertex.BufferBuilder b,
 //$$                                    float x0, float y0, float z0, float x1, float y1, float z1,
 //$$                                    float r, float g, float bl, float a) {
-//$$     b.addVertex(x0,y0,z0).setColor(r,g,bl,a).setLineWidth(1.5f); b.addVertex(x1,y0,z0).setColor(r,g,bl,a).setLineWidth(1.5f);
-//$$     b.addVertex(x1,y0,z0).setColor(r,g,bl,a).setLineWidth(1.5f); b.addVertex(x1,y0,z1).setColor(r,g,bl,a).setLineWidth(1.5f);
-//$$     b.addVertex(x1,y0,z1).setColor(r,g,bl,a).setLineWidth(1.5f); b.addVertex(x0,y0,z1).setColor(r,g,bl,a).setLineWidth(1.5f);
-//$$     b.addVertex(x0,y0,z1).setColor(r,g,bl,a).setLineWidth(1.5f); b.addVertex(x0,y0,z0).setColor(r,g,bl,a).setLineWidth(1.5f);
-//$$     b.addVertex(x0,y1,z0).setColor(r,g,bl,a).setLineWidth(1.5f); b.addVertex(x1,y1,z0).setColor(r,g,bl,a).setLineWidth(1.5f);
-//$$     b.addVertex(x1,y1,z0).setColor(r,g,bl,a).setLineWidth(1.5f); b.addVertex(x1,y1,z1).setColor(r,g,bl,a).setLineWidth(1.5f);
-//$$     b.addVertex(x1,y1,z1).setColor(r,g,bl,a).setLineWidth(1.5f); b.addVertex(x0,y1,z1).setColor(r,g,bl,a).setLineWidth(1.5f);
-//$$     b.addVertex(x0,y1,z1).setColor(r,g,bl,a).setLineWidth(1.5f); b.addVertex(x0,y1,z0).setColor(r,g,bl,a).setLineWidth(1.5f);
-//$$     b.addVertex(x0,y0,z0).setColor(r,g,bl,a).setLineWidth(1.5f); b.addVertex(x0,y1,z0).setColor(r,g,bl,a).setLineWidth(1.5f);
-//$$     b.addVertex(x1,y0,z0).setColor(r,g,bl,a).setLineWidth(1.5f); b.addVertex(x1,y1,z0).setColor(r,g,bl,a).setLineWidth(1.5f);
-//$$     b.addVertex(x1,y0,z1).setColor(r,g,bl,a).setLineWidth(1.5f); b.addVertex(x1,y1,z1).setColor(r,g,bl,a).setLineWidth(1.5f);
-//$$     b.addVertex(x0,y0,z1).setColor(r,g,bl,a).setLineWidth(1.5f); b.addVertex(x0,y1,z1).setColor(r,g,bl,a).setLineWidth(1.5f);
+//$$     line26(b, x0,y0,z0, x1,y0,z0, r,g,bl,a); line26(b, x1,y0,z0, x1,y0,z1, r,g,bl,a);
+//$$     line26(b, x1,y0,z1, x0,y0,z1, r,g,bl,a); line26(b, x0,y0,z1, x0,y0,z0, r,g,bl,a);
+//$$     line26(b, x0,y1,z0, x1,y1,z0, r,g,bl,a); line26(b, x1,y1,z0, x1,y1,z1, r,g,bl,a);
+//$$     line26(b, x1,y1,z1, x0,y1,z1, r,g,bl,a); line26(b, x0,y1,z1, x0,y1,z0, r,g,bl,a);
+//$$     line26(b, x0,y0,z0, x0,y1,z0, r,g,bl,a); line26(b, x1,y0,z0, x1,y1,z0, r,g,bl,a);
+//$$     line26(b, x1,y0,z1, x1,y1,z1, r,g,bl,a); line26(b, x0,y0,z1, x0,y1,z1, r,g,bl,a);
 //$$ }
 //$$ private static void addBoundaryEdges26(Set<BlockPos> positions, Color c, float expand,
 //$$                                         double camX, double camY, double camZ,
@@ -610,12 +640,29 @@ public class WorldRenderer {
 //$$         double bx=pos.getX()-camX, by=pos.getY()-camY, bz=pos.getZ()-camZ;
 //$$         float x0=(float)(bx-expand), y0=(float)(by-expand), z0=(float)(bz-expand);
 //$$         float x1=(float)(bx+1+expand), y1=(float)(by+1+expand), z1=(float)(bz+1+expand);
-//$$         if (!positions.contains(pos.above()))  { if (!positions.contains(pos.north())) { buf.addVertex(x0,y1,z0).setColor(r,g,b,a).setLineWidth(1.5f); buf.addVertex(x1,y1,z0).setColor(r,g,b,a).setLineWidth(1.5f); } if (!positions.contains(pos.south())) { buf.addVertex(x0,y1,z1).setColor(r,g,b,a).setLineWidth(1.5f); buf.addVertex(x1,y1,z1).setColor(r,g,b,a).setLineWidth(1.5f); } if (!positions.contains(pos.west())) { buf.addVertex(x0,y1,z0).setColor(r,g,b,a).setLineWidth(1.5f); buf.addVertex(x0,y1,z1).setColor(r,g,b,a).setLineWidth(1.5f); } if (!positions.contains(pos.east())) { buf.addVertex(x1,y1,z0).setColor(r,g,b,a).setLineWidth(1.5f); buf.addVertex(x1,y1,z1).setColor(r,g,b,a).setLineWidth(1.5f); } }
-//$$         if (!positions.contains(pos.below()))  { if (!positions.contains(pos.north())) { buf.addVertex(x0,y0,z0).setColor(r,g,b,a).setLineWidth(1.5f); buf.addVertex(x1,y0,z0).setColor(r,g,b,a).setLineWidth(1.5f); } if (!positions.contains(pos.south())) { buf.addVertex(x0,y0,z1).setColor(r,g,b,a).setLineWidth(1.5f); buf.addVertex(x1,y0,z1).setColor(r,g,b,a).setLineWidth(1.5f); } if (!positions.contains(pos.west())) { buf.addVertex(x0,y0,z0).setColor(r,g,b,a).setLineWidth(1.5f); buf.addVertex(x0,y0,z1).setColor(r,g,b,a).setLineWidth(1.5f); } if (!positions.contains(pos.east())) { buf.addVertex(x1,y0,z0).setColor(r,g,b,a).setLineWidth(1.5f); buf.addVertex(x1,y0,z1).setColor(r,g,b,a).setLineWidth(1.5f); } }
-//$$         if (!positions.contains(pos.north()))  { if (!positions.contains(pos.below())) { buf.addVertex(x0,y0,z0).setColor(r,g,b,a).setLineWidth(1.5f); buf.addVertex(x1,y0,z0).setColor(r,g,b,a).setLineWidth(1.5f); } if (!positions.contains(pos.above())) { buf.addVertex(x0,y1,z0).setColor(r,g,b,a).setLineWidth(1.5f); buf.addVertex(x1,y1,z0).setColor(r,g,b,a).setLineWidth(1.5f); } if (!positions.contains(pos.west())) { buf.addVertex(x0,y0,z0).setColor(r,g,b,a).setLineWidth(1.5f); buf.addVertex(x0,y1,z0).setColor(r,g,b,a).setLineWidth(1.5f); } if (!positions.contains(pos.east())) { buf.addVertex(x1,y0,z0).setColor(r,g,b,a).setLineWidth(1.5f); buf.addVertex(x1,y1,z0).setColor(r,g,b,a).setLineWidth(1.5f); } }
-//$$         if (!positions.contains(pos.south()))  { if (!positions.contains(pos.below())) { buf.addVertex(x0,y0,z1).setColor(r,g,b,a).setLineWidth(1.5f); buf.addVertex(x1,y0,z1).setColor(r,g,b,a).setLineWidth(1.5f); } if (!positions.contains(pos.above())) { buf.addVertex(x0,y1,z1).setColor(r,g,b,a).setLineWidth(1.5f); buf.addVertex(x1,y1,z1).setColor(r,g,b,a).setLineWidth(1.5f); } if (!positions.contains(pos.west())) { buf.addVertex(x0,y0,z1).setColor(r,g,b,a).setLineWidth(1.5f); buf.addVertex(x0,y1,z1).setColor(r,g,b,a).setLineWidth(1.5f); } if (!positions.contains(pos.east())) { buf.addVertex(x1,y0,z1).setColor(r,g,b,a).setLineWidth(1.5f); buf.addVertex(x1,y1,z1).setColor(r,g,b,a).setLineWidth(1.5f); } }
-//$$         if (!positions.contains(pos.west()))   { if (!positions.contains(pos.below())) { buf.addVertex(x0,y0,z0).setColor(r,g,b,a).setLineWidth(1.5f); buf.addVertex(x0,y0,z1).setColor(r,g,b,a).setLineWidth(1.5f); } if (!positions.contains(pos.above())) { buf.addVertex(x0,y1,z0).setColor(r,g,b,a).setLineWidth(1.5f); buf.addVertex(x0,y1,z1).setColor(r,g,b,a).setLineWidth(1.5f); } if (!positions.contains(pos.north())) { buf.addVertex(x0,y0,z0).setColor(r,g,b,a).setLineWidth(1.5f); buf.addVertex(x0,y1,z0).setColor(r,g,b,a).setLineWidth(1.5f); } if (!positions.contains(pos.south())) { buf.addVertex(x0,y0,z1).setColor(r,g,b,a).setLineWidth(1.5f); buf.addVertex(x0,y1,z1).setColor(r,g,b,a).setLineWidth(1.5f); } }
-//$$         if (!positions.contains(pos.east()))   { if (!positions.contains(pos.below())) { buf.addVertex(x1,y0,z0).setColor(r,g,b,a).setLineWidth(1.5f); buf.addVertex(x1,y0,z1).setColor(r,g,b,a).setLineWidth(1.5f); } if (!positions.contains(pos.above())) { buf.addVertex(x1,y1,z0).setColor(r,g,b,a).setLineWidth(1.5f); buf.addVertex(x1,y1,z1).setColor(r,g,b,a).setLineWidth(1.5f); } if (!positions.contains(pos.north())) { buf.addVertex(x1,y0,z0).setColor(r,g,b,a).setLineWidth(1.5f); buf.addVertex(x1,y1,z0).setColor(r,g,b,a).setLineWidth(1.5f); } if (!positions.contains(pos.south())) { buf.addVertex(x1,y0,z1).setColor(r,g,b,a).setLineWidth(1.5f); buf.addVertex(x1,y1,z1).setColor(r,g,b,a).setLineWidth(1.5f); } }
+//$$         boolean up = positions.contains(pos.above()),    down  = positions.contains(pos.below());
+//$$         boolean north = positions.contains(pos.north()), south = positions.contains(pos.south());
+//$$         boolean west = positions.contains(pos.west()),   east  = positions.contains(pos.east());
+//$$         if (!up) {
+//$$             if (!north) line26(buf, x0,y1,z0, x1,y1,z0, r,g,b,a);
+//$$             if (!south) line26(buf, x0,y1,z1, x1,y1,z1, r,g,b,a);
+//$$             if (!west)  line26(buf, x0,y1,z0, x0,y1,z1, r,g,b,a);
+//$$             if (!east)  line26(buf, x1,y1,z0, x1,y1,z1, r,g,b,a);
+//$$         }
+//$$         if (!down) {
+//$$             if (!north) line26(buf, x0,y0,z0, x1,y0,z0, r,g,b,a);
+//$$             if (!south) line26(buf, x0,y0,z1, x1,y0,z1, r,g,b,a);
+//$$             if (!west)  line26(buf, x0,y0,z0, x0,y0,z1, r,g,b,a);
+//$$             if (!east)  line26(buf, x1,y0,z0, x1,y0,z1, r,g,b,a);
+//$$         }
+//$$         if (!north) {
+//$$             if (!west)  line26(buf, x0,y0,z0, x0,y1,z0, r,g,b,a);
+//$$             if (!east)  line26(buf, x1,y0,z0, x1,y1,z0, r,g,b,a);
+//$$         }
+//$$         if (!south) {
+//$$             if (!west)  line26(buf, x0,y0,z1, x0,y1,z1, r,g,b,a);
+//$$             if (!east)  line26(buf, x1,y0,z1, x1,y1,z1, r,g,b,a);
+//$$         }
 //$$     }
 //$$ }
 //#endif
@@ -665,11 +712,11 @@ public class WorldRenderer {
 //$$ var mesh = buf.endNullable();
 //$$ if (mesh != null) { RenderLayers.LINES_TRANSLUCENT.draw(mesh); mesh.close(); }
 //#else
-//$$ var buf = Tesselator.getInstance().begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR_LINE_WIDTH);
+//$$ var buf = Tesselator.getInstance().begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR_NORMAL_LINE_WIDTH);
 //$$ for (int i = 0; i < segCount; i++) {
 //$$     int o = i * 6;
-//$$     buf.addVertex((float)(segs[o]   - camX), (float)(segs[o+1] - camY), (float)(segs[o+2] - camZ)).setColor(r,g,b,a).setLineWidth(1.5f);
-//$$     buf.addVertex((float)(segs[o+3] - camX), (float)(segs[o+4] - camY), (float)(segs[o+5] - camZ)).setColor(r,g,b,a).setLineWidth(1.5f);
+//$$     line26(buf, (float)(segs[o]   - camX), (float)(segs[o+1] - camY), (float)(segs[o+2] - camZ),
+//$$                 (float)(segs[o+3] - camX), (float)(segs[o+4] - camY), (float)(segs[o+5] - camZ), r,g,b,a);
 //$$ }
 //$$ var mesh = buf.build();
 //$$ if (mesh != null) { RenderTypes.lines().draw(mesh); mesh.close(); }

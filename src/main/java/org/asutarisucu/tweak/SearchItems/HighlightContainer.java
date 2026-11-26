@@ -39,7 +39,7 @@ public class HighlightContainer {
         Color color = Configs.Generic.HIGHLIGHT_CONTAINER_COLOR.getColor();
         Vec3d cam = context.camera().getPos();
         Matrix4f viewRot = context.matrixStack().peek().getPositionMatrix();
-        WorldRenderer.renderBlockOutlines(posSet, color, 0.0025, viewRot, cam.x, cam.y, cam.z);
+        WorldRenderer.renderBlockOutlinesThroughWalls(posSet, color, 0.0025, viewRot, cam.x, cam.y, cam.z);
     }
 //#elseif MC < 260100
 //$$ public static void render(WorldRenderContext context) {
@@ -48,7 +48,7 @@ public class HighlightContainer {
 //$$     Color color = Configs.Generic.HIGHLIGHT_CONTAINER_COLOR.getColor();
 //$$     Vec3d cam = context.gameRenderer().getCamera().getCameraPos();
 //$$     Matrix4f viewRot = context.matrices().peek().getPositionMatrix();
-//$$     WorldRenderer.renderBlockOutlines(posSet, color, 0.0025, viewRot, cam.x, cam.y, cam.z);
+//$$     WorldRenderer.renderBlockOutlinesThroughWalls(posSet, color, 0.0025, viewRot, cam.x, cam.y, cam.z);
 //$$ }
 //#else
 //$$ public static void render(net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext context) {
@@ -62,7 +62,7 @@ public class HighlightContainer {
 //$$     WorldRenderer.beginFrame(context.submitNodeCollector(), context.poseStack());
 //#endif
 //$$     Matrix4f viewRot = new Matrix4f();
-//$$     WorldRenderer.renderBlockOutlines(posSet, color, 0.0025, viewRot, cam.x, cam.y, cam.z);
+//$$     WorldRenderer.renderBlockOutlinesThroughWalls(posSet, color, 0.0025, viewRot, cam.x, cam.y, cam.z);
 //$$ }
 //#endif
 }
