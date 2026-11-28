@@ -4,8 +4,13 @@
 # The jars are taken from the release rather than rebuilt, so what reaches
 # Modrinth is the same file people download from GitHub.
 #
+# A jar already on Modrinth is not uploaded again; its version's changelog is
+# replaced with the release body. Running this by hand after editing the
+# release notes brings the Modrinth changelogs up to date.
+#
 # Needs a MODRINTH_TOKEN repository secret: a personal access token with the
-# "Create versions" scope, from https://modrinth.com/settings/pats
+# "Create versions" and "Write versions" scopes, from
+# https://modrinth.com/settings/pats
 
 name: publish-modrinth
 
@@ -65,11 +70,12 @@ jobs:
           fi
           UA="asutarisucu/AsutanTweaks/$VERSION (github-actions)"
 
-          # Filenames already on Modrinth, so a re-run does not upload twice.
+          # Filenames already on Modrinth with their version ids, so a re-run
+          # does not upload twice.
           curl -sS --fail-with-body \
             -H "User-Agent: $UA" \
             "https://api.modrinth.com/v2/project/$MODRINTH_PROJECT_ID/version" \
-            | jq -r '.[].files[].filename' | sort -u > published.txt
+            | jq -r '.[] | .id as $id | .files[] | "\(.filename)\t\($id)"' > published.tsv
 
           failed=0
           for dir in $(jq -r '.versions[]' settings.json); do
@@ -86,8 +92,20 @@ jobs:
               echo "::notice::$TAG has no jar for MC $mc, skipping"
               continue
             fi
-            if grep -qxF "$(basename "$jar")" published.txt; then
-              echo "::notice::$(basename "$jar") is already on Modrinth, skipping"
+            existing=$(awk -F'\t' -v f="$(basename "$jar")" '$1 == f { print $2; exit }' published.tsv)
+            if [ -n "$existing" ]; then
+              echo "$(basename "$jar") is already on Modrinth, updating the changelog of $existing"
+              jq -n --rawfile changelog changelog.md '{changelog: $changelog}' > patch.json
+              if ! curl -sS --fail-with-body -X PATCH \
+                -H "Authorization: $MODRINTH_TOKEN" \
+                -H "User-Agent: $UA" \
+                -H "Content-Type: application/json" \
+                --data-binary @patch.json \
+                "https://api.modrinth.com/v2/version/$existing"; then
+                echo "::error::changelog update failed for MC $mc"
+                failed=1
+              fi
+              echo
               continue
             fi
 
