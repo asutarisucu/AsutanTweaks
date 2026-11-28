@@ -206,7 +206,7 @@
   "asutantweaks.option.cbr_players.detail": "選択範囲内のプレイヤーを描きます。録画する本人が写り込みやすいので既定はOFFです。",
   "asutantweaks.option.cbr_format.detail": "WebM (VP9)はブラウザで再生できます。MOV (ProRes 4444)は動画編集ソフト向けです。どちらも透過を保ちます。",
   "asutantweaks.option.cbr_ffmpeg_path.detail": "PATHにffmpegが無いときに、その場所を指定します。",
-  "asutantweaks.option.trencher_area_source.detail": "検証する範囲を、Litematicaの選択範囲から取るか座標入力から取るかを選びます。高さはどちらも、岩盤より上のY-58からMax Yまでです。Max Yより上にあるブロックは、別のカードで強調表示します。",
+  "asutantweaks.option.trencher_area_source.detail": "検証する範囲を、Litematicaの選択範囲から取るか座標入力から取るかを選びます。高さはどちらも、岩盤より上のY-59からMax Yまでです。Max Yより上にあるブロックは、別のカードで強調表示します。",
   "asutantweaks.option.trencher_pos1.detail": "座標入力のときの1つ目の角です。「x y z」の形で入れます。Yは使いません。",
   "asutantweaks.option.trencher_pos2.detail": "座標入力のときの2つ目の角です。「x y z」の形で入れます。Yは使いません。",
   "asutantweaks.option.trencher_liquid_removed.detail": "範囲内の液体を取り除いてあるときにONにします。溶岩を調べる場所が、幅の外側1マスだけになります。",

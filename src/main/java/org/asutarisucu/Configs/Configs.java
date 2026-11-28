@@ -143,7 +143,7 @@ public class Configs {
                 new BooleanConfig("trencher_liquid_removed", false);
         /** Highest Y checked. Blocks above it inside the area get a card of their own. */
         public static final IntegerConfig TRENCHER_MAX_Y =
-                new IntegerConfig("trencher_max_y", 110, -58, 320);
+                new IntegerConfig("trencher_max_y", 110, -59, 320);
         /** Starts the blast-resistant cards picked instead, and hides falling stacks. */
         public static final BooleanConfig TRENCHER_EATER_MODE =
                 new BooleanConfig("trencher_eater_mode", false);

@@ -280,7 +280,7 @@
   "asutantweaks.option.cbr_ffmpeg_path": "FFmpeg Path",
   "asutantweaks.option.cbr_ffmpeg_path.detail": "Path to ffmpeg, if it is not on PATH.",
   "asutantweaks.option.trencher_area_source": "Area Source",
-  "asutantweaks.option.trencher_area_source.detail": "Take the area from the Litematica selection or from typed coordinates. Either way it runs from Y -58, above the bedrock, to Max Y. Blocks above Max Y are highlighted on their own card.",
+  "asutantweaks.option.trencher_area_source.detail": "Take the area from the Litematica selection or from typed coordinates. Either way it runs from Y -59, above the bedrock, to Max Y. Blocks above Max Y are highlighted on their own card.",
   "asutantweaks.option.trencher_pos1": "Trencher Pos 1",
   "asutantweaks.option.trencher_pos1.detail": "First corner when Area Source is Coordinates, as \"x y z\". Y is not used.",
   "asutantweaks.option.trencher_pos2": "Trencher Pos 2",

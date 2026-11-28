@@ -112,7 +112,7 @@ import java.util.Set;
  * Checks the ground a Trencher will dig for blocks that get in its way.
  *
  * The area is the horizontal rectangle of the Litematica selection or of two
- * typed corners, from Y -58 (or the bottom of the world, when that is higher)
+ * typed corners, from Y -59 (or the bottom of the world, when that is higher)
  * to Max Y. Blocks above Max Y inside the area are kept apart as "above" so
  * they can be highlighted too. Its shorter side is
  * the width and its longer side the length. Every non-air block inside is
@@ -152,10 +152,12 @@ public final class TrencherVerifier {
     private static final float TNT_PROOF_RESISTANCE = 17.04f;
 
     /**
-     * Lowest Y looked at. Overworld bedrock reaches up to Y -59 and a Trencher
-     * cannot dig through it, so the layers below are left out.
+     * Lowest Y looked at. Overworld bedrock reaches up to Y -60 and a Trencher
+     * cannot dig through it, so the layers below are left out. The floor is
+     * SurfaceRuleData's "bedrock_floor" gradient: always at the bottom, never
+     * from five blocks above it.
      */
-    private static final int MIN_Y = -58;
+    private static final int MIN_Y = -59;
 
     /** Opacity of the fill drawn over highlighted blocks. */
     private static final float FILL_ALPHA = 0.35f;
