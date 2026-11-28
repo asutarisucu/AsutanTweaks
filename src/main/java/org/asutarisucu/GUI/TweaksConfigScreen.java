@@ -18,6 +18,7 @@ import org.asutarisucu.GUI.glass.Suggestions;
 import org.asutarisucu.GUI.glass.TextField;
 import org.asutarisucu.GUI.glass.Widgets;
 import org.asutarisucu.lib.config.*;
+import org.asutarisucu.tweak.TrencherVerify.TrencherVerifier;
 import org.lwjgl.glfw.GLFW;
 
 import java.io.File;
@@ -58,7 +59,9 @@ import org.asutarisucu.mixin.ConfigScreen.MixinTitleScreenPanorama;
  * the left, all drawn as liquid glass over what is behind the screen.
  *
  * Opened with {@code cbrMode} it becomes the Clear Block Render screen: that
- * feature's settings on the left and a live preview on the right.
+ * feature's settings on the left and a live preview on the right. Opened with
+ * {@link #trencher} it becomes the Trencher Verify screen: the area settings on
+ * the left and the block types found in the area on the right.
  */
 public class TweaksConfigScreen extends Screen {
 
@@ -74,6 +77,8 @@ public class TweaksConfigScreen extends Screen {
 
     private static final String[] TAB_KEYS = { "ui.tab.all", "ui.tab.features", "ui.tab.options", "ui.tab.hotkeys" };
     private static final String[] CBR_TAB_KEYS = { "ui.cbr.tab.common", "ui.cbr.tab.rec" };
+    private static final String[] TRENCHER_TAB_KEYS = { "ui.trencher.tab.settings" };
+    private static final int RESULT_ROW_H = 27, CHIP_H = 16, TRENCHER_INFO_H = 46;
     private static int lastTab = 0;
     private static int lastCbrTab = 0;
     /** null follows the space available; set once the player clicks the header. */
@@ -82,11 +87,19 @@ public class TweaksConfigScreen extends Screen {
 
     private final Screen parent;
     private final boolean cbrMode;
+    private final boolean trencherMode;
 
     private int tab;
     private float lensX = -1, lensW;
 
-    private List<Entry> features, options, hotkeys, cbrCommon, cbrRec;
+    private List<Entry> features, options, hotkeys, cbrCommon, cbrRec, trencherOpts;
+
+    // result list (Trencher Verify mode)
+    private int[] resultRect;
+    /** {x, y, w, h} of the select-all button. */
+    private int[] selectAllRect;
+    private float resultScroll, resultScrollTarget;
+    private int resultMaxScroll;
 
     private final TextField search = TextField.plain();
     private Entry editEntry;
@@ -156,14 +169,24 @@ public class TweaksConfigScreen extends Screen {
     }
 
     public TweaksConfigScreen(Screen parent, boolean cbrMode) {
+        this(parent, cbrMode, false);
+    }
+
+    /** The Trencher Verify screen. */
+    public static TweaksConfigScreen trencher(Screen parent) {
+        return new TweaksConfigScreen(parent, false, true);
+    }
+
+    private TweaksConfigScreen(Screen parent, boolean cbrMode, boolean trencherMode) {
 //#if MC < 260100
-        super(Text.literal(cbrMode ? "Clear Block Render" : "AsutanTweaks Config"));
+        super(Text.literal(trencherMode ? "Trencher Verify" : cbrMode ? "Clear Block Render" : "AsutanTweaks Config"));
 //#else
-//$$     super(Component.literal(cbrMode ? "Clear Block Render" : "AsutanTweaks Config"));
+//$$     super(Component.literal(trencherMode ? "Trencher Verify" : cbrMode ? "Clear Block Render" : "AsutanTweaks Config"));
 //#endif
         this.parent = parent;
         this.cbrMode = cbrMode;
-        this.tab = cbrMode ? lastCbrTab : lastTab;
+        this.trencherMode = trencherMode;
+        this.tab = trencherMode ? 0 : cbrMode ? lastCbrTab : lastTab;
         reloadEntries();
     }
 
@@ -173,10 +196,20 @@ public class TweaksConfigScreen extends Screen {
         hotkeys = ConfigEntries.hotkeys();
         cbrCommon = ConfigEntries.cbrCommonOptions();
         cbrRec = ConfigEntries.cbrRecOptions();
+        trencherOpts = ConfigEntries.trencherOptions();
     }
 
     private String[] tabKeys() {
-        return cbrMode ? CBR_TAB_KEYS : TAB_KEYS;
+        return trencherMode ? TRENCHER_TAB_KEYS : cbrMode ? CBR_TAB_KEYS : TAB_KEYS;
+    }
+
+    /** True for the screens with a settings list on the left and their own pane on the right. */
+    private boolean sideMode() {
+        return cbrMode || trencherMode;
+    }
+
+    private String title() {
+        return trencherMode ? Lang.get("ui.trencher.title") : cbrMode ? Lang.get("ui.cbr.title") : "AsutanTweaks";
     }
 
     // ── version glue: rendering ──────────────────────────────────
@@ -330,6 +363,8 @@ public class TweaksConfigScreen extends Screen {
         drawTopBar(g, imx, imy);
         if (cbrMode) {
             drawCbrSide(g, imx, imy);
+        } else if (trencherMode) {
+            drawTrencherSide(g, imx, imy);
         } else {
             drawDetails(g);
             drawAppearance(g, imx, imy);
@@ -343,12 +378,15 @@ public class TweaksConfigScreen extends Screen {
 
     private void layout() {
         int bodyY = M + TOP_H + GAP, bodyBottom = height - M;
-        if (cbrMode) {
-            int leftW = Math.max(170, Math.round((width - M * 2) * 0.46f));
+        if (sideMode()) {
+            // Trencher Verify gives the result list the larger share.
+            int leftW = Math.max(170, Math.round((width - M * 2) * (trencherMode ? 0.36f : 0.46f)));
             listX = M;
             listW = leftW;
             listY = bodyY + 20 + 6;
             listH = bodyBottom - listY;
+            // Trencher Verify keeps the texts about the picked setting under its list.
+            if (trencherMode) listH -= TRENCHER_INFO_H + GAP;
             return;
         }
         int leftW = Math.max(150, Math.min(280, Math.round(width * 0.32f)));
@@ -428,7 +466,7 @@ public class TweaksConfigScreen extends Screen {
 
     private void drawTopBar(Gfx g, int mx, int my) {
         if (!beginPanel(g, 0, width / 2f, M + TOP_H / 2f)) return;
-        String title = cbrMode ? Lang.get("ui.cbr.title") : "AsutanTweaks";
+        String title = title();
         int[] tabs = tabRects();
         String[] keys = tabKeys();
         int titleRoom = tabs[0] - 8 - (M + 2);
@@ -479,7 +517,7 @@ public class TweaksConfigScreen extends Screen {
         }
         int x = (width - total) / 2;
         // Keep clear of the title when there is room to the right.
-        String title = cbrMode ? Lang.get("ui.cbr.title") : "AsutanTweaks";
+        String title = title();
         int titleEnd = M + 2 + Gfx.textWidth(title, true) + 12;
         if (x < titleEnd && titleEnd + total <= width - M - TOP_H - 8) x = titleEnd;
         int[] out = new int[w.length + 1];
@@ -507,6 +545,7 @@ public class TweaksConfigScreen extends Screen {
 
     private List<List<Entry>> sections() {
         if (cbrMode) return List.of(tab == 0 ? cbrCommon : cbrRec);
+        if (trencherMode) return List.of(trencherOpts);
         return switch (tab) {
             case 1 -> List.of(features);
             case 2 -> List.of(options);
@@ -1115,6 +1154,255 @@ public class TweaksConfigScreen extends Screen {
         return Lang.format("ui.cbr.ready", size, fmtKey(Hotkeys.CLEAR_BLOCK_RENDER_RECORD.getHotkey().getStorageString()));
     }
 
+    // ── Trencher Verify side ─────────────────────────────────────
+
+    private void drawTrencherSide(Gfx g, int mx, int my) {
+        int x = listX + listW + GAP + 6, x1 = width - M;
+        int top = M + TOP_H + GAP, bottom = height - M;
+        int btnY = bottom - 20;
+        int listBottom = btnY - 8;
+        TrencherVerifier.Result r = TrencherVerifier.result();
+
+        if (beginPanel(g, 20, (x + x1) / 2f, (top + listBottom) / 2f)) {
+            Widgets.panel(g, x, top, x1 - x, listBottom - top, 14, closing());
+            String label = selectAllLabel(r);
+            selectAllRect = new int[] { x + 8, top + 8, Gfx.textWidth(label, false) + 14, CHIP_H };
+            Widgets.button(g, selectAllRect[0], selectAllRect[1], selectAllRect[2], selectAllRect[3], label, mx, my, false);
+            int chipsBottom = top + 8 + CHIP_H;
+            // The run's progress sits at the foot of the list as a meter of read chunks.
+            int statusY = listBottom - 8;
+            if (r != null) {
+                statusY -= 4;
+                float done = r.totalChunks == 0 ? 1f : r.doneChunks() / (float) r.totalChunks;
+                Widgets.meter(g, x + 10, statusY, x1 - x - 20, done);
+            }
+            drawResultList(g, r, x + 8, chipsBottom + 6, x1 - 8, statusY - 6, mx, my);
+            endPanel(g);
+        }
+
+        int infoY = bottom - TRENCHER_INFO_H;
+        if (beginPanel(g, 40, listX + listW / 2f, infoY + TRENCHER_INFO_H / 2f)) {
+            Widgets.panel(g, listX, infoY, listW, TRENCHER_INFO_H, 12, closing());
+            String info = selected != null ? selected.detail() : Lang.get("ui.trencher.hint");
+            int ty = infoY + 7;
+            for (String line : g.wrap(info, listW - 20)) {
+                if (ty > infoY + TRENCHER_INFO_H - 12) break;
+                g.text(line, listX + 10, ty, Widgets.TEXT_DIM, false, false);
+                ty += 11;
+            }
+            endPanel(g);
+        }
+
+        if (beginPanel(g, 60, (x + x1) / 2f, btnY + 10)) {
+            int[] b = trencherButtons();
+            Widgets.button(g, b[2], btnY, b[4], 20, Lang.get("ui.done"), mx, my, true);
+            Widgets.button(g, b[1], btnY, b[3], 20, Lang.get("ui.trencher.clear"), mx, my, false);
+            Widgets.button(g, b[0], btnY, b[3], 20, Lang.get("ui.trencher.scan"), mx, my, false);
+            endPanel(g);
+        }
+    }
+
+    /** {scan x, clear x, done x, side button width, done width}, shrinking evenly when narrow. */
+    private int[] trencherButtons() {
+        int x = listX + listW + GAP + 6, x1 = width - M, gap = 6;
+        int even = (x1 - x - gap * 2) / 3;
+        int doneW = Math.min(84, even), sideW = Math.min(96, even);
+        int doneX = x1 - doneW, clearX = doneX - gap - sideW, scanX = clearX - gap - sideW;
+        return new int[] { scanX, clearX, doneX, sideW, doneW };
+    }
+
+    /** The label of the button above the list: it picks every card, or drops them when all are picked. */
+    private static String selectAllLabel(TrencherVerifier.Result r) {
+        return r != null && allShownSelected(r) ? Lang.get("ui.trencher.deselect_all") : Lang.get("ui.trencher.select_all");
+    }
+
+    /**
+     * Cards that head the list: lava, when lava was looked for, the blocks above
+     * the area's top, and outside Eater Mode the stacks of falling blocks.
+     */
+    private static List<String> fixedRows(TrencherVerifier.Result r) {
+        List<String> rows = new ArrayList<>();
+        if (r.lavaCheck != TrencherVerifier.LavaCheck.NONE) rows.add("lava");
+        rows.add("above");
+        if (!TrencherVerifier.eaterMode()) rows.add("stack");
+        return rows;
+    }
+
+    private static boolean fixedSelected(String id) {
+        return switch (id) {
+            case "lava" -> TrencherVerifier.isLavaSelected();
+            case "above" -> TrencherVerifier.isAboveSelected();
+            default -> TrencherVerifier.isStackSelected();
+        };
+    }
+
+    private static void setFixedSelected(String id, boolean on) {
+        switch (id) {
+            case "lava" -> TrencherVerifier.setLavaSelected(on);
+            case "above" -> TrencherVerifier.setAboveSelected(on);
+            default -> TrencherVerifier.setStackSelected(on);
+        }
+    }
+
+    private static boolean allShownSelected(TrencherVerifier.Result r) {
+        List<TrencherVerifier.Entry> entries = r.entries();
+        List<String> fixed = fixedRows(r);
+        if (entries.isEmpty() && fixed.isEmpty()) return false;
+        for (String id : fixed) {
+            if (!fixedSelected(id)) return false;
+        }
+        for (TrencherVerifier.Entry e : entries) {
+            if (!TrencherVerifier.isSelected(e)) return false;
+        }
+        return true;
+    }
+
+    /** Picks every card shown, or drops them all when they are all picked. */
+    private static void toggleAllShown(TrencherVerifier.Result r) {
+        boolean on = !allShownSelected(r);
+        TrencherVerifier.setSelected(r.entries(), on);
+        for (String id : fixedRows(r)) setFixedSelected(id, on);
+    }
+
+    /** Block types in list order: those that start picked first, each group in the order found. */
+    private static List<TrencherVerifier.Entry> orderedEntries(TrencherVerifier.Result r) {
+        List<TrencherVerifier.Entry> out = new ArrayList<>(r.entries().size());
+        for (TrencherVerifier.Entry e : r.entries()) {
+            if (TrencherVerifier.isDefaultOn(e)) out.add(e);
+        }
+        for (TrencherVerifier.Entry e : r.entries()) {
+            if (!TrencherVerifier.isDefaultOn(e)) out.add(e);
+        }
+        return out;
+    }
+
+    /** The block's name, plus which of its cards this is when the block has several. */
+    private static String entryLabel(TrencherVerifier.Entry e) {
+        String s = e.name;
+        if (e.waterlogged) s += " · " + Lang.get("ui.trencher.filter.waterlogged");
+        if (e.immovable) s += " · " + Lang.get("ui.trencher.filter.immovable");
+        return s;
+    }
+
+    private void drawResultList(Gfx g, TrencherVerifier.Result r, int x0, int y0, int x1, int y1, int mx, int my) {
+        resultRect = new int[] { x0, y0, x1, y1 };
+        if (r == null) {
+            resultMaxScroll = 0;
+            String msg = Lang.get("ui.trencher.no_result");
+            g.text(msg, (x0 + x1 - g.width(msg)) / 2, (y0 + y1) / 2 - 4, Widgets.TEXT_FAINT, false, false);
+            return;
+        }
+        List<TrencherVerifier.Entry> entries = orderedEntries(r);
+        List<String> fixed = fixedRows(r);
+        int rows = entries.size() + fixed.size();
+        resultMaxScroll = Math.max(0, rows * RESULT_ROW_H - (y1 - y0));
+        resultScrollTarget = Math.max(0, Math.min(resultMaxScroll, resultScrollTarget));
+        resultScroll = Anim.approach(resultScroll, resultScrollTarget, dt, 18);
+
+        int highlight = Configs.Generic.TRENCHER_HIGHLIGHT_COLOR.getValue();
+        int lavaColor = Configs.Generic.TRENCHER_LAVA_COLOR.getValue();
+        int aboveColor = Configs.Generic.TRENCHER_ABOVE_COLOR.getValue();
+        int stackColor = Configs.Generic.TRENCHER_STACK_COLOR.getValue();
+        g.scissor(x0, y0, x1, y1);
+        int y = y0 - Math.round(resultScroll);
+        for (int i = 0; i < rows; i++, y += RESULT_ROW_H) {
+            if (y + RESULT_ROW_H < y0 || y > y1) continue;
+            boolean hover = Widgets.inside(mx, my, x0, Math.max(y, y0), x1 - x0, RESULT_ROW_H - 3)
+                    && my >= y0 && my < y1;
+            String fixedId = i < fixed.size() ? fixed.get(i) : "";
+            if (fixedId.equals("lava")) {
+                drawResultCard(g, x0, y, x1, "lava", TrencherVerifier.lavaIcon(), Lang.get("ui.trencher.lava"),
+                        r.lavaCount(), TrencherVerifier.isLavaSelected(), lavaColor, hover);
+            } else if (fixedId.equals("above")) {
+                drawResultCard(g, x0, y, x1, "above", TrencherVerifier.aboveIcon(), Lang.format("ui.trencher.above", r.maxY),
+                        r.aboveCount(), TrencherVerifier.isAboveSelected(), aboveColor, hover);
+            } else if (fixedId.equals("stack")) {
+                drawResultCard(g, x0, y, x1, "stack", TrencherVerifier.stackIcon(), Lang.get("ui.trencher.stack"),
+                        r.stackCount(), TrencherVerifier.isStackSelected(), stackColor, hover);
+            } else {
+                TrencherVerifier.Entry e = entries.get(i - fixed.size());
+                drawResultCard(g, x0, y, x1, e.id, e.icon(), entryLabel(e), e.count(),
+                        TrencherVerifier.isSelected(e), highlight, hover);
+            }
+        }
+        g.unscissor();
+    }
+
+    /** One block type as a card. The whole card toggles its highlight; the switch shows the state. */
+//#if MC < 260100
+    private void drawResultCard(Gfx g, int x0, int y, int x1, String id, net.minecraft.item.ItemStack icon, String name,
+//#else
+//$$ private void drawResultCard(Gfx g, int x0, int y, int x1, String id, net.minecraft.world.item.ItemStack icon, String name,
+//#endif
+                                int count, boolean on, int color, boolean hover) {
+        int h = RESULT_ROW_H - 3, w = x1 - x0;
+        int rgb = color & 0x00FFFFFF;
+        g.rounded(x0, y, w, h, 8, on ? rgb | 0x38000000 : hover ? 0x24FFFFFF : 0x12FFFFFF);
+        g.outline(x0, y, w, h, 8, 1, on ? rgb | 0xC0000000 : Widgets.STROKE);
+        g.item(icon, x0 + 6, y + (h - 16) / 2);
+
+        int tx = x1 - 8 - 28, ty = y + (h - 16) / 2;
+        float knob = approachMap(knobs, "trencher:" + id, on ? 1 : 0, 16);
+        Widgets.toggle(g, tx, ty, knob, hover);
+
+        String n = String.valueOf(count);
+        int nx = tx - 10 - g.width(n);
+        int textY = y + (h - 8) / 2;
+        g.text(n, nx, textY, count > 0 ? Widgets.TEXT : Widgets.TEXT_FAINT, false, false);
+        g.text(g.ellipsize(name, nx - 10 - (x0 + 28)), x0 + 28, textY, on ? Widgets.TEXT : Widgets.TEXT_DIM, false, false);
+    }
+
+
+    private boolean clickTrencherSide(int mx, int my) {
+        int btnY = height - M - 20;
+        int[] b = trencherButtons();
+        if (Widgets.inside(mx, my, b[2], btnY, b[4], 20)) {
+            startClose();
+            return true;
+        }
+        if (Widgets.inside(mx, my, b[1], btnY, b[3], 20)) {
+            TrencherVerifier.clear();
+            return true;
+        }
+        if (Widgets.inside(mx, my, b[0], btnY, b[3], 20)) {
+            runTrencherScan();
+            return true;
+        }
+        TrencherVerifier.Result r = TrencherVerifier.result();
+        int[] c = selectAllRect;
+        if (c != null && Widgets.inside(mx, my, c[0], c[1], c[2], c[3])) {
+            if (r != null) toggleAllShown(r);
+            return true;
+        }
+        if (r != null && resultRect != null
+                && Widgets.inside(mx, my, resultRect[0], resultRect[1], resultRect[2] - resultRect[0], resultRect[3] - resultRect[1])) {
+            int off = my - resultRect[1] + Math.round(resultScroll);
+            int i = off / RESULT_ROW_H;
+            List<TrencherVerifier.Entry> entries = orderedEntries(r);
+            List<String> fixed = fixedRows(r);
+            // The gap under each card belongs to no card.
+            if (off % RESULT_ROW_H < RESULT_ROW_H - 3 && i >= 0 && i < entries.size() + fixed.size()) {
+                if (i < fixed.size()) setFixedSelected(fixed.get(i), !fixedSelected(fixed.get(i)));
+                else TrencherVerifier.toggle(entries.get(i - fixed.size()));
+            }
+            return true;
+        }
+        return mx >= listX + listW + GAP;
+    }
+
+    private void runTrencherScan() {
+        TrencherVerifier.Status st = TrencherVerifier.start();
+        resultScroll = 0;
+        resultScrollTarget = 0;
+        switch (st) {
+            case OK -> showToast(Lang.get("ui.trencher.started"), false);
+            case NO_WORLD -> showToast(Lang.get("ui.trencher.no_world"), true);
+            case NO_LITEMATICA -> showToast(Lang.get("ui.trencher.no_litematica"), true);
+            case NO_SELECTION -> showToast(Lang.get("ui.trencher.no_selection"), true);
+            case BAD_COORDS -> showToast(Lang.get("ui.trencher.bad_coords"), true);
+        }
+    }
+
     // ── popups, placement, toast ─────────────────────────────────
 
     private void drawPopups(Gfx g, int mx, int my, long now) {
@@ -1152,7 +1440,9 @@ public class TweaksConfigScreen extends Screen {
         float a = Math.min(Anim.easeOutCubic(t / 200f), 1 - Anim.clamp01((t - 2600) / 400f));
         // The Clear Block Render screen has buttons along the bottom, so its
         // toasts sit at the foot of the preview instead.
-        int[] area = cbrMode && previewRect != null ? previewRect : new int[] { M, 0, width - M, height - M };
+        int[] area = cbrMode && previewRect != null ? previewRect
+                : trencherMode && resultRect != null ? resultRect
+                : new int[] { M, 0, width - M, height - M };
         String s = g.ellipsize(toast, area[2] - area[0] - 36);
         int w = g.width(s) + 24, x = (area[0] + area[2] - w) / 2, y = area[3] - 26;
         g.push();
@@ -1382,7 +1672,7 @@ public class TweaksConfigScreen extends Screen {
                     if (tab != i) {
                         tab = i;
                         if (cbrMode) lastCbrTab = i;
-                        else lastTab = i;
+                        else if (!trencherMode) lastTab = i;
                         scrollTarget = 0;
                         scroll = 0;
                         rowY.clear();
@@ -1393,8 +1683,9 @@ public class TweaksConfigScreen extends Screen {
         }
 
         if (cbrMode && clickCbrButtons(mx, my)) return true;
-        if (!cbrMode && clickAppearance(mx, my)) return true;
-        if (!cbrMode && Widgets.inside(mx, my, detailX, detailY, detailW, detailH)) return true;
+        if (trencherMode && clickTrencherSide(mx, my)) return true;
+        if (!sideMode() && clickAppearance(mx, my)) return true;
+        if (!sideMode() && Widgets.inside(mx, my, detailX, detailY, detailW, detailH)) return true;
 
         // scrollbar
         if (contentH > listH && Widgets.inside(mx, my, listX + listW, listY, 8, listH)) {
@@ -1661,6 +1952,7 @@ public class TweaksConfigScreen extends Screen {
 
     private List<Entry> sectionOf(Entry e) {
         if (cbrMode) return cbrCommon.contains(e) ? cbrCommon : cbrRec;
+        if (trencherMode) return trencherOpts;
         return switch (e.kind) {
             case FEATURE -> features;
             case OPTION -> options;
@@ -1707,8 +1999,8 @@ public class TweaksConfigScreen extends Screen {
         if (sec == null || dropIndex < 0) return;
         sec.remove(pressEntry);
         sec.add(Math.min(dropIndex, sec.size()), pressEntry);
-        StringListConfig order = cbrMode
-                ? (sec == cbrCommon ? Configs.Ui.ORDER_CBR : Configs.Ui.ORDER_CBR_REC)
+        StringListConfig order = trencherMode ? Configs.Ui.ORDER_TRENCHER
+                : cbrMode ? (sec == cbrCommon ? Configs.Ui.ORDER_CBR : Configs.Ui.ORDER_CBR_REC)
                 : switch (pressEntry.kind) {
             case FEATURE -> Configs.Ui.ORDER_FEATURES;
             case OPTION -> Configs.Ui.ORDER_OPTIONS;
@@ -1732,7 +2024,12 @@ public class TweaksConfigScreen extends Screen {
             }
             return true;
         }
-        if (!cbrMode && Widgets.inside(mx, my, detailX, detailY, detailW, detailH)) {
+        if (trencherMode && resultRect != null
+                && Widgets.inside(mx, my, resultRect[0], resultRect[1], resultRect[2] - resultRect[0], resultRect[3] - resultRect[1])) {
+            resultScrollTarget -= (float) amount * RESULT_ROW_H * 2;
+            return true;
+        }
+        if (!sideMode() && Widgets.inside(mx, my, detailX, detailY, detailW, detailH)) {
             detailScrollTarget -= (float) amount * 22;
             return true;
         }

@@ -142,8 +142,8 @@ public final class ConfigEntries {
         list.add(option(Configs.Generic.WORLDEDIT_GRID_MAX_LINES));
         list.add(option(Configs.Generic.COMPARATOR_SIGNAL_RANGE));
         list.add(option(Configs.Generic.COMPARATOR_SIGNAL_SYNC_INTERVAL));
-        // Clear Block Render options are edited in its own screen, opened by its
-        // hotkey, rather than from this list.
+        // Clear Block Render and Trencher Verify options are edited in their own
+        // screens, opened by their hotkeys, rather than from this list.
         return ordered(list, Configs.Ui.ORDER_OPTIONS);
     }
 
@@ -176,6 +176,23 @@ public final class ConfigEntries {
         return ordered(list, Configs.Ui.ORDER_CBR_REC);
     }
 
+    /** Settings of the Trencher Verify screen. */
+    public static List<Entry> trencherOptions() {
+        List<Entry> list = new ArrayList<>();
+        list.add(option(Configs.Generic.TRENCHER_AREA_SOURCE));
+        list.add(option(Configs.Generic.TRENCHER_POS1));
+        list.add(option(Configs.Generic.TRENCHER_POS2));
+        list.add(option(Configs.Generic.TRENCHER_LIQUID_REMOVED));
+        list.add(option(Configs.Generic.TRENCHER_MAX_Y));
+        list.add(option(Configs.Generic.TRENCHER_EATER_MODE));
+        list.add(option(Configs.Generic.TRENCHER_STACK_HEIGHT));
+        list.add(option(Configs.Generic.TRENCHER_HIGHLIGHT_COLOR));
+        list.add(option(Configs.Generic.TRENCHER_LAVA_COLOR));
+        list.add(option(Configs.Generic.TRENCHER_ABOVE_COLOR));
+        list.add(option(Configs.Generic.TRENCHER_STACK_COLOR));
+        return ordered(list, Configs.Ui.ORDER_TRENCHER);
+    }
+
     public static List<Entry> hotkeys() {
         List<Entry> list = new ArrayList<>();
         list.add(hotkey(Hotkeys.OPEN_CONFIG_GUI, "Open Config GUI"));
@@ -184,6 +201,7 @@ public final class ConfigEntries {
         list.add(hotkey(Hotkeys.PICK_BLOCK_ULTIMATE_COMPONENT, "Pick Block State"));
         list.add(hotkey(Hotkeys.CLEAR_BLOCK_RENDER_TOGGLE, "Clear Block Render Screen"));
         list.add(hotkey(Hotkeys.CLEAR_BLOCK_RENDER_RECORD, "Clear Block Render Rec"));
+        list.add(hotkey(Hotkeys.TRENCHER_VERIFY_SCREEN, "Trencher Verify Screen"));
         return ordered(list, Configs.Ui.ORDER_HOTKEYS);
     }
 

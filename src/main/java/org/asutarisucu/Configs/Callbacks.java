@@ -38,12 +38,14 @@ public class Callbacks {
         Hotkeys.ADD_HIGHLIGHT_ITEM.setHotkeyCallback(() -> RegisterItem.addHandItem());
         Hotkeys.CLEAR_BLOCK_RENDER_TOGGLE.setHotkeyCallback(Callbacks::openClearBlockRenderGui);
         Hotkeys.CLEAR_BLOCK_RENDER_RECORD.setHotkeyCallback(ClearBlockRender::toggle);
+        Hotkeys.TRENCHER_VERIFY_SCREEN.setHotkeyCallback(Callbacks::openTrencherVerifyGui);
 
         HotkeyManager.INSTANCE.register(Hotkeys.OPEN_CONFIG_GUI.getHotkey());
         HotkeyManager.INSTANCE.register(Hotkeys.CLEAR_ITEM_COUNT.getHotkey());
         HotkeyManager.INSTANCE.register(Hotkeys.ADD_HIGHLIGHT_ITEM.getHotkey());
         HotkeyManager.INSTANCE.register(Hotkeys.CLEAR_BLOCK_RENDER_TOGGLE.getHotkey());
         HotkeyManager.INSTANCE.register(Hotkeys.CLEAR_BLOCK_RENDER_RECORD.getHotkey());
+        HotkeyManager.INSTANCE.register(Hotkeys.TRENCHER_VERIFY_SCREEN.getHotkey());
         // PICK_BLOCK_ULTIMATE_COMPONENT is polled while held, not on activation,
         // so it is deliberately not registered with the edge-triggered manager.
     }
@@ -72,6 +74,19 @@ public class Callbacks {
 //#else
 //$$ Minecraft mc = Minecraft.getInstance();
 //$$ mc.execute(() -> mc.gui.setScreen(new org.asutarisucu.GUI.TweaksConfigScreen(mc.gui.screen(), true)));
+//#endif
+    }
+
+    private static void openTrencherVerifyGui() {
+//#if MC < 260100
+        MinecraftClient mc = MinecraftClient.getInstance();
+        mc.send(() -> mc.setScreen(org.asutarisucu.GUI.TweaksConfigScreen.trencher(mc.currentScreen)));
+//#elseif MC < 260200
+//$$ Minecraft mc = Minecraft.getInstance();
+//$$ mc.execute(() -> mc.setScreen(org.asutarisucu.GUI.TweaksConfigScreen.trencher(mc.screen)));
+//#else
+//$$ Minecraft mc = Minecraft.getInstance();
+//$$ mc.execute(() -> mc.gui.setScreen(org.asutarisucu.GUI.TweaksConfigScreen.trencher(mc.gui.screen())));
 //#endif
     }
 }

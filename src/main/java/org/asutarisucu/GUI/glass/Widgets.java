@@ -96,6 +96,14 @@ public final class Widgets {
         g.roundedSheen(kx - 5, cy - 5, 10, 10, 5, 0xFFFDFDFE);
     }
 
+    /** Progress bar without a knob; {@code t} is the done share, 0-1. Turns green when full. */
+    public static void meter(Gfx g, int x, int y, int w, float t) {
+        t = Gfx.clamp01(t);
+        g.rounded(x, y, w, 4, 2, 0x50000000);
+        int fw = Math.round(w * t);
+        if (fw > 0) g.rounded(x, y, fw, 4, 2, t >= 1f ? ON : ACCENT);
+    }
+
     /** Six dots that show a panel can be dragged. */
     public static void grip(Gfx g, int x, int y, int color) {
         for (int row = 0; row < 3; row++) {

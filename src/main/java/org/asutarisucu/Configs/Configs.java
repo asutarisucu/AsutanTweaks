@@ -130,6 +130,34 @@ public class Configs {
                 new OptionListConfig<>("cbr_format", VideoFormat.WEBM_VP9, VideoFormat.class);
         public static final StringConfig CBR_FFMPEG_PATH =
                 new StringConfig("cbr_ffmpeg_path", "ffmpeg");
+
+        public static final OptionListConfig<TrencherAreaSource> TRENCHER_AREA_SOURCE =
+                new OptionListConfig<>("trencher_area_source", TrencherAreaSource.LITEMATICA, TrencherAreaSource.class);
+        /** Corners used when the area source is MANUAL, as "x y z". Y is not used. */
+        public static final StringConfig TRENCHER_POS1 =
+                new StringConfig("trencher_pos1", "");
+        public static final StringConfig TRENCHER_POS2 =
+                new StringConfig("trencher_pos2", "");
+        /** The area's liquids are already removed: look for lava only in the outer strips. */
+        public static final BooleanConfig TRENCHER_LIQUID_REMOVED =
+                new BooleanConfig("trencher_liquid_removed", false);
+        /** Highest Y checked. Blocks above it inside the area get a card of their own. */
+        public static final IntegerConfig TRENCHER_MAX_Y =
+                new IntegerConfig("trencher_max_y", 110, -58, 320);
+        /** Starts the blast-resistant cards picked instead, and hides falling stacks. */
+        public static final BooleanConfig TRENCHER_EATER_MODE =
+                new BooleanConfig("trencher_eater_mode", false);
+        /** Height from which a column of falling blocks is highlighted. */
+        public static final IntegerConfig TRENCHER_STACK_HEIGHT =
+                new IntegerConfig("trencher_stack_height", 7, 2, 64);
+        public static final ColorConfig TRENCHER_HIGHLIGHT_COLOR =
+                new ColorConfig("trencher_highlight_color", "#FFFFAA00");
+        public static final ColorConfig TRENCHER_LAVA_COLOR =
+                new ColorConfig("trencher_lava_color", "#FFFF3020");
+        public static final ColorConfig TRENCHER_ABOVE_COLOR =
+                new ColorConfig("trencher_above_color", "#FF40A0FF");
+        public static final ColorConfig TRENCHER_STACK_COLOR =
+                new ColorConfig("trencher_stack_color", "#FFE040FF");
     }
 
     /** Settings of the config screen itself. Not listed in the screen's Options tab. */
@@ -159,6 +187,8 @@ public class Configs {
                 new StringListConfig("order_cbr", List.of());
         public static final StringListConfig ORDER_CBR_REC =
                 new StringListConfig("order_cbr_rec", List.of());
+        public static final StringListConfig ORDER_TRENCHER =
+                new StringListConfig("order_trencher", List.of());
     }
 
     public static void registerAll() {
@@ -213,10 +243,21 @@ public class Configs {
         ConfigManager.INSTANCE.register("options", Generic.CBR_PLAYERS.getName(),       Generic.CBR_PLAYERS);
         ConfigManager.INSTANCE.register("options", Generic.CBR_FORMAT.getName(),        Generic.CBR_FORMAT);
         ConfigManager.INSTANCE.register("options", Generic.CBR_FFMPEG_PATH.getName(),   Generic.CBR_FFMPEG_PATH);
+        ConfigManager.INSTANCE.register("options", Generic.TRENCHER_AREA_SOURCE.getName(),     Generic.TRENCHER_AREA_SOURCE);
+        ConfigManager.INSTANCE.register("options", Generic.TRENCHER_POS1.getName(),            Generic.TRENCHER_POS1);
+        ConfigManager.INSTANCE.register("options", Generic.TRENCHER_POS2.getName(),            Generic.TRENCHER_POS2);
+        ConfigManager.INSTANCE.register("options", Generic.TRENCHER_LIQUID_REMOVED.getName(),  Generic.TRENCHER_LIQUID_REMOVED);
+        ConfigManager.INSTANCE.register("options", Generic.TRENCHER_MAX_Y.getName(),           Generic.TRENCHER_MAX_Y);
+        ConfigManager.INSTANCE.register("options", Generic.TRENCHER_EATER_MODE.getName(),      Generic.TRENCHER_EATER_MODE);
+        ConfigManager.INSTANCE.register("options", Generic.TRENCHER_STACK_HEIGHT.getName(),    Generic.TRENCHER_STACK_HEIGHT);
+        ConfigManager.INSTANCE.register("options", Generic.TRENCHER_HIGHLIGHT_COLOR.getName(), Generic.TRENCHER_HIGHLIGHT_COLOR);
+        ConfigManager.INSTANCE.register("options", Generic.TRENCHER_LAVA_COLOR.getName(),      Generic.TRENCHER_LAVA_COLOR);
+        ConfigManager.INSTANCE.register("options", Generic.TRENCHER_ABOVE_COLOR.getName(),     Generic.TRENCHER_ABOVE_COLOR);
+        ConfigManager.INSTANCE.register("options", Generic.TRENCHER_STACK_COLOR.getName(),     Generic.TRENCHER_STACK_COLOR);
 
         for (IConfig<?> c : List.<IConfig<?>>of(Ui.LANGUAGE, Ui.BACKGROUND_IMAGE, Ui.GLASS_TRANSPARENCY,
                 Ui.BACKGROUND_BLUR, Ui.REFRACTION, Ui.BACKGROUND_DIM,
-                Ui.ORDER_FEATURES, Ui.ORDER_OPTIONS, Ui.ORDER_HOTKEYS, Ui.ORDER_CBR, Ui.ORDER_CBR_REC)) {
+                Ui.ORDER_FEATURES, Ui.ORDER_OPTIONS, Ui.ORDER_HOTKEYS, Ui.ORDER_CBR, Ui.ORDER_CBR_REC, Ui.ORDER_TRENCHER)) {
             ConfigManager.INSTANCE.register("ui", c.getName(), c);
         }
     }

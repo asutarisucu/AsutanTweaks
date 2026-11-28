@@ -12,6 +12,7 @@ import org.asutarisucu.tweak.SearchItems.HighlightBlock;
 import org.asutarisucu.tweak.SearchItems.HighlightContainer;
 import org.asutarisucu.tweak.SimpleItemEntityRender.SimpleEntityRender;
 import org.asutarisucu.tweak.ThirdEye.ThirdEye;
+import org.asutarisucu.tweak.TrencherVerify.TrencherVerifier;
 import org.asutarisucu.tweak.VisualiseLazyEntity.VisualiseLazyEntity;
 import org.asutarisucu.tweak.WorldEditGUI.SelectionGridRenderer;
 import org.asutarisucu.tweak.WorldEditGUI.WorldEditCui;
@@ -44,6 +45,7 @@ public class Reference {
         VisualiseLazyEntity.register();
         WorldEditCui.register();
         ComparatorSignalView.register();
+        TrencherVerifier.register();
         registerWorldRendering();
         registerHud();
     }
@@ -55,6 +57,7 @@ public class Reference {
 //$$     if (Feature.SEARCH_CONTAINER_HIGHLIGHT.isEnabled()) HighlightContainer.render(context);
 //$$     if (Feature.WORLDEDIT_GUI.isEnabled())              SelectionGridRenderer.render(context);
 //$$     if (Feature.COMPARATOR_SIGNAL_VIEW.isEnabled())     ComparatorSignalView.render(context);
+//$$     TrencherVerifier.render(context);
 //$$     BlockUpdateViewer.renderOverlay(context);
 //$$ });
 //#else
@@ -63,6 +66,7 @@ public class Reference {
             if (Feature.SEARCH_CONTAINER_HIGHLIGHT.isEnabled()) HighlightContainer.render(context);
             if (Feature.WORLDEDIT_GUI.isEnabled())              SelectionGridRenderer.render(context);
             if (Feature.COMPARATOR_SIGNAL_VIEW.isEnabled())     ComparatorSignalView.render(context);
+            TrencherVerifier.render(context);
 //#if MC >= 12111
 //$$ BlockUpdateViewer.renderOverlay(context);
 //#else

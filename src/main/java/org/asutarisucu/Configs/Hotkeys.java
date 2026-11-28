@@ -26,6 +26,9 @@ public class Hotkeys {
      */
     public static final FeatureConfig CLEAR_BLOCK_RENDER_RECORD =
             new FeatureConfig("clear_block_render_record", false, "");
+    /** Opens the Trencher Verify screen. */
+    public static final FeatureConfig TRENCHER_VERIFY_SCREEN =
+            new FeatureConfig("trencher_verify_screen", false, "");
 
     public static void registerAll() {
         ConfigManager.INSTANCE.register("hotkeys", OPEN_CONFIG_GUI.getName(),    OPEN_CONFIG_GUI);
@@ -34,5 +37,6 @@ public class Hotkeys {
         ConfigManager.INSTANCE.register("hotkeys", PICK_BLOCK_ULTIMATE_COMPONENT.getName(), PICK_BLOCK_ULTIMATE_COMPONENT);
         ConfigManager.INSTANCE.register("hotkeys", CLEAR_BLOCK_RENDER_TOGGLE.getName(), CLEAR_BLOCK_RENDER_TOGGLE);
         ConfigManager.INSTANCE.register("hotkeys", CLEAR_BLOCK_RENDER_RECORD.getName(), CLEAR_BLOCK_RENDER_RECORD);
+        ConfigManager.INSTANCE.register("hotkeys", TRENCHER_VERIFY_SCREEN.getName(), TRENCHER_VERIFY_SCREEN);
     }
 }
